@@ -1,0 +1,7 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "rebaseWhen": "behind-base-branch",
+  "prHourlyLimit": 10
+}
