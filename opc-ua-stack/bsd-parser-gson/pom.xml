@@ -18,7 +18,7 @@
         <dependency>
             <groupId>org.eclipse.milo</groupId>
             <artifactId>bsd-parser</artifactId>
-            <version>0.6.8-SNAPSHOT</version>
+            <version>0.6.8</version>
         </dependency>
 
         <dependency>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.eclipse.milo</groupId>
             <artifactId>bsd-parser</artifactId>
-            <version>0.6.8-SNAPSHOT</version>
+            <version>0.6.8</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
