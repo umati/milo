@@ -15,7 +15,7 @@
         <annotations.version>23.0.0</annotations.version>
         <slf4j.version>2.0.0</slf4j.version>
         <testng.version>7.5</testng.version>
-        <mockito.version>4.7.0</mockito.version>
+        <mockito.version>4.8.0</mockito.version>
     </properties>
 
     <modules>
