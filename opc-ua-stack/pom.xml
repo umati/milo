@@ -27,7 +27,7 @@
         <javassist.version>3.23.1-GA</javassist.version>
         <annotations.version>23.0.0</annotations.version>
         <netty.version>4.1.85.Final</netty.version>
-        <slf4j.version>2.0.4</slf4j.version>
+        <slf4j.version>2.0.5</slf4j.version>
         <testng.version>7.5</testng.version>
     </properties>
 
