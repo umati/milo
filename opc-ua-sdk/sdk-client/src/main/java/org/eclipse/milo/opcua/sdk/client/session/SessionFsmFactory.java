@@ -292,7 +292,7 @@ public class SessionFsmFactory {
                 createSession(ctx, client).whenComplete((csr, ex) -> {
                     if (csr != null) {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.debug("CreateSession succeeded: {}", csr.getSessionId());
                         }
@@ -300,7 +300,7 @@ public class SessionFsmFactory {
                         ctx.fireEvent(new Event.CreateSessionSuccess(csr));
                     } else {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.debug("CreateSession failed: {}", ex.getMessage(), ex);
                         }
@@ -318,7 +318,7 @@ public class SessionFsmFactory {
                 createSession(ctx, client).whenComplete((csr, ex) -> {
                     if (csr != null) {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.debug("CreateSession succeeded: {}", csr.getSessionId());
                         }
@@ -326,7 +326,7 @@ public class SessionFsmFactory {
                         ctx.fireEvent(new Event.CreateSessionSuccess(csr));
                     } else {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.debug("CreateSession failed: {}", ex.getMessage(), ex);
                         }
@@ -380,7 +380,7 @@ public class SessionFsmFactory {
                 activateSession(ctx, client, event.response).whenComplete((session, ex) -> {
                     if (session != null) {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.debug("Session activated: {}", session);
                         }
@@ -388,7 +388,7 @@ public class SessionFsmFactory {
                         ctx.fireEvent(new Event.ActivateSessionSuccess(session));
                     } else {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.debug("ActivateSession failed: {}", ex.getMessage(), ex);
                         }
@@ -415,7 +415,7 @@ public class SessionFsmFactory {
     }
 
     private static void configureTransferringState(FsmBuilder<State, Event> fb,
-        OpcUaClient client) {
+                                                   OpcUaClient client) {
         /* Transitions */
 
         fb.when(State.Transferring)
@@ -443,7 +443,7 @@ public class SessionFsmFactory {
                 transferSubscriptions(ctx, client, event.session).whenComplete((u, ex) -> {
                     if (u != null) {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.debug("TransferSubscriptions succeeded");
                         }
@@ -451,7 +451,7 @@ public class SessionFsmFactory {
                         ctx.fireEvent(new Event.TransferSubscriptionsSuccess(event.session));
                     } else {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.debug("TransferSubscriptions failed: {}", ex.getMessage(), ex);
                         }
@@ -478,7 +478,7 @@ public class SessionFsmFactory {
     }
 
     private static void configureInitializingState(FsmBuilder<State, Event> fb,
-        OpcUaClient client) {
+                                                   OpcUaClient client) {
         /* Transitions */
 
         fb.when(State.Initializing)
@@ -508,7 +508,7 @@ public class SessionFsmFactory {
                 initialize(ctx, client, session).whenComplete((u, ex) -> {
                     if (u != null) {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.debug("Initialization succeeded: {}", session);
                         }
@@ -516,7 +516,7 @@ public class SessionFsmFactory {
                         ctx.fireEvent(new Event.InitializeSuccess(session));
                     } else {
                         try (MDCCloseable ignored =
-                            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                             LOGGER.warn("Initialization failed: {}", session, ex);
                         }
@@ -605,8 +605,8 @@ public class SessionFsmFactory {
                                 channelFsm.removeTransitionListener(this);
 
                                 try (MDCCloseable ignored =
-                                    MDC.putCloseable("instance-id",
-                                        ctx.getUserContext().toString())) {
+                                         MDC.putCloseable("instance-id",
+                                             ctx.getUserContext().toString())) {
 
                                     LOGGER.debug(
                                         "ChannelFsm transition from={} to={} via={}",
@@ -651,8 +651,11 @@ public class SessionFsmFactory {
                 SessionFsm.SessionActivityListeners sessionActivityListeners =
                     KEY_SESSION_ACTIVITY_LISTENERS.get(ctx);
 
-                sessionActivityListeners.sessionActivityListeners
-                    .forEach(listener -> listener.onSessionActive(session));
+                client.getTransport().getConfig().getExecutor().execute(
+                    () ->
+                        sessionActivityListeners.sessionActivityListeners
+                            .forEach(listener -> listener.onSessionActive(session))
+                );
             });
 
         // onSessionInactive() callbacks
@@ -665,8 +668,11 @@ public class SessionFsmFactory {
                 SessionFsm.SessionActivityListeners sessionActivityListeners =
                     KEY_SESSION_ACTIVITY_LISTENERS.get(ctx);
 
-                sessionActivityListeners.sessionActivityListeners
-                    .forEach(listener -> listener.onSessionInactive(session));
+                client.getTransport().getConfig().getExecutor().execute(
+                    () ->
+                        sessionActivityListeners.sessionActivityListeners
+                            .forEach(listener -> listener.onSessionInactive(session))
+                );
             });
 
 
@@ -687,8 +693,8 @@ public class SessionFsmFactory {
                                 ServerState state = ServerState.from((Integer) value);
 
                                 try (MDCCloseable ignored =
-                                    MDC.putCloseable("instance-id",
-                                        ctx.getUserContext().toString())) {
+                                         MDC.putCloseable("instance-id",
+                                             ctx.getUserContext().toString())) {
 
                                     LOGGER.debug("ServerState: {}", state);
                                 }
@@ -712,7 +718,7 @@ public class SessionFsmFactory {
 
                         if (keepAliveFailureCount > keepAliveFailuresAllowed) {
                             try (MDCCloseable ignored =
-                                MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                     MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                                 LOGGER.warn(
                                     "Keep Alive failureCount={} exceeds failuresAllowed={}",
@@ -736,7 +742,7 @@ public class SessionFsmFactory {
                             }
                         } else {
                             try (MDCCloseable ignored =
-                                MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                                     MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                                 LOGGER.debug(
                                     "Keep Alive failureCount={}", keepAliveFailureCount, ex);
@@ -779,7 +785,7 @@ public class SessionFsmFactory {
 
                 closeSession(ctx, client, session).whenComplete((u, ex) -> {
                     try (MDCCloseable ignored =
-                        MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                             MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                         if (u != null) {
                             LOGGER.debug("Session closed: {}", session);
@@ -870,7 +876,7 @@ public class SessionFsmFactory {
         CloseSessionRequest request = new CloseSessionRequest(requestHeader, true);
 
         try (MDCCloseable ignored =
-            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
             LOGGER.debug("Sending CloseSessionRequest...");
         }
@@ -935,7 +941,7 @@ public class SessionFsmFactory {
         );
 
         try (MDCCloseable ignored =
-            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
             LOGGER.debug("Sending CreateSessionRequest...");
         }
@@ -1028,7 +1034,7 @@ public class SessionFsmFactory {
             );
 
             try (MDCCloseable ignored =
-                MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                     MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                 LOGGER.debug("Sending ActivateSessionRequest...");
             }
@@ -1086,7 +1092,7 @@ public class SessionFsmFactory {
         );
 
         try (MDCCloseable ignored =
-            MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                 MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
             LOGGER.debug("Sending TransferSubscriptionsRequest...");
         }
@@ -1099,7 +1105,7 @@ public class SessionFsmFactory {
                     TransferResult[] results = requireNonNull(tsr.getResults());
 
                     try (MDCCloseable ignored =
-                        MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                             MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                         LOGGER.debug(
                             "TransferSubscriptions supported: {}",
@@ -1213,7 +1219,7 @@ public class SessionFsmFactory {
             return initializer.initialize(client, session)
                 .exceptionally(ex -> {
                     try (MDCCloseable ignored =
-                        MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
+                             MDC.putCloseable("instance-id", ctx.getUserContext().toString())) {
 
                         LOGGER.error("Uncaught initialization error: {}",
                             initializer.getClass().getSimpleName(), ex);
@@ -1226,7 +1232,7 @@ public class SessionFsmFactory {
     }
 
     private static CompletableFuture<ReadResponse> sendKeepAlive(OpcUaClient client,
-        OpcUaSession session) {
+                                                                 OpcUaSession session) {
         ReadRequest keepAliveRequest = createKeepAliveRequest(client, session);
 
         return client.getTransport()
