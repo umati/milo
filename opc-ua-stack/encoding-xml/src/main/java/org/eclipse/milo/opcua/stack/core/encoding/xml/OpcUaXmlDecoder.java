@@ -10,27 +10,6 @@
 
 package org.eclipse.milo.opcua.stack.core.encoding.xml;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.lang.reflect.Array;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import com.google.common.io.CharStreams;
 import jakarta.xml.bind.DatatypeConverter;
 import org.eclipse.milo.opcua.stack.core.BuiltinDataType;
@@ -42,19 +21,7 @@ import org.eclipse.milo.opcua.stack.core.encoding.EncodingContext;
 import org.eclipse.milo.opcua.stack.core.encoding.UaDecoder;
 import org.eclipse.milo.opcua.stack.core.types.DataTypeDictionary;
 import org.eclipse.milo.opcua.stack.core.types.UaMessageType;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DiagnosticInfo;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
-import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
-import org.eclipse.milo.opcua.stack.core.types.builtin.Matrix;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
-import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
-import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
-import org.eclipse.milo.opcua.stack.core.types.builtin.XmlElement;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
@@ -67,10 +34,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.ubyte;
-import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint;
-import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.ulong;
-import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.ushort;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.function.Function;
+
+import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.*;
 
 public class OpcUaXmlDecoder implements UaDecoder {
 
@@ -371,10 +347,12 @@ public class OpcUaXmlDecoder implements UaDecoder {
                 if (idNode != null) {
                     String textContent = idNode.getTextContent();
 
-                    return NodeId.parseSafe(textContent).orElseThrow(() ->
+                    NodeId nodeId = NodeId.parseSafe(textContent).orElseThrow(() ->
                         new UaSerializationException(
                             StatusCodes.Bad_DecodingError, "invalid NodeId: " + textContent)
                     );
+
+                    return reindexNodeId(nodeId);
                 } else {
                     return NodeId.NULL_VALUE;
                 }
@@ -393,7 +371,9 @@ public class OpcUaXmlDecoder implements UaDecoder {
 
             try {
                 if (expandedIdNode != null) {
-                    return ExpandedNodeId.parse(expandedIdNode.getTextContent());
+                    ExpandedNodeId xni = ExpandedNodeId.parse(expandedIdNode.getTextContent());
+
+                    return reindexExpandedNodeId(xni);
                 } else {
                     return ExpandedNodeId.NULL_VALUE;
                 }
@@ -449,7 +429,7 @@ public class OpcUaXmlDecoder implements UaDecoder {
                     name = nameNode.getTextContent();
                 }
 
-                return new QualifiedName(namespaceIndex, name);
+                return reindexQualifiedName(new QualifiedName(namespaceIndex, name));
             } catch (Throwable t) {
                 throw new UaSerializationException(StatusCodes.Bad_DecodingError, t);
             } finally {
@@ -1277,6 +1257,36 @@ public class OpcUaXmlDecoder implements UaDecoder {
     @Override
     public Matrix decodeStructMatrix(String field, ExpandedNodeId dataTypeId) {
         return null;
+    }
+
+    /**
+     * Special overload for use when processing values from a UANodeSet.
+     *
+     * @param nodeId the NodeId to reindex.
+     * @return the re-indexed NodeId.
+     */
+    protected NodeId reindexNodeId(NodeId nodeId) {
+        return nodeId;
+    }
+
+    /**
+     * Special overload for use when processing values from a UANodeSet.
+     *
+     * @param expandedNodeId the ExpandedNodeId to reindex.
+     * @return the re-indexed ExpandedNodeId.
+     */
+    protected ExpandedNodeId reindexExpandedNodeId(ExpandedNodeId expandedNodeId) {
+        return expandedNodeId;
+    }
+
+    /**
+     * Special overload for use when processing values from a UANodeSet.
+     *
+     * @param qualifiedName the QualifiedName to reindex.
+     * @return the re-indexed QualifiedName.
+     */
+    protected QualifiedName reindexQualifiedName(QualifiedName qualifiedName) {
+        return qualifiedName;
     }
 
     private void checkArrayLength(int length) throws UaSerializationException {
