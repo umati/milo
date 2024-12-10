@@ -11,15 +11,13 @@
 package org.eclipse.milo.opcua.stack.transport.server.tcp;
 
 import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
@@ -28,11 +26,13 @@ import org.eclipse.milo.opcua.stack.core.util.Lazy;
 import org.eclipse.milo.opcua.stack.transport.server.OpcServerTransport;
 import org.eclipse.milo.opcua.stack.transport.server.ServerApplicationContext;
 import org.eclipse.milo.opcua.stack.transport.server.uasc.UascServerHelloHandler;
+import org.slf4j.LoggerFactory;
 
 public class OpcTcpServerTransport implements OpcServerTransport {
 
     private final Set<InetSocketAddress> boundAddresses = new HashSet<>();
     private final Set<Channel> channelReferences = new HashSet<>();
+    private final Set<Channel> childChannelReferences = Collections.synchronizedSet(new HashSet<>());
     private final Lazy<ServerBootstrap> serverBootstrap = new Lazy<>();
 
     private final OpcTcpServerTransportConfig config;
@@ -57,6 +57,9 @@ public class OpcTcpServerTransport implements OpcServerTransport {
                         channel.pipeline().addLast(
                             new UascServerHelloHandler(config, applicationContext, TransportProfile.TCP_UASC_UABINARY)
                         );
+
+                        childChannelReferences.add(channel);
+                        channel.closeFuture().addListener(future -> childChannelReferences.remove(channel));
                     }
                 })
         );
@@ -82,6 +85,15 @@ public class OpcTcpServerTransport implements OpcServerTransport {
             }
         });
         channelReferences.clear();
+
+        synchronized (childChannelReferences) {
+            childChannelReferences.forEach(channel -> {
+                LoggerFactory.getLogger(getClass())
+                    .info("Closing child channel: {}", channel);
+                channel.close();
+            });
+            childChannelReferences.clear();
+        }
 
         serverBootstrap.reset();
     }
