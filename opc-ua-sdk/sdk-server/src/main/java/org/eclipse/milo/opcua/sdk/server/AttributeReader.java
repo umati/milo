@@ -10,12 +10,11 @@
 
 package org.eclipse.milo.opcua.sdk.server;
 
-import java.util.Optional;
-
 import org.eclipse.milo.opcua.sdk.core.NumericRange;
 import org.eclipse.milo.opcua.sdk.core.nodes.Node;
 import org.eclipse.milo.opcua.sdk.core.nodes.VariableNode;
 import org.eclipse.milo.opcua.sdk.core.nodes.VariableTypeNode;
+import org.eclipse.milo.opcua.sdk.core.typetree.DataType;
 import org.eclipse.milo.opcua.sdk.server.nodes.UaNode;
 import org.eclipse.milo.opcua.sdk.server.nodes.UaServerNode;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
@@ -24,16 +23,14 @@ import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.encoding.binary.OpcUaDefaultBinaryEncoding;
 import org.eclipse.milo.opcua.stack.core.types.DataTypeEncoding;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
-import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
-import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
+import org.eclipse.milo.opcua.stack.core.types.structured.StructureDefinition;
 import org.eclipse.milo.opcua.stack.core.util.ArrayUtil;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 import static org.eclipse.milo.opcua.stack.core.util.ArrayUtil.transformArray;
 
@@ -141,7 +138,31 @@ public class AttributeReader {
             // node, and we need to return Bad_AttributeIdInvalid.
 
             switch (attributeId) {
-                case DataTypeDefinition:
+                case DataTypeDefinition: {
+                    if (value instanceof StructureDefinition definition) {
+                        NodeId defaultEncodingId = definition.getDefaultEncodingId();
+
+                        if (defaultEncodingId.isNull()) {
+                            DataType dataType = node.getNodeContext()
+                                .getServer()
+                                .getDataTypeTree()
+                                .getDataType(node.getNodeId());
+
+                            if (dataType != null && dataType.getBinaryEncodingId() != null) {
+                                // Some day this should look up the encoding based on the
+                                // session/transport, but right now we only support the default
+                                // binary encoding.
+                                value = new StructureDefinition(
+                                    dataType.getBinaryEncodingId(),
+                                    definition.getBaseDataType(),
+                                    definition.getStructureType(),
+                                    definition.getFields()
+                                );
+                            }
+                        }
+                    }
+                }
+
                 case RolePermissions:
                 case UserRolePermissions:
                 case AccessRestrictions:
