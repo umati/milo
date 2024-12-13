@@ -10,24 +10,10 @@
 
 package org.eclipse.milo.opcua.sdk.client.subscriptions;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.google.common.primitives.Ints;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
+import org.eclipse.milo.opcua.sdk.client.SessionActivityListener;
+import org.eclipse.milo.opcua.sdk.client.UaSession;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
@@ -37,18 +23,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MonitoringMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
-import org.eclipse.milo.opcua.stack.core.types.structured.CreateMonitoredItemsResponse;
-import org.eclipse.milo.opcua.stack.core.types.structured.CreateSubscriptionResponse;
-import org.eclipse.milo.opcua.stack.core.types.structured.DeleteMonitoredItemsResponse;
-import org.eclipse.milo.opcua.stack.core.types.structured.DeleteSubscriptionsResponse;
-import org.eclipse.milo.opcua.stack.core.types.structured.EventFieldList;
-import org.eclipse.milo.opcua.stack.core.types.structured.ModifyMonitoredItemsResponse;
-import org.eclipse.milo.opcua.stack.core.types.structured.ModifySubscriptionResponse;
-import org.eclipse.milo.opcua.stack.core.types.structured.MonitoredItemCreateResult;
-import org.eclipse.milo.opcua.stack.core.types.structured.MonitoredItemModifyResult;
-import org.eclipse.milo.opcua.stack.core.types.structured.MonitoredItemNotification;
-import org.eclipse.milo.opcua.stack.core.types.structured.SetMonitoringModeResponse;
-import org.eclipse.milo.opcua.stack.core.types.structured.SetPublishingModeResponse;
+import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.eclipse.milo.opcua.stack.core.util.Lazy;
 import org.eclipse.milo.opcua.stack.core.util.Lists;
 import org.eclipse.milo.opcua.stack.core.util.TaskQueue;
@@ -56,6 +31,13 @@ import org.eclipse.milo.opcua.stack.core.util.Unit;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.math.BigInteger;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.ubyte;
@@ -178,6 +160,7 @@ public class OpcUaSubscription {
             );
 
             watchdogTimer = new WatchdogTimer();
+            client.addSessionActivityListener(watchdogTimer);
             resetWatchdogTimer();
 
             client.addSubscription(this);
@@ -1182,16 +1165,17 @@ public class OpcUaSubscription {
         }
     }
 
-    void cancelWatchdogTimer() {
+    synchronized void cancelWatchdogTimer() {
         WatchdogTimer watchdog = this.watchdogTimer;
         if (watchdog != null) {
+            client.removeSessionActivityListener(watchdog);
             watchdog.cancel();
             this.watchdogTimer = null;
             logger.debug("id={}, watchdog timer cancelled", serverState.subscriptionId);
         }
     }
 
-    void resetWatchdogTimer() {
+    synchronized void resetWatchdogTimer() {
         WatchdogTimer watchdog = this.watchdogTimer;
         if (watchdog != null) {
             watchdog.reset();
@@ -1360,7 +1344,7 @@ public class OpcUaSubscription {
 
     }
 
-    private class WatchdogTimer {
+    private class WatchdogTimer implements SessionActivityListener {
 
         private final AtomicReference<ScheduledFuture<?>> scheduledFuture = new AtomicReference<>();
 
@@ -1410,6 +1394,18 @@ public class OpcUaSubscription {
                     }
                 );
             }
+        }
+
+        @Override
+        public void onSessionActive(UaSession session) {
+            reset();
+            logger.debug("id={}, watchdog timer reset via onSessionActive()", serverState.subscriptionId);
+        }
+
+        @Override
+        public void onSessionInactive(UaSession session) {
+            cancel();
+            logger.debug("id={}, watchdog timer cancelled via onSessionInactive()", serverState.subscriptionId);
         }
 
     }
