@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 the Eclipse Milo Authors
+ * Copyright (c) 2024 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -69,8 +69,8 @@ public interface OpcUaServerConfig {
 
     /**
      * Get the application name for the server.
-     * <p/>
-     * This will be used in the {@link ApplicationDescription} returned to clients.
+     *
+     * <p>This will be used in the {@link ApplicationDescription} returned to clients.
      *
      * @return the application name for the server.
      */
@@ -78,9 +78,8 @@ public interface OpcUaServerConfig {
 
     /**
      * Get the application uri for the server.
-     * <p/>
-     * This will be used in the {@link ApplicationDescription} returned to clients.
-     * <p/>
+     *
+     * <p>This will be used in the {@link ApplicationDescription} returned to clients.
      * <b>The application uri must match the application uri used on the server's application instance certificate.</b>
      *
      * @return the application uri for the server.
@@ -89,8 +88,8 @@ public interface OpcUaServerConfig {
 
     /**
      * Get the product uri for the server.
-     * <p/>
-     * This will be used in the {@link ApplicationDescription} returned to clients.
+     *
+     * <p>This will be used in the {@link ApplicationDescription} returned to clients.
      *
      * @return the product uri for the server.
      */

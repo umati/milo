@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 the Eclipse Milo Authors
+ * Copyright (c) 2024 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -51,7 +51,7 @@ public interface AddressSpaceFilter {
      * @param nodeId the {@link NodeId} from the browse operation.
      * @return {@code true} if the browse operation for {@code nodeId} should be handled the the {@link AddressSpace}
      * this filter belongs to.
-     * @see AddressSpace#browse(BrowseContext, ViewDescription, NodeId)
+     * @see AddressSpace#browse(BrowseContext, ViewDescription, List)
      */
     boolean filterBrowse(OpcUaServer server, NodeId nodeId);
 

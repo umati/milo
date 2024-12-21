@@ -1196,7 +1196,7 @@ public class OpcUaClient {
      * @return the {@link HistoryReadResponse}.
      * @throws UaException if there is an error invoking the service.
      * @see <a href="https://reference.opcfoundation.org/Core/Part4/v105/docs/5.10.3">
-     *     https://reference.opcfoundation.org/Core/Part4/v105/docs/5.10.3<a/>
+     *     https://reference.opcfoundation.org/Core/Part4/v105/docs/5.10.3</a>
      */
     public HistoryReadResponse historyRead(
         HistoryReadDetails historyReadDetails,
@@ -1234,7 +1234,7 @@ public class OpcUaClient {
      *     {@link HistoryReadResponse}, or completes exceptionally if there is an error invoking
      *     the service.
      * @see <a href="https://reference.opcfoundation.org/Core/Part4/v105/docs/5.10.3">
-     *     https://reference.opcfoundation.org/Core/Part4/v105/docs/5.10.3<a/>
+     *     https://reference.opcfoundation.org/Core/Part4/v105/docs/5.10.3</a>
      */
     public CompletableFuture<HistoryReadResponse> historyReadAsync(
         HistoryReadDetails historyReadDetails,
@@ -1422,7 +1422,7 @@ public class OpcUaClient {
      * @return the {@link ModifyMonitoredItemsResponse}.
      * @throws UaException if there is an error invoking the service.
      * @see <a href="https://reference.opcfoundation.org/Core/Part4/v105/docs/5.12.3">
-     *     https://reference.opcfoundation.org/Core/Part4/v105/docs/5.12.3<a/>
+     *     https://reference.opcfoundation.org/Core/Part4/v105/docs/5.12.3</a>
      */
     public ModifyMonitoredItemsResponse modifyMonitoredItems(
         UInteger subscriptionId,
@@ -1507,7 +1507,7 @@ public class OpcUaClient {
      *     {@link DeleteMonitoredItemsResponse}, or completes exceptionally if there is an error
      *     invoking the service.
      * @see <a href="https://reference.opcfoundation.org/Core/Part4/v105/docs/5.12.6">
-     *     https://reference.opcfoundation.org/Core/Part4/v105/docs/5.12.6<a/>
+     *     https://reference.opcfoundation.org/Core/Part4/v105/docs/5.12.6</a>
      */
     public CompletableFuture<DeleteMonitoredItemsResponse> deleteMonitoredItemsAsync(
         UInteger subscriptionId,

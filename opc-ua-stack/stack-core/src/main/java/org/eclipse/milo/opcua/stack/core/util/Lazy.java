@@ -53,7 +53,7 @@ public final class Lazy<T> {
      *
      * @param supplier a {@link ThrowingSupplier} that computes the value if necessary.
      * @return the lazily computed value.
-     * @throws Exception if the supplier throws an exception.
+     * @throws E if the supplier throws an exception.
      */
     public <E extends Exception> T getOrThrow(ThrowingSupplier<E, T> supplier) throws E {
         final T v = value;

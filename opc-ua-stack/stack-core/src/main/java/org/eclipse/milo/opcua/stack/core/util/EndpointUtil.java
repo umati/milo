@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 the Eclipse Milo Authors
+ * Copyright (c) 2024 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -121,7 +121,7 @@ public class EndpointUtil {
      *
      * @param endpoint the {@link EndpointDescription} to modify.
      * @param hostname the new hostname to use. A null value will result in the original hostname being used.
-     * @param port the new port to use. Any value <= 0 will result in the original port being used.
+     * @param port the new port to use. Any value less than or equal to 0 will result in the original port being used.
      * @return an updated {@link EndpointDescription} in which the hostname of the endpoint URL has been replaced with
      *     {@code hostname}.
      */
