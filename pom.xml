@@ -46,7 +46,6 @@
     </licenses>
 
     <modules>
-        <module>build-tools</module>
         <module>milo-examples</module>
         <module>opc-ua-stack</module>
         <module>opc-ua-sdk</module>
@@ -68,8 +67,6 @@
         <netty-channel-fsm.version>1.0.0</netty-channel-fsm.version>
         <slf4j.version>2.0.12</slf4j.version>
 
-        <checkstyle.version>10.14.0</checkstyle.version>
-
         <!-- Test Dependency Versions -->
         <junit.version>5.10.2</junit.version>
         <mockito.version>2.25.1</mockito.version>
@@ -84,7 +81,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.5.0</version>
+                        <version>3.11.2</version>
                         <configuration>
                             <doclint>none</doclint>
                             <failOnError>false</failOnError>
@@ -150,7 +147,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.5.0</version>
+                        <version>3.11.2</version>
                         <configuration>
                             <doclint>none</doclint>
                             <failOnError>false</failOnError>
@@ -185,103 +182,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <!-- TODO upgrade and fix violations before 1.0 -->
-                    <skip>true</skip>
-                    <configLocation>milo/checkstyle.xml</configLocation>
-                    <excludes>
-                        **/org/eclipse/milo/opcua/sdk/server/namespaces/loader/*,
-                        **/org/eclipse/milo/opcua/stack/core/types/structured/**,
-                        **/org/eclipse/milo/opcua/stack/core/types/enumerated/**,
-                        **/org/eclipse/milo/opcua/sdk/core/CefactEngineeringUnits.java,
-                        **/org/eclipse/milo/opcua/sdk/core/CefactEngineeringUnits0.java,
-                        **/org/eclipse/milo/opcua/sdk/core/CefactEngineeringUnits1.java,
-                        **/org/eclipse/milo/opcua/sdk/core/CefactEngineeringUnitsBase.java,
-                        **/org/eclipse/milo/opcua/sdk/client/dtd/BuiltinDataTypeInfo.java,
-                        **/org/eclipse/milo/opcua/sdk/client/model/nodes/objects/*,
-                        **/org/eclipse/milo/opcua/sdk/client/model/nodes/variables/*,
-                        **/org/eclipse/milo/opcua/sdk/client/model/types/objects/*,
-                        **/org/eclipse/milo/opcua/sdk/client/model/types/variables/*,
-                        **/org/eclipse/milo/opcua/sdk/server/model/nodes/objects/*,
-                        **/org/eclipse/milo/opcua/sdk/server/model/nodes/variables/*,
-                        **/org/eclipse/milo/opcua/sdk/server/model/types/objects/*,
-                        **/org/eclipse/milo/opcua/sdk/server/model/types/variables/*,
-                        **/org/eclipse/milo/opcua/stack/core/types/builtin/unsigned/*,
-                        **/org/eclipse/milo/opcua/stack/core/Identifiers.java,
-                        **/org/eclipse/milo/opcua/stack/core/StatusCodes.java,
-                        **/org/eclipse/milo/opcua/stack/core/types/TypeInitializer.java,
-                        **/org/opcfoundation/opcua/binaryschema/*
-                    </excludes>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>${checkstyle.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.milo</groupId>
-                        <artifactId>milo-build-tools</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>jcl-over-slf4j</artifactId>
-                        <version>${slf4j.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-jdk14</artifactId>
-                        <version>${slf4j.version}</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
-                        <configuration>
-                            <!-- TODO upgrade and fix violations before 1.0 -->
-                            <skip>true</skip>
-                            <configLocation>milo/checkstyle.xml</configLocation>
-                            <excludes>
-                                **/org/eclipse/milo/opcua/sdk/server/namespaces/loader/*,
-                                **/org/eclipse/milo/opcua/stack/core/types/structured/**,
-                                **/org/eclipse/milo/opcua/stack/core/types/enumerated/**,
-                                **/org/eclipse/milo/opcua/sdk/core/CefactEngineeringUnits.java,
-                                **/org/eclipse/milo/opcua/sdk/core/CefactEngineeringUnits0.java,
-                                **/org/eclipse/milo/opcua/sdk/core/CefactEngineeringUnits1.java,
-                                **/org/eclipse/milo/opcua/sdk/core/CefactEngineeringUnitsBase.java,
-                                **/org/eclipse/milo/opcua/sdk/client/dtd/BuiltinDataTypeInfo.java,
-                                **/org/eclipse/milo/opcua/sdk/client/model/nodes/objects/*,
-                                **/org/eclipse/milo/opcua/sdk/client/model/nodes/variables/*,
-                                **/org/eclipse/milo/opcua/sdk/client/model/types/objects/*,
-                                **/org/eclipse/milo/opcua/sdk/client/model/types/variables/*,
-                                **/org/eclipse/milo/opcua/sdk/server/model/methods/*,
-                                **/org/eclipse/milo/opcua/sdk/server/model/nodes/objects/*,
-                                **/org/eclipse/milo/opcua/sdk/server/model/nodes/variables/*,
-                                **/org/eclipse/milo/opcua/sdk/server/model/types/objects/*,
-                                **/org/eclipse/milo/opcua/sdk/server/model/types/variables/*,
-                                **/org/eclipse/milo/opcua/stack/core/types/builtin/unsigned/*,
-                                **/org/eclipse/milo/opcua/stack/core/Identifiers.java,
-                                **/org/eclipse/milo/opcua/stack/core/StatusCodes.java,
-                                **/org/eclipse/milo/opcua/stack/core/types/TypeInitializer.java,
-                                **/org/opcfoundation/opcua/binaryschema/*
-                            </excludes>
-                            <consoleOutput>true</consoleOutput>
-                            <failsOnError>true</failsOnError>
-                            <failOnViolation>true</failOnViolation>
-                        </configuration>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -407,36 +307,6 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <configLocation>milo/checkstyle.xml</configLocation>
-                    <excludes>
-                        **/org/eclipse/milo/opcua/sdk/server/namespaces/loader/*,
-                        **/org/eclipse/milo/opcua/stack/core/types/structured/**,
-                        **/org/eclipse/milo/opcua/stack/core/types/enumerated/**,
-                        **/org/eclipse/milo/opcua/sdk/client/api/model/nodes/objects/*,
-                        **/org/eclipse/milo/opcua/sdk/client/api/model/nodes/variables/*,
-                        **/org/eclipse/milo/opcua/sdk/client/api/model/types/objects/*,
-                        **/org/eclipse/milo/opcua/sdk/client/api/model/types/variables/*,
-                        **/org/eclipse/milo/opcua/sdk/server/model/methods/*,
-                        **/org/eclipse/milo/opcua/sdk/server/model/nodes/objects/*,
-                        **/org/eclipse/milo/opcua/sdk/server/model/nodes/variables/*,
-                        **/org/eclipse/milo/opcua/sdk/server/model/types/objects/*,
-                        **/org/eclipse/milo/opcua/sdk/server/model/types/variables/*,
-                        **/org/eclipse/milo/opcua/stack/core/Identifiers.java,
-                        **/org/eclipse/milo/opcua/stack/core/types/builtin/unsigned/*,
-                        **/org/eclipse/milo/opcua/stack/core/StatusCodes.java
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <distributionManagement>
         <snapshotRepository>
