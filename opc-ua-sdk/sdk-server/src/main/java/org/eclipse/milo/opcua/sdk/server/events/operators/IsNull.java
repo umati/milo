@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 the Eclipse Milo Authors
+ * Copyright (c) 2024 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -21,27 +21,25 @@ import org.jetbrains.annotations.Nullable;
 
 public class IsNull implements Operator<Boolean> {
 
-    IsNull() {}
+  IsNull() {}
 
-    @Override
-    public void validate(FilterContext context, FilterOperand[] operands) throws ValidationException {
-        if (operands.length < 1) {
-            throw new ValidationException(StatusCodes.Bad_FilterOperandCountMismatch);
-        }
+  @Override
+  public void validate(FilterContext context, FilterOperand[] operands) throws ValidationException {
+    if (operands.length < 1) {
+      throw new ValidationException(StatusCodes.Bad_FilterOperandCountMismatch);
     }
+  }
 
-    @Nullable
-    @Override
-    public Boolean apply(
-        OperatorContext context,
-        BaseEventTypeNode eventNode,
-        FilterOperand[] operands) throws UaException {
+  @Nullable
+  @Override
+  public Boolean apply(
+      OperatorContext context, BaseEventTypeNode eventNode, FilterOperand[] operands)
+      throws UaException {
 
-        validate(context, operands);
+    validate(context, operands);
 
-        Object value = context.resolve(operands[0], eventNode);
+    Object value = context.resolve(operands[0], eventNode);
 
-        return value == null;
-    }
-
+    return value == null;
+  }
 }
