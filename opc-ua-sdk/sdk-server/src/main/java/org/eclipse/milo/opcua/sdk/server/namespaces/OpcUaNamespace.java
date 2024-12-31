@@ -155,7 +155,7 @@ public class OpcUaNamespace extends ManagedNamespaceWithLifecycle {
           TimeUnit.MILLISECONDS.convert(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
       long deltaCount = getNodeManager().getNodes().size() - startCount;
 
-      logger.info("Loaded {} nodes in {}ms.", deltaCount, deltaMs);
+      logger.debug("Loaded {} nodes in {}ms.", deltaCount, deltaMs);
     } catch (Exception e) {
       logger.error("Error loading nodes.", e);
     }
