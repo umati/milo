@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.util.Tree;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class TypeTree<T extends TypeTree.Type> {
 

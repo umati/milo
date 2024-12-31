@@ -20,20 +20,20 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class UInt32Conversions {
 
   private UInt32Conversions() {}
 
-  @NotNull
-  static Boolean uInt32ToBoolean(@NotNull UInteger ui) {
+  @NonNull
+  static Boolean uInt32ToBoolean(@NonNull UInteger ui) {
     return ui.intValue() != 0;
   }
 
   @Nullable
-  static UByte uInt32ToByte(@NotNull UInteger ui) {
+  static UByte uInt32ToByte(@NonNull UInteger ui) {
     long l = ui.longValue();
 
     if (l <= UByte.MAX_VALUE) {
@@ -43,18 +43,18 @@ final class UInt32Conversions {
     }
   }
 
-  @NotNull
-  static Double uInt32ToDouble(@NotNull UInteger ui) {
+  @NonNull
+  static Double uInt32ToDouble(@NonNull UInteger ui) {
     return ui.doubleValue();
   }
 
-  @NotNull
-  static Float uInt32ToFloat(@NotNull UInteger ui) {
+  @NonNull
+  static Float uInt32ToFloat(@NonNull UInteger ui) {
     return ui.floatValue();
   }
 
   @Nullable
-  static Short uInt32ToInt16(@NotNull UInteger ui) {
+  static Short uInt32ToInt16(@NonNull UInteger ui) {
     int i = ui.intValue();
 
     if (i <= Short.MAX_VALUE) {
@@ -65,7 +65,7 @@ final class UInt32Conversions {
   }
 
   @Nullable
-  static Integer uInt32ToInt32(@NotNull UInteger ui) {
+  static Integer uInt32ToInt32(@NonNull UInteger ui) {
     long l = ui.longValue();
 
     if (l <= Integer.MAX_VALUE) {
@@ -75,13 +75,13 @@ final class UInt32Conversions {
     }
   }
 
-  @NotNull
-  static Long uInt32ToInt64(@NotNull UInteger ui) {
+  @NonNull
+  static Long uInt32ToInt64(@NonNull UInteger ui) {
     return ui.longValue();
   }
 
   @Nullable
-  static Byte uInt32ToSByte(@NotNull UInteger ui) {
+  static Byte uInt32ToSByte(@NonNull UInteger ui) {
     int i = ui.intValue();
 
     if (i <= Byte.MAX_VALUE) {
@@ -91,18 +91,18 @@ final class UInt32Conversions {
     }
   }
 
-  @NotNull
-  static StatusCode uInt32ToStatusCode(@NotNull UInteger ui) {
+  @NonNull
+  static StatusCode uInt32ToStatusCode(@NonNull UInteger ui) {
     return new StatusCode(ui);
   }
 
-  @NotNull
-  static String uInt32ToString(@NotNull UInteger ui) {
+  @NonNull
+  static String uInt32ToString(@NonNull UInteger ui) {
     return ui.toString();
   }
 
   @Nullable
-  static UShort uInt32ToUInt16(@NotNull UInteger ui) {
+  static UShort uInt32ToUInt16(@NonNull UInteger ui) {
     int i = ui.intValue();
 
     if (i <= UShort.MAX_VALUE) {
@@ -112,8 +112,8 @@ final class UInt32Conversions {
     }
   }
 
-  @NotNull
-  static ULong uInt32ToUInt64(@NotNull UInteger ui) {
+  @NonNull
+  static ULong uInt32ToUInt64(@NonNull UInteger ui) {
     return ulong(ui.longValue());
   }
 
@@ -129,7 +129,7 @@ final class UInt32Conversions {
   }
 
   @Nullable
-  static Object explicitConversion(@NotNull UInteger ui, BuiltinDataType targetType) {
+  static Object explicitConversion(@NonNull UInteger ui, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Boolean:
@@ -153,7 +153,7 @@ final class UInt32Conversions {
   }
 
   @Nullable
-  static Object implicitConversion(@NotNull UInteger ui, BuiltinDataType targetType) {
+  static Object implicitConversion(@NonNull UInteger ui, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Double:

@@ -12,7 +12,7 @@ package org.eclipse.milo.opcua.stack.transport.client.uasc;
 
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.UaResponseMessageType;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class UascResponse {
 

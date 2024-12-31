@@ -12,7 +12,7 @@ package org.eclipse.milo.opcua.stack.core.types.builtin.unsigned;
 
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * The <code>unsigned byte</code> type
@@ -257,7 +257,7 @@ public final class UByte extends UNumber implements Comparable<UByte> {
   }
 
   @Override
-  public int compareTo(@NotNull UByte o) {
+  public int compareTo(@NonNull UByte o) {
     return Short.compare(value, o.value);
   }
 

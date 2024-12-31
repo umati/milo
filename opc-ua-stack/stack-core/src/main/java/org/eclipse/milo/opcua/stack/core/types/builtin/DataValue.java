@@ -17,8 +17,8 @@ import java.util.function.Consumer;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public final class DataValue {
 
@@ -58,7 +58,7 @@ public final class DataValue {
   }
 
   public DataValue(
-      @NotNull Variant value,
+      @NonNull Variant value,
       @Nullable StatusCode status,
       @Nullable DateTime sourceTime,
       @Nullable UShort sourcePicoseconds,

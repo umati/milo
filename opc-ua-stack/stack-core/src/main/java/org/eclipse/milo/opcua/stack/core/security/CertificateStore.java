@@ -13,7 +13,7 @@ package org.eclipse.milo.opcua.stack.core.security;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface CertificateStore {
 
@@ -35,8 +35,7 @@ public interface CertificateStore {
    *     {@code certificateTypeId}.
    * @throws Exception if an error occurs while getting the {@link Entry}.
    */
-  @Nullable
-  Entry get(NodeId certificateTypeId) throws Exception;
+  @Nullable Entry get(NodeId certificateTypeId) throws Exception;
 
   /**
    * Remove the {@link Entry} for {@code certificateTypeId}.
@@ -46,8 +45,7 @@ public interface CertificateStore {
    *     certificateTypeId}.
    * @throws Exception if an error occurs while removing the {@link Entry}.
    */
-  @Nullable
-  Entry remove(NodeId certificateTypeId) throws Exception;
+  @Nullable Entry remove(NodeId certificateTypeId) throws Exception;
 
   /**
    * Set the {@link Entry} for {@code certificateTypeId}.

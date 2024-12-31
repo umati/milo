@@ -13,7 +13,7 @@ package org.eclipse.milo.opcua.sdk.server.events.operators;
 import org.eclipse.milo.opcua.sdk.server.events.OperatorContext;
 import org.eclipse.milo.opcua.sdk.server.model.objects.BaseEventTypeNode;
 import org.eclipse.milo.opcua.stack.core.BuiltinDataType;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class GreaterThan extends ImplicitConversionBinaryOperator<Boolean> {
 

@@ -33,7 +33,7 @@ import org.eclipse.milo.opcua.stack.core.types.structured.DataChangeFilter;
 import org.eclipse.milo.opcua.stack.core.types.structured.MonitoredItemNotification;
 import org.eclipse.milo.opcua.stack.core.types.structured.MonitoringFilter;
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public class MonitoredDataItem extends BaseMonitoredItem<DataValue> implements DataItem {
 
@@ -87,7 +87,7 @@ public class MonitoredDataItem extends BaseMonitoredItem<DataValue> implements D
   }
 
   @Override
-  protected synchronized void enqueue(@NotNull DataValue value) {
+  protected synchronized void enqueue(@NonNull DataValue value) {
     if (queue.size() < queue.maxSize()) {
       queue.add(value);
     } else {

@@ -59,8 +59,8 @@ import org.eclipse.milo.opcua.stack.core.types.structured.EventFilterResult;
 import org.eclipse.milo.opcua.stack.core.types.structured.FilterOperand;
 import org.eclipse.milo.opcua.stack.core.types.structured.LiteralOperand;
 import org.eclipse.milo.opcua.stack.core.types.structured.SimpleAttributeOperand;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,7 +165,7 @@ public class EventContentFilter {
 
   @Nullable
   private static Node getRelativeNode(
-      FilterContext context, @NotNull UaNode startingNode, @NotNull QualifiedName[] browsePath) {
+      FilterContext context, @NonNull UaNode startingNode, @NonNull QualifiedName[] browsePath) {
 
     UaNode relativeNode = startingNode;
 
@@ -210,7 +210,7 @@ public class EventContentFilter {
   }
 
   private static ContentFilterElementResult validateFilterElement(
-      @NotNull FilterContext context, @NotNull ContentFilterElement filterElement) {
+      @NonNull FilterContext context, @NonNull ContentFilterElement filterElement) {
 
     FilterOperator filterOperator = filterElement.getFilterOperator();
 
@@ -274,9 +274,9 @@ public class EventContentFilter {
   }
 
   public static Variant[] select(
-      @NotNull FilterContext context,
-      @NotNull SimpleAttributeOperand[] selectClauses,
-      @NotNull BaseEventTypeNode eventNode) {
+      @NonNull FilterContext context,
+      @NonNull SimpleAttributeOperand[] selectClauses,
+      @NonNull BaseEventTypeNode eventNode) {
 
     return Arrays.stream(selectClauses)
         .map(
@@ -291,9 +291,9 @@ public class EventContentFilter {
   }
 
   public static boolean evaluate(
-      @NotNull FilterContext context,
-      @NotNull ContentFilter whereClause,
-      @NotNull BaseEventTypeNode eventNode)
+      @NonNull FilterContext context,
+      @NonNull ContentFilter whereClause,
+      @NonNull BaseEventTypeNode eventNode)
       throws UaException {
 
     if (whereClause.getElements() == null || whereClause.getElements().length == 0) {
@@ -317,9 +317,9 @@ public class EventContentFilter {
 
   @Nullable
   private static Object evaluate(
-      @NotNull OperatorContext context,
-      @NotNull BaseEventTypeNode eventNode,
-      @NotNull ContentFilterElement element)
+      @NonNull OperatorContext context,
+      @NonNull BaseEventTypeNode eventNode,
+      @NonNull ContentFilterElement element)
       throws UaException {
 
     FilterOperator filterOperator = element.getFilterOperator();
@@ -335,7 +335,7 @@ public class EventContentFilter {
     return operator.apply(context, eventNode, filterOperands);
   }
 
-  @NotNull
+  @NonNull
   private static FilterOperand[] decodeOperands(
       EncodingContext context, ExtensionObject @Nullable [] operandXos) {
 
@@ -348,8 +348,8 @@ public class EventContentFilter {
     }
   }
 
-  @NotNull
-  private static Operator<?> getOperator(@NotNull FilterOperator filterOperator) {
+  @NonNull
+  private static Operator<?> getOperator(@NonNull FilterOperator filterOperator) {
     // @formatter:off
     switch (filterOperator) {
       // Basic FilterOperators
@@ -399,9 +399,9 @@ public class EventContentFilter {
 
   @SuppressWarnings("unused")
   private static Object getAttribute(
-      @NotNull FilterContext context,
-      @NotNull AttributeOperand operand,
-      @NotNull BaseEventTypeNode eventNode)
+      @NonNull FilterContext context,
+      @NonNull AttributeOperand operand,
+      @NonNull BaseEventTypeNode eventNode)
       throws UaException {
 
     // AttributeOperand is not allowed to be used in EventFilters... it's for the Query services.
@@ -411,9 +411,9 @@ public class EventContentFilter {
   }
 
   private static Object getSimpleAttribute(
-      @NotNull FilterContext context,
-      @NotNull SimpleAttributeOperand operand,
-      @NotNull BaseEventTypeNode eventNode)
+      @NonNull FilterContext context,
+      @NonNull SimpleAttributeOperand operand,
+      @NonNull BaseEventTypeNode eventNode)
       throws UaException {
 
     NodeId typeDefinitionId = operand.getTypeDefinitionId();

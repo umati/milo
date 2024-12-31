@@ -13,7 +13,7 @@ package org.eclipse.milo.opcua.sdk.server.identity;
 import java.security.cert.X509Certificate;
 import java.util.function.Predicate;
 import org.eclipse.milo.opcua.sdk.server.Session;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class X509IdentityValidator extends AbstractX509IdentityValidator {
 
@@ -24,7 +24,7 @@ public class X509IdentityValidator extends AbstractX509IdentityValidator {
   }
 
   @Override
-  protected @Nullable Identity.X509UserIdentity authenticateCertificate(
+  protected Identity.@Nullable X509UserIdentity authenticateCertificate(
       Session session, X509Certificate certificate) {
 
     if (predicate.test(certificate)) {

@@ -15,8 +15,8 @@ import static org.testng.Assert.assertNull;
 import static org.testng.Assert.fail;
 
 import org.eclipse.milo.opcua.stack.core.BuiltinDataType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.testng.annotations.Test;
 
 abstract class AbstractConversionTest<S> {
@@ -111,7 +111,7 @@ abstract class AbstractConversionTest<S> {
     }
   }
 
-  protected Conversion c(@NotNull S fromValue, @NotNull Object targetValue) {
+  protected Conversion c(@NonNull S fromValue, @NonNull Object targetValue) {
     Conversion c = new Conversion();
     c.fromValue = fromValue;
     c.targetValue = targetValue;
@@ -120,7 +120,7 @@ abstract class AbstractConversionTest<S> {
   }
 
   protected Conversion c(
-      @NotNull S fromValue, @Nullable Object targetValue, @NotNull BuiltinDataType targetType) {
+      @NonNull S fromValue, @Nullable Object targetValue, @NonNull BuiltinDataType targetType) {
     Conversion c = new Conversion();
     c.fromValue = fromValue;
     c.targetValue = targetValue;

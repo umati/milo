@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Manages an array of URIs and provides bidirectional access to the URIs their indices. */
 public abstract class UriArray {

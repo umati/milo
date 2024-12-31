@@ -10,7 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin.unsigned;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * The <code>unsigned short</code> type
@@ -160,7 +160,7 @@ public final class UShort extends UNumber implements Comparable<UShort> {
   }
 
   @Override
-  public int compareTo(@NotNull UShort o) {
+  public int compareTo(@NonNull UShort o) {
     return Integer.compare(value, o.value);
   }
 

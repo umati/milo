@@ -16,7 +16,7 @@ import org.eclipse.milo.opcua.sdk.core.nodes.Node;
 import org.eclipse.milo.opcua.sdk.server.AccessContext;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
 import org.eclipse.milo.opcua.stack.core.UaException;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface UaServerNode extends Node {
 
@@ -51,8 +51,7 @@ public interface UaServerNode extends Node {
    * @param attributeId the {@link AttributeId} to get.
    * @return the attribute value.
    */
-  @Nullable
-  Object getAttribute(AccessContext context, AttributeId attributeId);
+  @Nullable Object getAttribute(AccessContext context, AttributeId attributeId);
 
   /**
    * Read an attribute of this node, considering an {@link AccessContext}.
@@ -65,8 +64,7 @@ public interface UaServerNode extends Node {
    * @return the attribute value.
    * @throws UaException if the attribute cannot be read.
    */
-  @Nullable
-  Object readAttribute(AccessContext context, AttributeId attributeId) throws UaException;
+  @Nullable Object readAttribute(AccessContext context, AttributeId attributeId) throws UaException;
 
   /**
    * Set an attribute of this node, considering an {@link AccessContext}.

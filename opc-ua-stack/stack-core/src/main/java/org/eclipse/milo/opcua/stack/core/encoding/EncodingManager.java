@@ -12,7 +12,7 @@ package org.eclipse.milo.opcua.stack.core.encoding;
 
 import org.eclipse.milo.opcua.stack.core.types.DataTypeEncoding;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface EncodingManager {
 
@@ -20,9 +20,7 @@ public interface EncodingManager {
 
   boolean hasEncoding(QualifiedName encodingName);
 
-  @Nullable
-  DataTypeEncoding getEncoding(QualifiedName encodingName);
+  @Nullable DataTypeEncoding getEncoding(QualifiedName encodingName);
 
-  @Nullable
-  DataTypeEncoding removeEncoding(QualifiedName encodingName);
+  @Nullable DataTypeEncoding removeEncoding(QualifiedName encodingName);
 }

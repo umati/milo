@@ -44,7 +44,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.util.Namespaces;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.opcfoundation.opcua.binaryschema.EnumeratedType;
 import org.opcfoundation.opcua.binaryschema.FieldType;
 import org.opcfoundation.opcua.binaryschema.StructuredType;
@@ -435,23 +435,17 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
 
   private static boolean compareToSwitchValue(
       long controlValue, SwitchOperand switchOperand, long switchValue) {
-    switch (switchOperand) {
-      case EQUALS:
-        return controlValue == switchValue;
-      case NOT_EQUAL:
-        return controlValue != switchValue;
-      case GREATER_THAN:
-        return controlValue > switchValue;
-      case GREATER_THAN_OR_EQUAL:
-        return controlValue >= switchValue;
-      case LESS_THAN:
-        return controlValue < switchValue;
-      case LESS_THAN_OR_EQUAL:
-        return controlValue <= switchValue;
-      default:
-        throw new UaSerializationException(
-            StatusCodes.Bad_InternalError, "unknown SwitchOperand: " + switchOperand);
-    }
+    return switch (switchOperand) {
+      case EQUALS -> controlValue == switchValue;
+      case NOT_EQUAL -> controlValue != switchValue;
+      case GREATER_THAN -> controlValue > switchValue;
+      case GREATER_THAN_OR_EQUAL -> controlValue >= switchValue;
+      case LESS_THAN -> controlValue < switchValue;
+      case LESS_THAN_OR_EQUAL -> controlValue <= switchValue;
+      default ->
+          throw new UaSerializationException(
+              StatusCodes.Bad_InternalError, "unknown SwitchOperand: " + switchOperand);
+    };
   }
 
   private static boolean fieldIsScalar(FieldType field) {

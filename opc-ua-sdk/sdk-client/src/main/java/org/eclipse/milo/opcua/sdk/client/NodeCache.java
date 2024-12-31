@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.eclipse.milo.opcua.sdk.client.nodes.UaNode;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class NodeCache {
 

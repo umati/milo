@@ -18,15 +18,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class Struct {
 
   private final String name;
   private final Map<String, Member> members;
 
-  public Struct(@NotNull String name, @NotNull Map<String, Member> members) {
+  public Struct(@NonNull String name, @NonNull Map<String, Member> members) {
     Preconditions.checkNotNull(name);
     Preconditions.checkNotNull(members);
 
@@ -34,12 +34,12 @@ public class Struct {
     this.members = Map.copyOf(members);
   }
 
-  @NotNull
+  @NonNull
   public String getName() {
     return name;
   }
 
-  @NotNull
+  @NonNull
   public Map<String, Member> getMembers() {
     return members;
   }
@@ -49,7 +49,7 @@ public class Struct {
     return members.get(name);
   }
 
-  @NotNull
+  @NonNull
   public Optional<Member> getMemberSafe(String name) {
     return Optional.ofNullable(members.get(name));
   }

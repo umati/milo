@@ -48,7 +48,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.StructureType;
 import org.eclipse.milo.opcua.stack.core.types.structured.StructureDefinition;
 import org.eclipse.milo.opcua.stack.core.types.structured.StructureField;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public class DynamicStructCodec extends GenericDataTypeCodec<DynamicStruct> {
 
@@ -130,7 +130,7 @@ public class DynamicStructCodec extends GenericDataTypeCodec<DynamicStruct> {
     }
   }
 
-  private @NotNull DynamicStruct decodeStruct(UaDecoder decoder) {
+  private @NonNull DynamicStruct decodeStruct(UaDecoder decoder) {
     StructureField[] fields = requireNonNullElse(definition.getFields(), new StructureField[0]);
 
     LinkedHashMap<String, Object> members = new LinkedHashMap<>();
@@ -153,7 +153,7 @@ public class DynamicStructCodec extends GenericDataTypeCodec<DynamicStruct> {
     return new DynamicStruct(dataType, members);
   }
 
-  private @NotNull DynamicUnion decodeUnion(UaDecoder decoder) {
+  private @NonNull DynamicUnion decodeUnion(UaDecoder decoder) {
     int switchField = decoder.decodeUInt32("SwitchField").intValue();
 
     StructureField[] fields = requireNonNullElse(definition.getFields(), new StructureField[0]);

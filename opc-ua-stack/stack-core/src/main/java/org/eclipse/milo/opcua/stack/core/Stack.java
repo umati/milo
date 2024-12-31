@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.eclipse.milo.opcua.stack.core.util.ManifestUtil;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.LoggerFactory;
 
 public final class Stack {
@@ -70,7 +70,7 @@ public final class Stack {
             private final AtomicLong threadNumber = new AtomicLong(0L);
 
             @Override
-            public Thread newThread(@NotNull Runnable r) {
+            public Thread newThread(@NonNull Runnable r) {
               Thread thread =
                   new Thread(r, "milo-netty-event-loop-" + threadNumber.getAndIncrement());
               thread.setDaemon(true);
@@ -94,7 +94,7 @@ public final class Stack {
             private final AtomicLong threadNumber = new AtomicLong(0L);
 
             @Override
-            public Thread newThread(@NotNull Runnable r) {
+            public Thread newThread(@NonNull Runnable r) {
               Thread thread =
                   new Thread(r, "milo-shared-thread-pool-" + threadNumber.getAndIncrement());
               thread.setDaemon(true);
@@ -140,7 +140,7 @@ public final class Stack {
             private final AtomicLong threadNumber = new AtomicLong(0L);
 
             @Override
-            public Thread newThread(@NotNull Runnable r) {
+            public Thread newThread(@NonNull Runnable r) {
               Thread thread =
                   new Thread(r, "milo-shared-scheduled-executor-" + threadNumber.getAndIncrement());
               thread.setDaemon(true);

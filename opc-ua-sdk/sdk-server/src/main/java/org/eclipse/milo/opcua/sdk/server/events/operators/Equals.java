@@ -22,8 +22,8 @@ import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.structured.FilterOperand;
 import org.eclipse.milo.opcua.stack.core.util.ArrayUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class Equals implements Operator<Boolean> {
 
@@ -82,7 +82,7 @@ public class Equals implements Operator<Boolean> {
   }
 
   @Nullable
-  private static Object convert(@NotNull Object value, BuiltinDataType targetType) {
+  private static Object convert(@NonNull Object value, BuiltinDataType targetType) {
     if (value.getClass().isArray()) {
       return convertArray(value, targetType);
     } else {
@@ -90,7 +90,7 @@ public class Equals implements Operator<Boolean> {
     }
   }
 
-  private static Object convertArray(@NotNull Object array, BuiltinDataType targetType) {
+  private static Object convertArray(@NonNull Object array, BuiltinDataType targetType) {
     int[] dimensions = ArrayUtil.getDimensions(array);
 
     Object flattened = ArrayUtil.flatten(array);
@@ -117,7 +117,7 @@ public class Equals implements Operator<Boolean> {
     }
   }
 
-  private static BuiltinDataType getType(@NotNull Object o) {
+  private static BuiltinDataType getType(@NonNull Object o) {
     if (o.getClass().isArray()) {
       return BuiltinDataType.fromBackingClass(ArrayUtil.getType(o));
     } else {

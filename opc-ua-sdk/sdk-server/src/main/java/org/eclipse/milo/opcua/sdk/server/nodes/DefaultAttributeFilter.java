@@ -13,7 +13,7 @@ package org.eclipse.milo.opcua.sdk.server.nodes;
 import org.eclipse.milo.opcua.sdk.server.nodes.filters.AttributeFilter;
 import org.eclipse.milo.opcua.sdk.server.nodes.filters.AttributeFilterContext;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An {@link AttributeFilter} that gets or sets the actual attribute value from the backing field of

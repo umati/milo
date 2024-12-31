@@ -19,8 +19,8 @@ import org.eclipse.milo.opcua.stack.core.encoding.binary.OpcUaDefaultBinaryEncod
 import org.eclipse.milo.opcua.stack.core.types.DataTypeEncoding;
 import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.util.Lazy;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public final class ExtensionObject {
 
@@ -37,19 +37,19 @@ public final class ExtensionObject {
   private final Object body;
   private final NodeId encodingId;
 
-  public ExtensionObject(@NotNull ByteString body, @NotNull NodeId encodingId) {
+  public ExtensionObject(@NonNull ByteString body, @NonNull NodeId encodingId) {
     this((Object) body, encodingId);
   }
 
-  public ExtensionObject(@NotNull XmlElement body, @NotNull NodeId encodingId) {
+  public ExtensionObject(@NonNull XmlElement body, @NonNull NodeId encodingId) {
     this((Object) body, encodingId);
   }
 
-  public ExtensionObject(@Nullable String body, @NotNull NodeId encodingId) {
+  public ExtensionObject(@Nullable String body, @NonNull NodeId encodingId) {
     this((Object) body, encodingId);
   }
 
-  private ExtensionObject(@Nullable Object body, @NotNull NodeId encodingId) {
+  private ExtensionObject(@Nullable Object body, @NonNull NodeId encodingId) {
     this.body = body;
     this.encodingId = encodingId;
 

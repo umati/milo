@@ -20,70 +20,70 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class BooleanConversions {
 
   private BooleanConversions() {}
 
-  @NotNull
-  static UByte booleanToByte(@NotNull Boolean b) {
+  @NonNull
+  static UByte booleanToByte(@NonNull Boolean b) {
     return ubyte(b ? 1 : 0);
   }
 
-  @NotNull
-  static Double booleanToDouble(@NotNull Boolean b) {
+  @NonNull
+  static Double booleanToDouble(@NonNull Boolean b) {
     return b ? 1.0 : 0.0;
   }
 
-  @NotNull
-  static Float booleanToFloat(@NotNull Boolean b) {
+  @NonNull
+  static Float booleanToFloat(@NonNull Boolean b) {
     return b ? 1.0f : 0.0f;
   }
 
-  @NotNull
-  static Short booleanToInt16(@NotNull Boolean b) {
+  @NonNull
+  static Short booleanToInt16(@NonNull Boolean b) {
     return b ? (short) 1 : (short) 0;
   }
 
-  @NotNull
-  static Integer booleanToInt32(@NotNull Boolean b) {
+  @NonNull
+  static Integer booleanToInt32(@NonNull Boolean b) {
     return b ? 1 : 0;
   }
 
-  @NotNull
-  static Long booleanToInt64(@NotNull Boolean b) {
+  @NonNull
+  static Long booleanToInt64(@NonNull Boolean b) {
     return b ? 1L : 0L;
   }
 
-  @NotNull
-  static Byte booleanToSByte(@NotNull Boolean b) {
+  @NonNull
+  static Byte booleanToSByte(@NonNull Boolean b) {
     return b ? (byte) 1 : (byte) 0;
   }
 
-  @NotNull
-  static String booleanToString(@NotNull Boolean b) {
+  @NonNull
+  static String booleanToString(@NonNull Boolean b) {
     return b ? "1" : "0";
   }
 
-  @NotNull
-  static UShort booleanToUInt16(@NotNull Boolean b) {
+  @NonNull
+  static UShort booleanToUInt16(@NonNull Boolean b) {
     return b ? ushort(1) : ushort(0);
   }
 
-  @NotNull
-  static UInteger booleanToUInt32(@NotNull Boolean b) {
+  @NonNull
+  static UInteger booleanToUInt32(@NonNull Boolean b) {
     return b ? uint(1) : uint(0);
   }
 
-  @NotNull
-  static ULong booleanToUInt64(@NotNull Boolean b) {
+  @NonNull
+  static ULong booleanToUInt64(@NonNull Boolean b) {
     return b ? ulong(1) : ulong(0);
   }
 
   @Nullable
-  static Object convert(@NotNull Object o, BuiltinDataType targetType, boolean implicit) {
+  static Object convert(@NonNull Object o, BuiltinDataType targetType, boolean implicit) {
     if (o instanceof Boolean) {
       Boolean b = (Boolean) o;
 
@@ -94,7 +94,7 @@ final class BooleanConversions {
   }
 
   @Nullable
-  static Object explicitConversion(@NotNull Boolean b, BuiltinDataType targetType) {
+  static Object explicitConversion(@NonNull Boolean b, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case String:
@@ -106,7 +106,7 @@ final class BooleanConversions {
   }
 
   @Nullable
-  static Object implicitConversion(@NotNull Boolean b, BuiltinDataType targetType) {
+  static Object implicitConversion(@NonNull Boolean b, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Byte:

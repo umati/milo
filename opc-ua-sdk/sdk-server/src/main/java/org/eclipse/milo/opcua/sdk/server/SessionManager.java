@@ -69,8 +69,8 @@ import org.eclipse.milo.opcua.stack.core.util.EndpointUtil;
 import org.eclipse.milo.opcua.stack.core.util.NonceUtil;
 import org.eclipse.milo.opcua.stack.core.util.SignatureUtil;
 import org.eclipse.milo.opcua.stack.transport.server.ServiceRequestContext;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -682,7 +682,7 @@ public class SessionManager {
    * @param tokenPolicies the {@link UserTokenPolicy}s from the Session's Endpoint.
    * @return a {@link UserIdentityToken} object.
    */
-  @NotNull
+  @NonNull
   private UserIdentityToken decodeIdentityToken(
       @Nullable ExtensionObject identityTokenXo, @Nullable UserTokenPolicy[] tokenPolicies) {
 

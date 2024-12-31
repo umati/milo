@@ -12,7 +12,7 @@ package org.eclipse.milo.opcua.sdk.client.subscriptions;
 
 import java.util.Optional;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class MonitoredItemServiceOperationResult implements ServiceOperationResult<StatusCode> {
 

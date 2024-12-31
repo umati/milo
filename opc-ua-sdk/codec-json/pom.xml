@@ -37,11 +37,6 @@
       <artifactId>milo-encoding-json</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.jetbrains</groupId>
-      <artifactId>annotations</artifactId>
-      <version>${jetbrains-annotations.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>

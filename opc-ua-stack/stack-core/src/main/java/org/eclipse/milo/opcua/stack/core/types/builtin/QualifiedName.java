@@ -17,8 +17,8 @@ import com.google.common.base.Preconditions;
 import java.util.Objects;
 import org.eclipse.milo.opcua.stack.core.NamespaceTable;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /** This Built-in DataType contains a qualified name. It is, for example, used as BrowseName. */
 public final class QualifiedName {
@@ -46,7 +46,7 @@ public final class QualifiedName {
    *     the index of that namespace in the local Server’s NamespaceArray.
    * @param name the text portion of the QualifiedName.
    */
-  public QualifiedName(@NotNull UShort namespaceIndex, @Nullable String name) {
+  public QualifiedName(@NonNull UShort namespaceIndex, @Nullable String name) {
     Preconditions.checkNotNull(namespaceIndex);
     Preconditions.checkArgument(name == null || name.length() <= 512, "name");
 
@@ -108,7 +108,7 @@ public final class QualifiedName {
    * @param namespaceIndex thew new namespace index.
    * @return a new {@link QualifiedName} with {@code namespaceIndex}.
    */
-  public QualifiedName withNamespaceIndex(@NotNull UShort namespaceIndex) {
+  public QualifiedName withNamespaceIndex(@NonNull UShort namespaceIndex) {
     return new QualifiedName(namespaceIndex, name);
   }
 

@@ -13,7 +13,7 @@ package org.eclipse.milo.opcua.sdk.core.types;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import org.eclipse.milo.opcua.sdk.core.typetree.DataType;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class DynamicUnion extends DynamicStruct {
 

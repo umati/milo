@@ -63,10 +63,10 @@
     <jakarta-activation.version>2.0.1</jakarta-activation.version>
     <jakarta-xml-bind-api.version>4.0.1</jakarta-xml-bind-api.version>
     <jaxb.version>4.0.4</jaxb.version>
-    <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     <netty.version>4.1.115.Final</netty.version>
     <netty-channel-fsm.version>1.0.0</netty-channel-fsm.version>
     <slf4j.version>2.0.12</slf4j.version>
+    <jspecify.version>1.0.0</jspecify.version>
 
     <!-- Plugin Dependency Versions -->
     <checkstyle.version>10.21.0</checkstyle.version>
@@ -351,5 +351,5 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
-
 </project>
+

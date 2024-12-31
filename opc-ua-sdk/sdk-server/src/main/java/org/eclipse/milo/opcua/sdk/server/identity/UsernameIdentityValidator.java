@@ -12,7 +12,7 @@ package org.eclipse.milo.opcua.sdk.server.identity;
 
 import java.util.function.Predicate;
 import org.eclipse.milo.opcua.sdk.server.Session;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class UsernameIdentityValidator extends AbstractUsernameIdentityValidator {
 
@@ -27,7 +27,7 @@ public class UsernameIdentityValidator extends AbstractUsernameIdentityValidator
   }
 
   @Override
-  protected @Nullable Identity.AnonymousIdentity authenticateAnonymous(Session session) {
+  protected Identity.@Nullable AnonymousIdentity authenticateAnonymous(Session session) {
     if (anonymousAccessAllowed) {
       return new DefaultAnonymousIdentity();
     } else {
@@ -36,7 +36,7 @@ public class UsernameIdentityValidator extends AbstractUsernameIdentityValidator
   }
 
   @Override
-  protected @Nullable Identity.UsernameIdentity authenticateUsernamePassword(
+  protected Identity.@Nullable UsernameIdentity authenticateUsernamePassword(
       Session session, String username, String password) {
 
     var challenge = new AuthenticationChallenge(username, password);

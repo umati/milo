@@ -49,7 +49,7 @@ import org.eclipse.milo.opcua.stack.core.types.structured.EventFilterResult;
 import org.eclipse.milo.opcua.stack.core.types.structured.MonitoringFilter;
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
 import org.eclipse.milo.opcua.stack.core.types.structured.SimpleAttributeOperand;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +122,7 @@ public class MonitoredEventItem extends BaseMonitoredItem<Variant[]> implements 
     }
   }
 
-  @NotNull
+  @NonNull
   private Variant[] selectEventFields(BaseEventTypeNode eventNode) {
     SimpleAttributeOperand[] selectClauses = filter.getSelectClauses();
 
@@ -179,7 +179,7 @@ public class MonitoredEventItem extends BaseMonitoredItem<Variant[]> implements 
     }
   }
 
-  @NotNull
+  @NonNull
   private Variant[] generateOverflowEventFields() {
     BaseEventTypeNode overflowEvent = null;
 

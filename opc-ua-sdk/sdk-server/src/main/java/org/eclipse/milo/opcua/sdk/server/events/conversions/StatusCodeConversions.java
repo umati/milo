@@ -19,45 +19,45 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class StatusCodeConversions {
 
   private StatusCodeConversions() {}
 
-  @NotNull
-  static Short statusCodeToInt16(@NotNull StatusCode s) {
+  @NonNull
+  static Short statusCodeToInt16(@NonNull StatusCode s) {
     return (short) ((s.getValue() >>> 16) & 0xFFFF);
   }
 
-  @NotNull
-  static Integer statusCodeToInt32(@NotNull StatusCode s) {
+  @NonNull
+  static Integer statusCodeToInt32(@NonNull StatusCode s) {
     return (int) s.getValue();
   }
 
-  @NotNull
-  static Long statusCodeToInt64(@NotNull StatusCode s) {
+  @NonNull
+  static Long statusCodeToInt64(@NonNull StatusCode s) {
     return s.getValue();
   }
 
-  @NotNull
-  static UShort statusCodeToUInt16(@NotNull StatusCode s) {
+  @NonNull
+  static UShort statusCodeToUInt16(@NonNull StatusCode s) {
     return ushort(statusCodeToInt16(s));
   }
 
-  @NotNull
-  static UInteger statusCodeToUInt32(@NotNull StatusCode s) {
+  @NonNull
+  static UInteger statusCodeToUInt32(@NonNull StatusCode s) {
     return uint(statusCodeToInt32(s));
   }
 
-  @NotNull
-  static ULong statusCodeToUInt64(@NotNull StatusCode s) {
+  @NonNull
+  static ULong statusCodeToUInt64(@NonNull StatusCode s) {
     return ulong(s.getValue());
   }
 
   @Nullable
-  static Object convert(@NotNull Object o, BuiltinDataType targetType, boolean implicit) {
+  static Object convert(@NonNull Object o, BuiltinDataType targetType, boolean implicit) {
     if (o instanceof StatusCode) {
       StatusCode s = (StatusCode) o;
 
@@ -68,7 +68,7 @@ final class StatusCodeConversions {
   }
 
   @Nullable
-  static Object explicitConversion(@NotNull StatusCode s, BuiltinDataType targetType) {
+  static Object explicitConversion(@NonNull StatusCode s, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Int16:
@@ -82,7 +82,7 @@ final class StatusCodeConversions {
   }
 
   @Nullable
-  static Object implicitConversion(@NotNull StatusCode s, BuiltinDataType targetType) {
+  static Object implicitConversion(@NonNull StatusCode s, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Int32:

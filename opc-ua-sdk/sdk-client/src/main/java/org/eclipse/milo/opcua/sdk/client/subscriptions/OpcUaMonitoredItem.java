@@ -31,7 +31,7 @@ import org.eclipse.milo.opcua.stack.core.types.structured.MonitoredItemModifyRes
 import org.eclipse.milo.opcua.stack.core.types.structured.MonitoringFilter;
 import org.eclipse.milo.opcua.stack.core.types.structured.MonitoringParameters;
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class OpcUaMonitoredItem {
 

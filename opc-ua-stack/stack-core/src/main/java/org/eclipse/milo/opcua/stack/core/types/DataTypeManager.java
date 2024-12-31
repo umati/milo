@@ -12,7 +12,7 @@ package org.eclipse.milo.opcua.stack.core.types;
 
 import org.eclipse.milo.opcua.stack.core.encoding.DataTypeCodec;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface DataTypeManager {
 
@@ -31,20 +31,15 @@ public interface DataTypeManager {
    * @param id the {@link NodeId} of either the datatype or encoding.
    * @return the {@link DataTypeCodec} for the given {@link NodeId}.
    */
-  @Nullable
-  DataTypeCodec getCodec(NodeId id);
+  @Nullable DataTypeCodec getCodec(NodeId id);
 
-  @Nullable
-  NodeId getBinaryEncodingId(NodeId dataTypeId);
+  @Nullable NodeId getBinaryEncodingId(NodeId dataTypeId);
 
-  @Nullable
-  NodeId getXmlEncodingId(NodeId dataTypeId);
+  @Nullable NodeId getXmlEncodingId(NodeId dataTypeId);
 
-  @Nullable
-  NodeId getJsonEncodingId(NodeId dataTypeId);
+  @Nullable NodeId getJsonEncodingId(NodeId dataTypeId);
 
-  @Nullable
-  DataTypeDictionary getTypeDictionary(String namespaceUri);
+  @Nullable DataTypeDictionary getTypeDictionary(String namespaceUri);
 
   void registerTypeDictionary(DataTypeDictionary dictionary);
 }

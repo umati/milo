@@ -10,7 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.types;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Identifies an OPC UA enumerated type. */
 public interface UaEnumeratedType extends UaDataType {

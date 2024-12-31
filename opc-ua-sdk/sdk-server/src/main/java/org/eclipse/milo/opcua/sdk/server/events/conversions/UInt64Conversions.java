@@ -20,20 +20,20 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class UInt64Conversions {
 
   private UInt64Conversions() {}
 
-  @NotNull
-  static Boolean uInt64ToBoolean(@NotNull ULong ul) {
+  @NonNull
+  static Boolean uInt64ToBoolean(@NonNull ULong ul) {
     return ul.intValue() != 0;
   }
 
   @Nullable
-  static UByte uInt64ToByte(@NotNull ULong ul) {
+  static UByte uInt64ToByte(@NonNull ULong ul) {
     long l = ul.longValue();
 
     if (Long.compareUnsigned(l, UByte.MAX_VALUE) <= 0) {
@@ -44,7 +44,7 @@ final class UInt64Conversions {
   }
 
   @Nullable
-  static Double uInt64ToDouble(@NotNull ULong ul) {
+  static Double uInt64ToDouble(@NonNull ULong ul) {
     long l = ul.longValue();
 
     if (Long.compareUnsigned(l, (long) Double.MAX_VALUE) <= 0) {
@@ -55,7 +55,7 @@ final class UInt64Conversions {
   }
 
   @Nullable
-  static Float uInt64ToFloat(@NotNull ULong ul) {
+  static Float uInt64ToFloat(@NonNull ULong ul) {
     long l = ul.longValue();
 
     if (Long.compareUnsigned(l, (long) Float.MAX_VALUE) <= 0) {
@@ -66,7 +66,7 @@ final class UInt64Conversions {
   }
 
   @Nullable
-  static Short uInt64ToInt16(@NotNull ULong ul) {
+  static Short uInt64ToInt16(@NonNull ULong ul) {
     long l = ul.longValue();
 
     if (Long.compareUnsigned(l, Short.MAX_VALUE) <= 0) {
@@ -77,7 +77,7 @@ final class UInt64Conversions {
   }
 
   @Nullable
-  static Integer uInt64ToInt32(@NotNull ULong ul) {
+  static Integer uInt64ToInt32(@NonNull ULong ul) {
     long l = ul.longValue();
 
     if (Long.compareUnsigned(l, Integer.MAX_VALUE) <= 0) {
@@ -88,7 +88,7 @@ final class UInt64Conversions {
   }
 
   @Nullable
-  static Long uInt64ToInt64(@NotNull ULong ul) {
+  static Long uInt64ToInt64(@NonNull ULong ul) {
     long l = ul.longValue();
 
     if (Long.compareUnsigned(l, Long.MAX_VALUE) <= 0) {
@@ -99,7 +99,7 @@ final class UInt64Conversions {
   }
 
   @Nullable
-  static Byte uInt64ToSByte(@NotNull ULong ul) {
+  static Byte uInt64ToSByte(@NonNull ULong ul) {
     long l = ul.longValue();
 
     if (Long.compareUnsigned(l, Byte.MAX_VALUE) <= 0) {
@@ -110,13 +110,13 @@ final class UInt64Conversions {
   }
 
   @Nullable
-  static StatusCode uInt64ToStatusCode(@NotNull ULong ul) {
+  static StatusCode uInt64ToStatusCode(@NonNull ULong ul) {
     UInteger ui = uInt64ToUInt32(ul);
 
     return ui != null ? UInt32Conversions.uInt32ToStatusCode(ui) : null;
   }
 
-  @NotNull
+  @NonNull
   static String uInt64ToString(ULong ul) {
     return ul.toString();
   }
@@ -155,7 +155,7 @@ final class UInt64Conversions {
   }
 
   @Nullable
-  static Object explicitConversion(@NotNull ULong ul, BuiltinDataType targetType) {
+  static Object explicitConversion(@NonNull ULong ul, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Boolean:
@@ -183,7 +183,7 @@ final class UInt64Conversions {
   }
 
   @Nullable
-  static Object implicitConversion(@NotNull ULong ul, BuiltinDataType targetType) {
+  static Object implicitConversion(@NonNull ULong ul, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Double:

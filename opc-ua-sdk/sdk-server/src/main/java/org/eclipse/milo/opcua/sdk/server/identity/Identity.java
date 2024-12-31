@@ -17,7 +17,7 @@ import org.eclipse.milo.opcua.stack.core.types.structured.AnonymousIdentityToken
 import org.eclipse.milo.opcua.stack.core.types.structured.IssuedIdentityToken;
 import org.eclipse.milo.opcua.stack.core.types.structured.UserNameIdentityToken;
 import org.eclipse.milo.opcua.stack.core.types.structured.X509IdentityToken;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface Identity {
 
@@ -29,8 +29,7 @@ public interface Identity {
   /**
    * @return the user data object associated with this identity.
    */
-  @Nullable
-  Object getUserData();
+  @Nullable Object getUserData();
 
   /**
    * Associate an arbitrary user data object with this identity.

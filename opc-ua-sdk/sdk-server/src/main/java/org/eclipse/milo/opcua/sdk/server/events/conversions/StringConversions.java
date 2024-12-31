@@ -26,8 +26,8 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class StringConversions {
 
@@ -41,7 +41,7 @@ final class StringConversions {
   private StringConversions() {}
 
   @Nullable
-  static Boolean stringToBoolean(@NotNull String s) {
+  static Boolean stringToBoolean(@NonNull String s) {
     if (s.equalsIgnoreCase("true") || s.equals("1")) {
       return true;
     } else if (s.equalsIgnoreCase("false") || s.equals("0")) {
@@ -52,7 +52,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static UByte stringToByte(@NotNull String s) {
+  static UByte stringToByte(@NonNull String s) {
     try {
       return UByte.valueOf(s);
     } catch (NumberFormatException e) {
@@ -61,7 +61,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static DateTime stringToDateTime(@NotNull String s) {
+  static DateTime stringToDateTime(@NonNull String s) {
     try {
       Date date = iso8601UtcStringToDate(s);
 
@@ -72,7 +72,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static Double stringToDouble(@NotNull String s) {
+  static Double stringToDouble(@NonNull String s) {
     try {
       return Double.valueOf(s);
     } catch (NumberFormatException e) {
@@ -81,7 +81,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static ExpandedNodeId stringToExpandedNodeId(@NotNull String s) {
+  static ExpandedNodeId stringToExpandedNodeId(@NonNull String s) {
     try {
       return ExpandedNodeId.parse(s);
     } catch (Throwable t) {
@@ -90,7 +90,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static Float stringToFloat(@NotNull String s) {
+  static Float stringToFloat(@NonNull String s) {
     try {
       return Float.valueOf(s);
     } catch (NumberFormatException e) {
@@ -99,7 +99,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static UUID stringToGuid(@NotNull String s) {
+  static UUID stringToGuid(@NonNull String s) {
     try {
       return UUID.fromString(s);
     } catch (IllegalArgumentException e) {
@@ -108,7 +108,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static Short stringToInt16(@NotNull String s) {
+  static Short stringToInt16(@NonNull String s) {
     try {
       return Short.valueOf(s);
     } catch (NumberFormatException e) {
@@ -117,7 +117,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static Integer stringToInt32(@NotNull String s) {
+  static Integer stringToInt32(@NonNull String s) {
     try {
       return Integer.valueOf(s);
     } catch (NumberFormatException e) {
@@ -126,7 +126,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static Long stringToInt64(@NotNull String s) {
+  static Long stringToInt64(@NonNull String s) {
     try {
       return Long.valueOf(s);
     } catch (NumberFormatException e) {
@@ -135,7 +135,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static NodeId stringToNodeId(@NotNull String s) {
+  static NodeId stringToNodeId(@NonNull String s) {
     try {
       return NodeId.parse(s);
     } catch (Throwable t) {
@@ -144,7 +144,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static Byte stringToSByte(@NotNull String s) {
+  static Byte stringToSByte(@NonNull String s) {
     try {
       return Byte.valueOf(s);
     } catch (NumberFormatException e) {
@@ -152,18 +152,18 @@ final class StringConversions {
     }
   }
 
-  @NotNull
-  static LocalizedText stringToLocalizedText(@NotNull String s) {
+  @NonNull
+  static LocalizedText stringToLocalizedText(@NonNull String s) {
     return new LocalizedText("", s);
   }
 
-  @NotNull
-  static QualifiedName stringToQualifiedName(@NotNull String s) {
+  @NonNull
+  static QualifiedName stringToQualifiedName(@NonNull String s) {
     return new QualifiedName(0, s);
   }
 
   @Nullable
-  static UShort stringToUInt16(@NotNull String s) {
+  static UShort stringToUInt16(@NonNull String s) {
     try {
       return UShort.valueOf(s);
     } catch (NumberFormatException e) {
@@ -172,7 +172,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static UInteger stringToUInt32(@NotNull String s) {
+  static UInteger stringToUInt32(@NonNull String s) {
     try {
       return UInteger.valueOf(s);
     } catch (NumberFormatException e) {
@@ -181,7 +181,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static ULong stringToUInt64(@NotNull String s) {
+  static ULong stringToUInt64(@NonNull String s) {
     try {
       return ULong.valueOf(s);
     } catch (NumberFormatException e) {
@@ -196,7 +196,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static Object convert(@NotNull Object o, BuiltinDataType targetType, boolean implicit) {
+  static Object convert(@NonNull Object o, BuiltinDataType targetType, boolean implicit) {
     if (o instanceof String) {
       String s = (String) o;
 
@@ -207,7 +207,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static Object explicitConversion(@NotNull String s, BuiltinDataType targetType) {
+  static Object explicitConversion(@NonNull String s, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case DateTime:
@@ -227,7 +227,7 @@ final class StringConversions {
   }
 
   @Nullable
-  static Object implicitConversion(@NotNull String s, BuiltinDataType targetType) {
+  static Object implicitConversion(@NonNull String s, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Boolean:

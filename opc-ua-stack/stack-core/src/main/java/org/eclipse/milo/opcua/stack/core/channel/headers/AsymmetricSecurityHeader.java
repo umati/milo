@@ -18,7 +18,7 @@ import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaSerializationException;
 import org.eclipse.milo.opcua.stack.core.channel.EncodingLimits;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public class AsymmetricSecurityHeader {
 
@@ -36,9 +36,9 @@ public class AsymmetricSecurityHeader {
    *     field shall be null if the Message is not encrypted.
    */
   public AsymmetricSecurityHeader(
-      @NotNull String securityPolicyUri,
-      @NotNull ByteString senderCertificate,
-      @NotNull ByteString receiverThumbprint) {
+      @NonNull String securityPolicyUri,
+      @NonNull ByteString senderCertificate,
+      @NonNull ByteString receiverThumbprint) {
 
     Preconditions.checkNotNull(securityPolicyUri);
     Preconditions.checkArgument(
@@ -54,17 +54,17 @@ public class AsymmetricSecurityHeader {
     this.receiverThumbprint = receiverThumbprint;
   }
 
-  @NotNull
+  @NonNull
   public String getSecurityPolicyUri() {
     return securityPolicyUri;
   }
 
-  @NotNull
+  @NonNull
   public ByteString getSenderCertificate() {
     return senderCertificate;
   }
 
-  @NotNull
+  @NonNull
   public ByteString getReceiverThumbprint() {
     return receiverThumbprint;
   }

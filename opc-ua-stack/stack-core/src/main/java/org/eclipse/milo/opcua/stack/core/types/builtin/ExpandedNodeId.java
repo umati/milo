@@ -27,8 +27,8 @@ import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public final class ExpandedNodeId {
 
@@ -85,10 +85,10 @@ public final class ExpandedNodeId {
   }
 
   public ExpandedNodeId(
-      @NotNull UShort namespaceIndex,
+      @NonNull UShort namespaceIndex,
       @Nullable String namespaceUri,
       @Nullable Object identifier,
-      @NotNull UInteger serverIndex) {
+      @NonNull UInteger serverIndex) {
 
     Preconditions.checkNotNull(namespaceIndex);
     Preconditions.checkNotNull(serverIndex);
@@ -586,7 +586,7 @@ public final class ExpandedNodeId {
    * @return an {@link ExpandedNodeId} or {@code null} if parsing fails.
    */
   @Nullable
-  public static ExpandedNodeId parseOrNull(@NotNull String s) {
+  public static ExpandedNodeId parseOrNull(@NonNull String s) {
     try {
       return ExpandedNodeId.parse(s);
     } catch (UaRuntimeException t) {
@@ -602,7 +602,7 @@ public final class ExpandedNodeId {
    * @return an Optional containing an {@link ExpandedNodeId}, or {@link Optional#empty()} if
    *     parsing fails.
    */
-  public static Optional<ExpandedNodeId> parseSafe(@NotNull String s) {
+  public static Optional<ExpandedNodeId> parseSafe(@NonNull String s) {
     return Optional.ofNullable(parseOrNull(s));
   }
 

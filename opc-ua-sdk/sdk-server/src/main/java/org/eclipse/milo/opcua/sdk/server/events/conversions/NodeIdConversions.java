@@ -13,25 +13,25 @@ package org.eclipse.milo.opcua.sdk.server.events.conversions;
 import org.eclipse.milo.opcua.stack.core.BuiltinDataType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class NodeIdConversions {
 
   private NodeIdConversions() {}
 
-  @NotNull
-  static ExpandedNodeId nodeIdToExpandedNodeId(@NotNull NodeId nodeId) {
+  @NonNull
+  static ExpandedNodeId nodeIdToExpandedNodeId(@NonNull NodeId nodeId) {
     return nodeId.expanded();
   }
 
-  @NotNull
-  static String nodeIdToString(@NotNull NodeId nodeId) {
+  @NonNull
+  static String nodeIdToString(@NonNull NodeId nodeId) {
     return nodeId.toParseableString();
   }
 
   @Nullable
-  static Object convert(@NotNull Object o, BuiltinDataType targetType, boolean implicit) {
+  static Object convert(@NonNull Object o, BuiltinDataType targetType, boolean implicit) {
     if (o instanceof NodeId) {
       NodeId nodeId = (NodeId) o;
 
@@ -44,12 +44,12 @@ final class NodeIdConversions {
   }
 
   @Nullable
-  static Object explicitConversion(@NotNull NodeId nodeId, BuiltinDataType targetType) {
+  static Object explicitConversion(@NonNull NodeId nodeId, BuiltinDataType targetType) {
     return implicitConversion(nodeId, targetType);
   }
 
   @Nullable
-  static Object implicitConversion(@NotNull NodeId nodeId, BuiltinDataType targetType) {
+  static Object implicitConversion(@NonNull NodeId nodeId, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case ExpandedNodeId:

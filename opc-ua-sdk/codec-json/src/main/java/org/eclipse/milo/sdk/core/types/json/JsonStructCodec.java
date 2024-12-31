@@ -58,8 +58,10 @@ import org.eclipse.milo.opcua.stack.core.types.enumerated.StructureType;
 import org.eclipse.milo.opcua.stack.core.types.structured.StructureDefinition;
 import org.eclipse.milo.opcua.stack.core.types.structured.StructureField;
 import org.eclipse.milo.opcua.stack.core.util.Lazy;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class JsonStructCodec extends GenericDataTypeCodec<JsonStruct> {
 
   private final Lazy<Map<StructureField, Object>> hints = new Lazy<>();

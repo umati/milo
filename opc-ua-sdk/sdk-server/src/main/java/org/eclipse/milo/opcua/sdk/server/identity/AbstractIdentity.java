@@ -11,7 +11,7 @@
 package org.eclipse.milo.opcua.sdk.server.identity;
 
 import java.util.concurrent.atomic.AtomicReference;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** A base class for {@link Identity} implementations that manages the user data. */
 public abstract class AbstractIdentity implements Identity {

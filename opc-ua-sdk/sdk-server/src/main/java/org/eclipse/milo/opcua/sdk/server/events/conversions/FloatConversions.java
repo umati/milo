@@ -20,20 +20,20 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class FloatConversions {
 
   private FloatConversions() {}
 
-  @NotNull
-  static Boolean floatToBoolean(@NotNull Float f) {
+  @NonNull
+  static Boolean floatToBoolean(@NonNull Float f) {
     return f != 0.0f;
   }
 
   @Nullable
-  static UByte floatToByte(@NotNull Float f) {
+  static UByte floatToByte(@NonNull Float f) {
     long rounded = Math.round(f);
 
     if (rounded >= 0 && rounded <= UByte.MAX_VALUE) {
@@ -43,13 +43,13 @@ final class FloatConversions {
     }
   }
 
-  @NotNull
-  static Double floatToDouble(@NotNull Float f) {
+  @NonNull
+  static Double floatToDouble(@NonNull Float f) {
     return f.doubleValue();
   }
 
   @Nullable
-  static Short floatToInt16(@NotNull Float f) {
+  static Short floatToInt16(@NonNull Float f) {
     long rounded = Math.round(f);
 
     if (rounded >= Short.MIN_VALUE && rounded <= Short.MAX_VALUE) {
@@ -59,18 +59,18 @@ final class FloatConversions {
     }
   }
 
-  @NotNull
-  static Integer floatToInt32(@NotNull Float f) {
+  @NonNull
+  static Integer floatToInt32(@NonNull Float f) {
     return Math.round(f);
   }
 
-  @NotNull
-  static Long floatToInt64(@NotNull Float f) {
+  @NonNull
+  static Long floatToInt64(@NonNull Float f) {
     return (long) Math.round(f);
   }
 
   @Nullable
-  static Byte floatToSByte(@NotNull Float f) {
+  static Byte floatToSByte(@NonNull Float f) {
     long rounded = Math.round(f);
 
     if (rounded >= Byte.MIN_VALUE && rounded <= Byte.MAX_VALUE) {
@@ -80,13 +80,13 @@ final class FloatConversions {
     }
   }
 
-  @NotNull
-  static String floatToString(@NotNull Float f) {
+  @NonNull
+  static String floatToString(@NonNull Float f) {
     return f.toString();
   }
 
   @Nullable
-  static UShort floatToUInt16(@NotNull Float f) {
+  static UShort floatToUInt16(@NonNull Float f) {
     long rounded = Math.round(f);
 
     if (rounded >= UShort.MIN_VALUE && rounded <= UShort.MAX_VALUE) {
@@ -97,7 +97,7 @@ final class FloatConversions {
   }
 
   @Nullable
-  static UInteger floatToUInt32(@NotNull Float f) {
+  static UInteger floatToUInt32(@NonNull Float f) {
     int rounded = Math.round(f);
 
     if (rounded >= 0) {
@@ -108,7 +108,7 @@ final class FloatConversions {
   }
 
   @Nullable
-  static ULong floatToUInt64(@NotNull Float f) {
+  static ULong floatToUInt64(@NonNull Float f) {
     long rounded = Math.round(f);
 
     if (rounded >= 0) {
@@ -130,7 +130,7 @@ final class FloatConversions {
   }
 
   @Nullable
-  static Object explicitConversion(@NotNull Float f, BuiltinDataType targetType) {
+  static Object explicitConversion(@NonNull Float f, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Boolean:
@@ -160,7 +160,7 @@ final class FloatConversions {
   }
 
   @Nullable
-  static Object implicitConversion(@NotNull Float f, BuiltinDataType targetType) {
+  static Object implicitConversion(@NonNull Float f, BuiltinDataType targetType) {
     // @formatter:off
     switch (targetType) {
       case Double:

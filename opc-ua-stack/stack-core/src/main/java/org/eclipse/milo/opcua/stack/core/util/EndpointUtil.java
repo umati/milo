@@ -13,8 +13,8 @@ package org.eclipse.milo.opcua.stack.core.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class EndpointUtil {
 
@@ -74,7 +74,7 @@ public class EndpointUtil {
    * @param endpointUrl the endpoint URL.
    * @return the path component from the endpoint URL.
    */
-  public static @NotNull String getPath(String endpointUrl) {
+  public static @NonNull String getPath(String endpointUrl) {
     if (endpointUrl != null) {
       Matcher matcher = ENDPOINT_URL_PATTERN.matcher(endpointUrl);
 
@@ -108,7 +108,7 @@ public class EndpointUtil {
    *     been replaced with {@code hostname}.
    */
   public static EndpointDescription updateUrl(
-      @NotNull EndpointDescription endpoint, @Nullable String hostname) {
+      @NonNull EndpointDescription endpoint, @Nullable String hostname) {
 
     return updateUrl(endpoint, hostname, -1);
   }
@@ -129,7 +129,7 @@ public class EndpointUtil {
    *     been replaced with {@code hostname}.
    */
   public static EndpointDescription updateUrl(
-      @NotNull EndpointDescription endpoint, @Nullable String hostname, int port) {
+      @NonNull EndpointDescription endpoint, @Nullable String hostname, int port) {
 
     return new EndpointDescription(
         updateUrl(endpoint.getEndpointUrl(), hostname, port),

@@ -13,7 +13,7 @@ package org.eclipse.milo.opcua.sdk.core.typetree;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 import org.eclipse.milo.opcua.stack.core.types.structured.DataTypeDefinition;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface DataType extends TypeTree.Type {
 
@@ -38,8 +38,7 @@ public interface DataType extends TypeTree.Type {
    *
    * @return the NodeId of the Binary Encoding Node for this DataType, if it exists.
    */
-  @Nullable
-  NodeId getBinaryEncodingId();
+  @Nullable NodeId getBinaryEncodingId();
 
   /**
    * Get the {@link NodeId} of the XML Encoding Node for this DataType, if it exists.
@@ -48,8 +47,7 @@ public interface DataType extends TypeTree.Type {
    *
    * @return the NodeId of the XML Encoding Node for this DataType, if it exists.
    */
-  @Nullable
-  NodeId getXmlEncodingId();
+  @Nullable NodeId getXmlEncodingId();
 
   /**
    * Get the {@link NodeId} of the JSON Encoding Node for this DataType, if it exists.
@@ -58,8 +56,7 @@ public interface DataType extends TypeTree.Type {
    *
    * @return the {@link NodeId} of the JSON Encoding Node for this DataType, if it exists.
    */
-  @Nullable
-  NodeId getJsonEncodingId();
+  @Nullable NodeId getJsonEncodingId();
 
   /**
    * Get the {@link DataTypeDefinition} of this DataType.
@@ -68,8 +65,7 @@ public interface DataType extends TypeTree.Type {
    *
    * @return the {@link DataTypeDefinition} of this DataType.
    */
-  @Nullable
-  DataTypeDefinition getDataTypeDefinition();
+  @Nullable DataTypeDefinition getDataTypeDefinition();
 
   /**
    * Get whether this DataType is abstract.

@@ -16,8 +16,8 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.structured.SignedSoftwareCertificate;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class OpcUaSession extends ConcurrentHashMap<String, Object> implements UaSession {
 
@@ -95,18 +95,18 @@ public class OpcUaSession extends ConcurrentHashMap<String, Object> implements U
 
   @Nullable
   @Override
-  public Object getAttribute(@NotNull String name) {
+  public Object getAttribute(@NonNull String name) {
     return get(name);
   }
 
   @Nullable
   @Override
-  public Object setAttribute(@NotNull String name, @NotNull Object value) {
+  public Object setAttribute(@NonNull String name, @NonNull Object value) {
     return put(name, value);
   }
 
   @Override
-  public Object removeAttribute(@NotNull String name) {
+  public Object removeAttribute(@NonNull String name) {
     return remove(name);
   }
 

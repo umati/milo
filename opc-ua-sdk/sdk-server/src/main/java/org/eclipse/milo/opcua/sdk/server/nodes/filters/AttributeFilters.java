@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class AttributeFilters {
 

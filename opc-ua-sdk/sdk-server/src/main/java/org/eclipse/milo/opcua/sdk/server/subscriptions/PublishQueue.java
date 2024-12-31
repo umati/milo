@@ -25,7 +25,7 @@ import org.eclipse.milo.opcua.stack.core.types.structured.PublishRequest;
 import org.eclipse.milo.opcua.stack.core.types.structured.PublishResponse;
 import org.eclipse.milo.opcua.stack.core.types.structured.RequestHeader;
 import org.eclipse.milo.opcua.stack.transport.server.ServiceRequestContext;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,7 +142,7 @@ public class PublishQueue {
     return waitList.isEmpty();
   }
 
-  public synchronized @Nullable PublishQueue.PendingPublish poll() {
+  public synchronized PublishQueue.@Nullable PendingPublish poll() {
     long nowNanos = System.nanoTime();
 
     while (true) {

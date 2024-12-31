@@ -13,7 +13,7 @@ package org.eclipse.milo.opcua.stack.core.util;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class Lists {
 

@@ -12,7 +12,7 @@ package org.eclipse.milo.opcua.sdk.server.util;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public class RingBuffer<E> {
 
@@ -65,7 +65,7 @@ public class RingBuffer<E> {
    *
    * @param e element to add.
    */
-  public void add(@NotNull E e) {
+  public void add(@NonNull E e) {
     buffer[write] = e;
     write = (write + 1) % maxSize;
 

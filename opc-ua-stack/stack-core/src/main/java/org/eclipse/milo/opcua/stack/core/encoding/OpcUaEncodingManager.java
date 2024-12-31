@@ -12,7 +12,7 @@ package org.eclipse.milo.opcua.stack.core.encoding;
 
 import org.eclipse.milo.opcua.stack.core.types.DataTypeEncoding;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A singleton {@link EncodingManager} initialized with the default OPC UA encodings.

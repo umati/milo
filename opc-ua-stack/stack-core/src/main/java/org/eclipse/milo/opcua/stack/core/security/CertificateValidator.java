@@ -13,7 +13,7 @@ package org.eclipse.milo.opcua.stack.core.security;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import org.eclipse.milo.opcua.stack.core.UaException;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

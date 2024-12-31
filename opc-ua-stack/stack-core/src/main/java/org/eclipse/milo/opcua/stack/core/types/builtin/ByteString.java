@@ -15,8 +15,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public final class ByteString implements Serializable {
 
@@ -50,11 +50,11 @@ public final class ByteString implements Serializable {
     return bytes;
   }
 
-  public byte @NotNull [] bytesOrElse(byte @NotNull [] other) {
+  public byte @NonNull [] bytesOrElse(byte @NonNull [] other) {
     return bytes != null ? bytes : other;
   }
 
-  public byte @NotNull [] bytesOrEmpty() {
+  public byte @NonNull [] bytesOrEmpty() {
     return bytesOrElse(new byte[0]);
   }
 
@@ -68,13 +68,13 @@ public final class ByteString implements Serializable {
     return bs;
   }
 
-  public @NotNull UByte[] uBytesOrElse(@NotNull UByte[] other) {
+  public @NonNull UByte[] uBytesOrElse(@NonNull UByte[] other) {
     UByte[] ubs = uBytes();
 
     return ubs != null ? ubs : other;
   }
 
-  public @NotNull UByte[] uBytesOrEmpty() {
+  public @NonNull UByte[] uBytesOrEmpty() {
     return uBytesOrElse(new UByte[0]);
   }
 

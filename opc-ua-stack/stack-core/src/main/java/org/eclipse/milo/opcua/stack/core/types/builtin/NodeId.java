@@ -27,8 +27,8 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
 import org.eclipse.milo.opcua.stack.core.util.Namespaces;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public final class NodeId {
 
@@ -152,7 +152,7 @@ public final class NodeId {
     this.identifier = identifier;
   }
 
-  NodeId(@NotNull UShort namespaceIndex, @NotNull Object identifier) {
+  NodeId(@NonNull UShort namespaceIndex, @NonNull Object identifier) {
     checkNotNull(namespaceIndex);
     checkNotNull(identifier);
 
@@ -421,7 +421,7 @@ public final class NodeId {
     return sb.toString();
   }
 
-  public static NodeId parse(@NotNull String s) throws UaRuntimeException {
+  public static NodeId parse(@NonNull String s) throws UaRuntimeException {
     if (s.startsWith("ns=")) {
       int index = s.indexOf(";");
 
@@ -476,7 +476,7 @@ public final class NodeId {
   }
 
   @Nullable
-  public static NodeId parseOrNull(@NotNull String s) {
+  public static NodeId parseOrNull(@NonNull String s) {
     try {
       return NodeId.parse(s);
     } catch (UaRuntimeException t) {
@@ -484,7 +484,7 @@ public final class NodeId {
     }
   }
 
-  public static Optional<NodeId> parseSafe(@NotNull String s) {
+  public static Optional<NodeId> parseSafe(@NonNull String s) {
     return Optional.ofNullable(parseOrNull(s));
   }
 }

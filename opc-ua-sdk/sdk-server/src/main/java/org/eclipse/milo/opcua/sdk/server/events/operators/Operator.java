@@ -16,13 +16,12 @@ import org.eclipse.milo.opcua.sdk.server.events.ValidationException;
 import org.eclipse.milo.opcua.sdk.server.model.objects.BaseEventTypeNode;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.structured.FilterOperand;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface Operator<T> {
 
   void validate(FilterContext context, FilterOperand[] operands) throws ValidationException;
 
-  @Nullable
-  T apply(OperatorContext context, BaseEventTypeNode eventNode, FilterOperand[] operands)
+  @Nullable T apply(OperatorContext context, BaseEventTypeNode eventNode, FilterOperand[] operands)
       throws UaException;
 }

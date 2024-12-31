@@ -11,13 +11,13 @@
 package org.eclipse.milo.opcua.sdk.server.events.conversions;
 
 import org.eclipse.milo.opcua.stack.core.BuiltinDataType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class ImplicitConversions {
 
   @Nullable
-  public static Object convert(@NotNull Object sourceValue, @NotNull BuiltinDataType targetType) {
+  public static Object convert(@NonNull Object sourceValue, @NonNull BuiltinDataType targetType) {
     BuiltinDataType sourceType = BuiltinDataType.fromBackingClass(sourceValue.getClass());
 
     if (sourceType == null) {
@@ -32,7 +32,7 @@ public class ImplicitConversions {
   }
 
   private static Object convert(
-      @NotNull Object sourceValue, BuiltinDataType sourceType, BuiltinDataType targetType) {
+      @NonNull Object sourceValue, BuiltinDataType sourceType, BuiltinDataType targetType) {
 
     switch (sourceType) {
       case Boolean:
@@ -98,7 +98,7 @@ public class ImplicitConversions {
     }
   }
 
-  public static int getPrecedence(@NotNull BuiltinDataType dataType) {
+  public static int getPrecedence(@NonNull BuiltinDataType dataType) {
     // @formatter:off
     switch (dataType) {
       case Double:

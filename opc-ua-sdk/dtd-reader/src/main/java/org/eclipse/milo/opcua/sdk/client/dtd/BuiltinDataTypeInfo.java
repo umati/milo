@@ -13,7 +13,7 @@ package org.eclipse.milo.opcua.sdk.client.dtd;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 abstract class BuiltinDataTypeInfo {
   private static final Map<String, DataTypeInfo> DATA_TYPE_INFO_MAP;

@@ -12,7 +12,7 @@ package org.eclipse.milo.opcua.sdk.server.methods;
 
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaException;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An "Out" param for an OPC UA method.

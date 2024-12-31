@@ -52,7 +52,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
 import org.eclipse.milo.opcua.stack.core.util.ArrayUtil;
 import org.eclipse.milo.opcua.stack.core.util.TypeUtil;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public class OpcUaJsonEncoder implements UaEncoder {
 
@@ -777,7 +777,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
     OPTION_SET
   }
 
-  private void encodeVariantValue(@NotNull Object value) throws IOException {
+  private void encodeVariantValue(@NonNull Object value) throws IOException {
     Class<?> valueClass;
     if (value instanceof Matrix) {
       Matrix m = (Matrix) value;
@@ -1036,7 +1036,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
     contextPop();
   }
 
-  private static Class<?> getClass(@NotNull Object o) {
+  private static Class<?> getClass(@NonNull Object o) {
     if (o.getClass().isArray()) {
       return ArrayUtil.getType(o);
     } else {
