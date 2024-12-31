@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 the Eclipse Milo Authors
+ * Copyright (c) 2024 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -20,12 +20,9 @@ import org.jetbrains.annotations.Nullable;
 
 public interface Operator<T> {
 
-    void validate(FilterContext context, FilterOperand[] operands) throws ValidationException;
+  void validate(FilterContext context, FilterOperand[] operands) throws ValidationException;
 
-    @Nullable
-    T apply(
-        OperatorContext context,
-        BaseEventTypeNode eventNode,
-        FilterOperand[] operands) throws UaException;
-
+  @Nullable
+  T apply(OperatorContext context, BaseEventTypeNode eventNode, FilterOperand[] operands)
+      throws UaException;
 }

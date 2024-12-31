@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 the Eclipse Milo Authors
+ * Copyright (c) 2024 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -17,39 +17,38 @@ import org.jetbrains.annotations.Nullable;
 
 final class LocalizedTextConversions {
 
-    private LocalizedTextConversions() {}
+  private LocalizedTextConversions() {}
 
-    @Nullable
-    static String localizedTextToString(@NotNull LocalizedText text) {
-        return text.getText();
+  @Nullable
+  static String localizedTextToString(@NotNull LocalizedText text) {
+    return text.getText();
+  }
+
+  @Nullable
+  static Object convert(@NotNull Object o, BuiltinDataType targetType, boolean implicit) {
+    if (o instanceof LocalizedText) {
+      LocalizedText text = (LocalizedText) o;
+
+      return implicit ? implicitConversion(text, targetType) : explicitConversion(text, targetType);
+    } else {
+      return null;
     }
+  }
 
-    @Nullable
-    static Object convert(@NotNull Object o, BuiltinDataType targetType, boolean implicit) {
-        if (o instanceof LocalizedText) {
-            LocalizedText text = (LocalizedText) o;
+  @Nullable
+  static Object explicitConversion(@NotNull LocalizedText text, BuiltinDataType targetType) {
+    return implicitConversion(text, targetType);
+  }
 
-            return implicit ?
-                implicitConversion(text, targetType) :
-                explicitConversion(text, targetType);
-        } else {
-            return null;
-        }
+  @Nullable
+  static Object implicitConversion(@NotNull LocalizedText text, BuiltinDataType targetType) {
+    // @formatter:off
+    switch (targetType) {
+      case String:
+        return localizedTextToString(text);
+      default:
+        return null;
     }
-
-    @Nullable
-    static Object explicitConversion(@NotNull LocalizedText text, BuiltinDataType targetType) {
-        return implicitConversion(text, targetType);
-    }
-
-    @Nullable
-    static Object implicitConversion(@NotNull LocalizedText text, BuiltinDataType targetType) {
-        //@formatter:off
-        switch (targetType) {
-            case String:    return localizedTextToString(text);
-            default:        return null;
-        }
-        //@formatter:on
-    }
-
+    // @formatter:on
+  }
 }

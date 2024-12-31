@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 the Eclipse Milo Authors
+ * Copyright (c) 2024 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -18,45 +18,45 @@ import org.jetbrains.annotations.Nullable;
 
 final class QualifiedNameConversions {
 
-    private QualifiedNameConversions() {}
+  private QualifiedNameConversions() {}
 
-    @Nullable
-    static String qualifiedNameToString(@NotNull QualifiedName name) {
-        return name.getName();
+  @Nullable
+  static String qualifiedNameToString(@NotNull QualifiedName name) {
+    return name.getName();
+  }
+
+  @NotNull
+  static LocalizedText qualifiedNameToLocalizedText(@NotNull QualifiedName name) {
+    return new LocalizedText("", name.getName());
+  }
+
+  @Nullable
+  static Object convert(@NotNull Object o, BuiltinDataType targetType, boolean implicit) {
+    if (o instanceof QualifiedName) {
+      QualifiedName name = (QualifiedName) o;
+
+      return implicit ? implicitConversion(name, targetType) : explicitConversion(name, targetType);
+    } else {
+      return null;
     }
+  }
 
-    @NotNull
-    static LocalizedText qualifiedNameToLocalizedText(@NotNull QualifiedName name) {
-        return new LocalizedText("", name.getName());
+  @Nullable
+  static Object explicitConversion(@NotNull QualifiedName name, BuiltinDataType targetType) {
+    return implicitConversion(name, targetType);
+  }
+
+  @Nullable
+  static Object implicitConversion(@NotNull QualifiedName name, BuiltinDataType targetType) {
+    // @formatter:off
+    switch (targetType) {
+      case String:
+        return qualifiedNameToString(name);
+      case LocalizedText:
+        return qualifiedNameToLocalizedText(name);
+      default:
+        return null;
     }
-
-    @Nullable
-    static Object convert(@NotNull Object o, BuiltinDataType targetType, boolean implicit) {
-        if (o instanceof QualifiedName) {
-            QualifiedName name = (QualifiedName) o;
-
-            return implicit ?
-                implicitConversion(name, targetType) :
-                explicitConversion(name, targetType);
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
-    static Object explicitConversion(@NotNull QualifiedName name, BuiltinDataType targetType) {
-        return implicitConversion(name, targetType);
-    }
-
-    @Nullable
-    static Object implicitConversion(@NotNull QualifiedName name, BuiltinDataType targetType) {
-        //@formatter:off
-        switch (targetType) {
-            case String:        return qualifiedNameToString(name);
-            case LocalizedText: return qualifiedNameToLocalizedText(name);
-            default:            return null;
-        }
-        //@formatter:on
-    }
-
+    // @formatter:on
+  }
 }
