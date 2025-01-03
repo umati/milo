@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,15 +10,15 @@
 
 package org.eclipse.milo.opcua.stack.core.util;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class ExecutionQueueTest {
 
@@ -63,6 +63,6 @@ public class ExecutionQueueTest {
     }
 
     latch.await();
-    assertEquals(count.get(), 100000);
+    assertEquals(100000, count.get());
   }
 }

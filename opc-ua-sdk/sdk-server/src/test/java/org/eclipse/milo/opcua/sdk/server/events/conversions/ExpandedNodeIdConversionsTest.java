@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -14,13 +14,13 @@ import static org.eclipse.milo.opcua.sdk.server.events.conversions.ExpandedNodeI
 import static org.eclipse.milo.opcua.sdk.server.events.conversions.ExpandedNodeIdConversions.expandedNodeIdToString;
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint;
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.ushort;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.util.Namespaces;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class ExpandedNodeIdConversionsTest {
 
@@ -31,7 +31,7 @@ public class ExpandedNodeIdConversionsTest {
 
     NodeId nodeId = new NodeId(0, "bar");
 
-    assertEquals(expandedNodeIdToNodeId(nodeId.expanded()), nodeId);
+    assertEquals(nodeId, expandedNodeIdToNodeId(nodeId.expanded()));
   }
 
   @Test
@@ -39,7 +39,7 @@ public class ExpandedNodeIdConversionsTest {
     ExpandedNodeId e1 = new ExpandedNodeId(ushort(0), Namespaces.OPC_UA, "foo", uint(2));
     ExpandedNodeId e2 = new NodeId(1, "bar").expanded();
 
-    assertEquals(expandedNodeIdToString(e1), e1.toParseableString());
-    assertEquals(expandedNodeIdToString(e2), e2.toParseableString());
+    assertEquals(e1.toParseableString(), expandedNodeIdToString(e1));
+    assertEquals(e2.toParseableString(), expandedNodeIdToString(e2));
   }
 }

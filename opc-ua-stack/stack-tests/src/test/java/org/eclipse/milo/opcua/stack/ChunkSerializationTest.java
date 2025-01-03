@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -12,8 +12,8 @@ package org.eclipse.milo.opcua.stack;
 
 import static org.eclipse.milo.opcua.stack.core.channel.EncodingLimits.DEFAULT_MAX_CHUNK_SIZE;
 import static org.eclipse.milo.opcua.stack.core.channel.EncodingLimits.DEFAULT_MAX_MESSAGE_SIZE;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ReferenceCountUtil;
@@ -35,10 +35,11 @@ import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode;
 import org.eclipse.milo.opcua.stack.core.util.BufferUtil;
 import org.eclipse.milo.opcua.stack.core.util.LongSequence;
 import org.eclipse.milo.opcua.stack.transport.client.uasc.ClientSecureChannel;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 public class ChunkSerializationTest extends SecureChannelFixture {
 
@@ -85,8 +86,7 @@ public class ChunkSerializationTest extends SecureChannelFixture {
           EncodingLimits.DEFAULT_MAX_CHUNK_SIZE,
           0);
 
-  @DataProvider
-  public Object[][] getAsymmetricSecurityParameters() {
+  public static Object[][] getAsymmetricSecurityParameters() {
     return new Object[][] {
       {SecurityPolicy.None, MessageSecurityMode.None, 128},
       {SecurityPolicy.Basic128Rsa15, MessageSecurityMode.Sign, 128},
@@ -166,7 +166,7 @@ public class ChunkSerializationTest extends SecureChannelFixture {
         ByteBuf message = decodedMessage.getMessage();
 
         messageBuffer.readerIndex(0);
-        assertEquals(message, messageBuffer);
+        assertEquals(messageBuffer, message);
 
         ReferenceCountUtil.release(message);
         ReferenceCountUtil.release(messageBuffer);
@@ -221,7 +221,7 @@ public class ChunkSerializationTest extends SecureChannelFixture {
         ByteBuf message = decodedMessage.getMessage();
 
         messageBuffer.readerIndex(0);
-        assertEquals(message, messageBuffer);
+        assertEquals(messageBuffer, message);
 
         ReferenceCountUtil.release(message);
         ReferenceCountUtil.release(messageBuffer);
@@ -231,7 +231,8 @@ public class ChunkSerializationTest extends SecureChannelFixture {
     }
   }
 
-  @Test(dataProvider = "getAsymmetricSecurityParameters")
+  @ParameterizedTest
+  @MethodSource("getAsymmetricSecurityParameters")
   public void testAsymmetricMessage(
       SecurityPolicy securityPolicy, MessageSecurityMode messageSecurity, int messageSize)
       throws Exception {
@@ -289,7 +290,7 @@ public class ChunkSerializationTest extends SecureChannelFixture {
         ByteBuf message = decodedMessage.getMessage();
 
         messageBuffer.readerIndex(0);
-        assertEquals(message, messageBuffer);
+        assertEquals(messageBuffer, message);
 
         ReferenceCountUtil.release(message);
         ReferenceCountUtil.release(messageBuffer);
@@ -299,8 +300,7 @@ public class ChunkSerializationTest extends SecureChannelFixture {
     }
   }
 
-  @DataProvider
-  public Object[][] getSymmetricSecurityParameters() {
+  public static Object[][] getSymmetricSecurityParameters() {
     return new Object[][] {
       {SecurityPolicy.None, MessageSecurityMode.None},
       {SecurityPolicy.Basic128Rsa15, MessageSecurityMode.Sign},
@@ -316,7 +316,8 @@ public class ChunkSerializationTest extends SecureChannelFixture {
     };
   }
 
-  @Test(dataProvider = "getSymmetricSecurityParameters")
+  @ParameterizedTest
+  @MethodSource("getSymmetricSecurityParameters")
   public void testSymmetricMessage(
       SecurityPolicy securityPolicy, MessageSecurityMode messageSecurity) throws Exception {
 
@@ -375,7 +376,7 @@ public class ChunkSerializationTest extends SecureChannelFixture {
           ByteBuf message = decodedMessage.getMessage();
 
           messageBuffer.readerIndex(0);
-          assertEquals(message, messageBuffer);
+          assertEquals(messageBuffer, message);
 
           ReferenceCountUtil.release(messageBuffer);
           ReferenceCountUtil.release(message);

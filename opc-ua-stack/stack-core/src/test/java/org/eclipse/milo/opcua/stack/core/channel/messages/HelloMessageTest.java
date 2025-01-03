@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,13 +10,13 @@
 
 package org.eclipse.milo.opcua.stack.core.channel.messages;
 
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.eclipse.milo.opcua.stack.core.UaException;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class HelloMessageTest {
 

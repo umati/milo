@@ -10,12 +10,12 @@
 
 package org.eclipse.milo.opcua.sdk.core;
 
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.UUID;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class ReferenceTest {
 

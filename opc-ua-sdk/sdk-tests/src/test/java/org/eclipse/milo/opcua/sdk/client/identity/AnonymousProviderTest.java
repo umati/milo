@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,17 +10,14 @@
 
 package org.eclipse.milo.opcua.sdk.client.identity;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertThrows;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.UserTokenType;
 import org.eclipse.milo.opcua.stack.core.types.structured.AnonymousIdentityToken;
 import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
 import org.eclipse.milo.opcua.stack.core.types.structured.UserTokenPolicy;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class AnonymousProviderTest {
 
@@ -43,8 +40,8 @@ public class AnonymousProviderTest {
 
     SignedIdentityToken signedIdentityToken = p.getIdentityToken(endpoint, ByteString.NULL_VALUE);
 
-    assertEquals(signedIdentityToken.getToken().getPolicyId(), "anonymous");
-    assertTrue(signedIdentityToken.getToken() instanceof AnonymousIdentityToken);
+    assertEquals("anonymous", signedIdentityToken.getToken().getPolicyId());
+    assertInstanceOf(AnonymousIdentityToken.class, signedIdentityToken.getToken());
   }
 
   @Test
@@ -66,8 +63,8 @@ public class AnonymousProviderTest {
 
     SignedIdentityToken signedIdentityToken = p.getIdentityToken(endpoint, ByteString.NULL_VALUE);
 
-    assertEquals(signedIdentityToken.getToken().getPolicyId(), "");
-    assertTrue(signedIdentityToken.getToken() instanceof AnonymousIdentityToken);
+    assertEquals("", signedIdentityToken.getToken().getPolicyId());
+    assertInstanceOf(AnonymousIdentityToken.class, signedIdentityToken.getToken());
   }
 
   @Test
@@ -90,7 +87,7 @@ public class AnonymousProviderTest {
     SignedIdentityToken signedIdentityToken = p.getIdentityToken(endpoint, ByteString.NULL_VALUE);
 
     assertNull(signedIdentityToken.getToken().getPolicyId());
-    assertTrue(signedIdentityToken.getToken() instanceof AnonymousIdentityToken);
+    assertInstanceOf(AnonymousIdentityToken.class, signedIdentityToken.getToken());
   }
 
   @Test
@@ -110,6 +107,6 @@ public class AnonymousProviderTest {
 
     AnonymousProvider p = new AnonymousProvider();
 
-    assertThrows(() -> p.getIdentityToken(endpoint, ByteString.NULL_VALUE));
+    assertThrows(Exception.class, () -> p.getIdentityToken(endpoint, ByteString.NULL_VALUE));
   }
 }

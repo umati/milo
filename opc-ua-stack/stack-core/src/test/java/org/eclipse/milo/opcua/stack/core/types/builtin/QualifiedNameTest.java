@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,11 +10,10 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class QualifiedNameTest {
 
@@ -40,6 +39,6 @@ public class QualifiedNameTest {
 
   private void assertSymmetry(String string) {
     String reString = QualifiedName.parse(string).toParseableString();
-    Assert.assertEquals(reString, string);
+    assertEquals(string, reString);
   }
 }

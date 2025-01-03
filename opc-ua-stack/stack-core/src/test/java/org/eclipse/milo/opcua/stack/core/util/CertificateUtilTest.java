@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,14 +10,14 @@
 
 package org.eclipse.milo.opcua.stack.core.util;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class CertificateUtilTest {
 
@@ -66,25 +66,25 @@ public class CertificateUtilTest {
                 certificate, CertificateUtil.SUBJECT_ALT_NAME_IP_ADDRESS)
             .get(0);
 
-    assertEquals(uri, "urn:eclipse:milo:test");
-    assertEquals(dnsName, "localhost");
-    assertEquals(ipAddress, "127.0.0.1");
+    assertEquals("urn:eclipse:milo:test", uri);
+    assertEquals("localhost", dnsName);
+    assertEquals("127.0.0.1", ipAddress);
   }
 
   @Test
   public void testGetSanUri() {
-    assertEquals(CertificateUtil.getSanUri(certificate).orElse(null), "urn:eclipse:milo:test");
+    assertEquals("urn:eclipse:milo:test", CertificateUtil.getSanUri(certificate).orElse(null));
   }
 
   @Test
   public void testGetSanDnsNames() {
     List<String> sanDnsNames = CertificateUtil.getSanDnsNames(certificate);
-    assertEquals(sanDnsNames, List.of("localhost", "hostname"));
+    assertEquals(List.of("localhost", "hostname"), sanDnsNames);
   }
 
   @Test
   public void testGetSanIpAddresses() {
     List<String> sanDnsNames = CertificateUtil.getSanIpAddresses(certificate);
-    assertEquals(sanDnsNames, List.of("127.0.0.1", "127.0.0.2"));
+    assertEquals(List.of("127.0.0.1", "127.0.0.2"), sanDnsNames);
   }
 }

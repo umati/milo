@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,12 +10,7 @@
 
 package org.eclipse.milo.opcua.sdk.client;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -53,8 +48,7 @@ public class AddressSpaceTest extends AbstractClientServerTest {
                   n.getNodeClass()));
 
           if (n instanceof UaVariableNode) {
-            System.out.println(
-                "\u2514\u2500 value = " + ((UaVariableNode) n).getValue().getValue());
+            System.out.println("└─ value = " + ((UaVariableNode) n).getValue().getValue());
           }
         });
   }
@@ -190,11 +184,11 @@ public class AddressSpaceTest extends AbstractClientServerTest {
 
     UaNode serverNode = addressSpace.getNode(NodeIds.Server);
     assertNotNull(serverNode);
-    assertTrue(serverNode instanceof ServerTypeNode);
+    assertInstanceOf(ServerTypeNode.class, serverNode);
 
     UaNode serverStatusNode = addressSpace.getNode(NodeIds.Server_ServerStatus);
     assertNotNull(serverStatusNode);
-    assertTrue(serverStatusNode instanceof ServerStatusTypeNode);
+    assertInstanceOf(ServerStatusTypeNode.class, serverStatusNode);
   }
 
   @Test

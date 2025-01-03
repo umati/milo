@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,8 +10,8 @@
 
 package org.eclipse.milo.opcua.sdk.server.nodes.filters;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
@@ -29,7 +29,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class AttributeFilterChainTest {
 
@@ -62,7 +62,7 @@ public class AttributeFilterChainTest {
         AttributeFilters.getValue(ctx -> new DataValue(new Variant("B"))));
 
     DataValue value = (DataValue) chain.getAttribute(null, AttributeId.Value);
-    assertEquals(value.getValue().getValue(), "B");
+    assertEquals("B", value.getValue().getValue());
   }
 
   @Test
@@ -74,7 +74,7 @@ public class AttributeFilterChainTest {
         AttributeFilters.getValue(ctx -> new DataValue(new Variant("Last"))));
 
     DataValue value = (DataValue) chain.getAttribute(null, AttributeId.Value);
-    assertEquals(value.getValue().getValue(), "Last");
+    assertEquals("Last", value.getValue().getValue());
   }
 
   @Test
@@ -92,7 +92,7 @@ public class AttributeFilterChainTest {
     node.setValue(new DataValue(new Variant("foo")));
 
     DataValue value = (DataValue) node.getFilterChain().getAttribute(node, AttributeId.Value);
-    assertEquals(value.getValue().getValue(), "foo");
+    assertEquals("foo", value.getValue().getValue());
   }
 
   @Test
@@ -123,7 +123,7 @@ public class AttributeFilterChainTest {
                   return new DataValue(new Variant("foo"));
                 }));
 
-    assertEquals(node.getValue().getValue().getValue(), "foo");
+    assertEquals("foo", node.getValue().getValue().getValue());
 
     assertTrue(observed.get());
   }

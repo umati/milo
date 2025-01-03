@@ -10,7 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.types.structured;
 
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.ApplicationType;
@@ -40,7 +40,7 @@ public class ApplicationDescriptionTest {
             null,
             new String[] {"a", "b", "c"});
 
-    assertEquals(applicationDescription1, applicationDescription2);
-    assertEquals(applicationDescription1.hashCode(), applicationDescription2.hashCode());
+    assertEquals(applicationDescription2, applicationDescription1);
+    assertEquals(applicationDescription2.hashCode(), applicationDescription1.hashCode());
   }
 }

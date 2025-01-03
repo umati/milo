@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,9 +10,10 @@
 
 package org.eclipse.milo.opcua.stack.core.encoding.binary;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Arrays;
 import org.eclipse.milo.opcua.stack.core.NamespaceTable;
@@ -23,11 +24,13 @@ import org.eclipse.milo.opcua.stack.core.types.OpcUaDataTypeManager;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.ApplicationType;
 import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 public class BinaryDecoderTest extends BinarySerializationFixture {
 
-  @Test(description = "a null array, once encoded, should decode to a null array")
+  @Test
+  @DisplayName("a null array, once encoded, should decode to a null array")
   public void testDecodeNullArray() {
     Argument argument = new Argument("test", NodeIds.Int16, 1, null, LocalizedText.NULL_VALUE);
 
@@ -40,7 +43,7 @@ public class BinaryDecoderTest extends BinarySerializationFixture {
     codec.encode(DefaultEncodingContext.INSTANCE, writer, argument);
     Argument decoded = (Argument) codec.decode(DefaultEncodingContext.INSTANCE, reader);
 
-    assertEquals(decoded.getName(), argument.getName());
+    assertEquals(argument.getName(), decoded.getName());
 
     assertNull(decoded.getArrayDimensions());
   }
@@ -50,7 +53,7 @@ public class BinaryDecoderTest extends BinarySerializationFixture {
     writer.encodeEnum(null, ApplicationType.Client);
     ApplicationType decoded = ApplicationType.from(reader.decodeEnum(null));
 
-    assertEquals(decoded, ApplicationType.Client);
+    assertEquals(ApplicationType.Client, decoded);
   }
 
   @Test
@@ -62,6 +65,6 @@ public class BinaryDecoderTest extends BinarySerializationFixture {
     ApplicationType[] decoded =
         Arrays.stream(decodedValues).map(ApplicationType::from).toArray(ApplicationType[]::new);
 
-    assertEquals(decoded, array);
+    assertArrayEquals(array, decoded);
   }
 }

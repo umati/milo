@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,12 +10,12 @@
 
 package org.eclipse.milo.opcua.stack.core;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class AttributeIdTest {
 
@@ -59,7 +59,6 @@ public class AttributeIdTest {
     assertEquals(AttributeId.RolePermissions, attributes.get(7));
     assertEquals(AttributeId.UserRolePermissions, attributes.get(8));
     assertEquals(AttributeId.AccessRestrictions, attributes.get(9));
-
     assertEquals(AttributeId.IsAbstract, attributes.get(10));
     assertEquals(AttributeId.DataTypeDefinition, attributes.get(11));
   }

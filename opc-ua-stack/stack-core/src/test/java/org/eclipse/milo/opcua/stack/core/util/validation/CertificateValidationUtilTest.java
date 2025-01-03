@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -14,11 +14,11 @@ import static java.util.Collections.emptySet;
 import static org.eclipse.milo.opcua.stack.core.util.validation.CertificateValidationUtil.buildTrustedCertPath;
 import static org.eclipse.milo.opcua.stack.core.util.validation.CertificateValidationUtil.checkHostnameOrIpAddress;
 import static org.eclipse.milo.opcua.stack.core.util.validation.CertificateValidationUtil.validateTrustedCertPath;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.expectThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.security.KeyPair;
@@ -45,8 +45,8 @@ import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateBuilder;
 import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateGenerator;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CertificateValidationUtilTest {
 
@@ -67,7 +67,7 @@ public class CertificateValidationUtilTest {
   private X509Certificate leafIntermediateSigned;
   private X509Certificate uriWithSpaces;
 
-  @BeforeSuite
+  @BeforeEach
   public void loadKeyStore() throws Exception {
     keyStore = KeyStore.getInstance("PKCS12");
 
@@ -126,7 +126,7 @@ public class CertificateValidationUtilTest {
   public void testBuildTrustedCertPath_LeafSelfSigned_NotTrusted() {
     List<X509Certificate> certificateChain = List.of(leafSelfSigned);
 
-    expectThrows(
+    assertThrows(
         UaException.class, () -> buildTrustedCertPath(certificateChain, emptySet(), emptySet()));
   }
 
@@ -197,11 +197,14 @@ public class CertificateValidationUtilTest {
       List<X509Certificate> certificateChain = List.of(leafIntermediateSigned);
 
       UaException e =
-          expectThrows(
+          assertThrows(
               UaException.class,
               () -> {
                 Set<X509CRL> x509CRLS =
                     Set.of(
+                        generateCrl(
+                            caRoot,
+                            (PrivateKey) keyStore.getKey(ALIAS_CA_ROOT, "password".toCharArray())),
                         generateCrl(
                             caIntermediate,
                             (PrivateKey)
@@ -226,7 +229,7 @@ public class CertificateValidationUtilTest {
                     false);
               });
 
-      assertEquals(e.getStatusCode(), new StatusCode(StatusCodes.Bad_CertificateRevoked));
+      assertEquals(new StatusCode(StatusCodes.Bad_CertificateRevoked), e.getStatusCode());
     }
 
     // chain: leaf
@@ -237,7 +240,7 @@ public class CertificateValidationUtilTest {
       List<X509Certificate> certificateChain = List.of(leafIntermediateSigned);
 
       UaException e =
-          expectThrows(
+          assertThrows(
               UaException.class,
               () -> {
                 Set<X509CRL> x509CRLS =
@@ -245,7 +248,11 @@ public class CertificateValidationUtilTest {
                         generateCrl(
                             caRoot,
                             (PrivateKey) keyStore.getKey(ALIAS_CA_ROOT, "password".toCharArray()),
-                            caIntermediate));
+                            caIntermediate),
+                        generateCrl(
+                            caIntermediate,
+                            (PrivateKey)
+                                keyStore.getKey(ALIAS_CA_INTERMEDIATE, "password".toCharArray())));
 
                 PKIXCertPathBuilderResult pathBuilderResult =
                     buildTrustedCertPath(certificateChain, Set.of(caIntermediate), Set.of(caRoot));
@@ -265,27 +272,27 @@ public class CertificateValidationUtilTest {
                     false);
               });
 
-      assertEquals(e.getStatusCode(), new StatusCode(StatusCodes.Bad_CertificateIssuerRevoked));
+      assertEquals(new StatusCode(StatusCodes.Bad_CertificateIssuerRevoked), e.getStatusCode());
     }
   }
 
   @Test
   public void testBuildTrustedCertPath_NoTrusted_NoIssuers() {
-    expectThrows(
+    assertThrows(
         UaException.class,
         () -> buildTrustedCertPath(List.of(leafSelfSigned), emptySet(), emptySet()));
 
-    expectThrows(
+    assertThrows(
         UaException.class,
         () -> buildTrustedCertPath(List.of(leafIntermediateSigned), emptySet(), emptySet()));
 
-    expectThrows(
+    assertThrows(
         UaException.class,
         () ->
             buildTrustedCertPath(
                 List.of(leafIntermediateSigned, caIntermediate), emptySet(), emptySet()));
 
-    expectThrows(
+    assertThrows(
         UaException.class,
         () ->
             buildTrustedCertPath(
@@ -333,7 +340,7 @@ public class CertificateValidationUtilTest {
       List<X509Certificate> certificateChain = List.of(leafIntermediateSigned);
 
       UaException e =
-          expectThrows(
+          assertThrows(
               UaException.class,
               () -> {
                 Set<X509CRL> x509CRLS =
@@ -361,7 +368,7 @@ public class CertificateValidationUtilTest {
                     false);
               });
 
-      assertEquals(e.getStatusCode(), new StatusCode(StatusCodes.Bad_CertificateIssuerRevoked));
+      assertEquals(new StatusCode(StatusCodes.Bad_CertificateIssuerRevoked), e.getStatusCode());
     }
   }
 

@@ -10,10 +10,10 @@
 
 package org.eclipse.milo.opcua.sdk.server.util;
 
-import static org.testng.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.Set;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class HostnameUtilTest {
 
@@ -23,8 +23,8 @@ public class HostnameUtilTest {
 
     hostnames.forEach(
         hostname -> {
-          assertNotEquals(hostname, "127.0.0.1");
-          assertNotEquals(hostname, "localhost");
+          assertNotEquals("127.0.0.1", hostname);
+          assertNotEquals("localhost", hostname);
           System.out.println(hostname);
         });
   }

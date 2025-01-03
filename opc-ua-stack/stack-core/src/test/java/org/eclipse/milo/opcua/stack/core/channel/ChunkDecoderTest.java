@@ -11,11 +11,11 @@
 package org.eclipse.milo.opcua.stack.core.channel;
 
 import static org.eclipse.milo.opcua.stack.core.channel.ChunkDecoder.LegacySequenceNumberValidator.validateSequenceNumber;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class ChunkDecoderTest {
 

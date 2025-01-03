@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,17 +10,16 @@
 
 package org.eclipse.milo.opcua.stack.core.encoding.binary;
 
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.DiagnosticInfo;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class DiagnosticInfoSerializationTest extends BinarySerializationFixture {
 
-  @DataProvider(name = "DiagnosticInfoProvider")
-  public Object[][] getDiagnosticInfos() {
+  public static Object[][] getDiagnosticInfos() {
     return new Object[][] {
       {null},
       {new DiagnosticInfo(1, -1, -1, -1, null, null, null)},
@@ -43,11 +42,12 @@ public class DiagnosticInfoSerializationTest extends BinarySerializationFixture 
     };
   }
 
-  @Test(dataProvider = "DiagnosticInfoProvider")
+  @ParameterizedTest
+  @MethodSource("getDiagnosticInfos")
   public void testDiagnosticInfoRoundTrip(DiagnosticInfo diagnosticInfo) {
     writer.encodeDiagnosticInfo(diagnosticInfo);
     DiagnosticInfo decoded = reader.decodeDiagnosticInfo();
 
-    assertEquals(decoded, diagnosticInfo);
+    assertEquals(diagnosticInfo, decoded);
   }
 }
