@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,7 +10,7 @@
 
 package org.eclipse.milo.sdk.core.types.json;
 
-import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.eclipse.milo.opcua.sdk.core.typetree.DataType;
 import org.eclipse.milo.opcua.stack.core.UaSerializationException;
@@ -39,9 +39,18 @@ public class JsonOptionSetCodec extends GenericDataTypeCodec<JsonStruct> {
     ByteString value = decoder.decodeByteString("Value");
     ByteString validBits = decoder.decodeByteString("ValidBits");
 
+    var valueArray = new JsonArray();
+    for (byte b : value.bytesOrEmpty()) {
+      valueArray.add(JsonConversions.fromSByte(b));
+    }
+    var validBitsArray = new JsonArray();
+    for (byte b : validBits.bytesOrEmpty()) {
+      validBitsArray.add(JsonConversions.fromSByte(b));
+    }
+
     var jsonObject = new JsonObject();
-    jsonObject.add("Value", JsonConversions.fromByteString(value));
-    jsonObject.add("ValidBits", JsonConversions.fromByteString(validBits));
+    jsonObject.add("Value", valueArray);
+    jsonObject.add("ValidBits", validBitsArray);
 
     return new JsonStruct(dataType, jsonObject);
   }
@@ -49,10 +58,20 @@ public class JsonOptionSetCodec extends GenericDataTypeCodec<JsonStruct> {
   @Override
   public void encodeType(EncodingContext context, UaEncoder encoder, JsonStruct value)
       throws UaSerializationException {
-    JsonElement valueElement = value.getJsonObject().get("Value");
-    JsonElement validBitsElement = value.getJsonObject().get("ValidBits");
+    JsonArray valueArray = value.getJsonObject().getAsJsonArray("Value");
+    JsonArray validBitsArray = value.getJsonObject().getAsJsonArray("ValidBits");
 
-    encoder.encodeByteString("Value", JsonConversions.toByteString(valueElement));
-    encoder.encodeByteString("ValidBits", JsonConversions.toByteString(validBitsElement));
+    byte[] valueBs = new byte[valueArray.size()];
+    for (int i = 0; i < valueArray.size(); i++) {
+      valueBs[i] = JsonConversions.toSByte(valueArray.get(i));
+    }
+
+    byte[] validBitsBs = new byte[validBitsArray.size()];
+    for (int i = 0; i < validBitsArray.size(); i++) {
+      validBitsBs[i] = JsonConversions.toSByte(validBitsArray.get(i));
+    }
+
+    encoder.encodeByteString("Value", new ByteString(valueBs));
+    encoder.encodeByteString("ValidBits", new ByteString(validBitsBs));
   }
 }
