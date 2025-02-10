@@ -28,10 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -134,6 +131,8 @@ public class OpcUaServer extends AbstractServiceHandler {
   private final Set<NodeId> registeredViews = Sets.newConcurrentHashSet();
 
   private final ServerDiagnosticsSummary diagnosticsSummary = new ServerDiagnosticsSummary(this);
+
+  private final List<EndpointConfig> boundEndpoints = new CopyOnWriteArrayList<>();
 
   /**
    * SecureChannel id sequence, starting at a random value in [1..{@link Integer#MAX_VALUE}], and
@@ -257,15 +256,29 @@ public class OpcUaServer extends AbstractServiceHandler {
                   transport.bind(applicationContext, bindAddress);
 
                   transports.put(transportProfile, transport);
+
+                  boundEndpoints.add(endpoint);
                 } catch (Exception e) {
-                  throw new RuntimeException(e);
+                  logger.warn(
+                      "Failed to bind endpoint {} to {}:{} [{}/{}]",
+                      endpoint.getEndpointUrl(),
+                      endpoint.getBindAddress(),
+                      endpoint.getBindPort(),
+                      endpoint.getSecurityPolicy(),
+                      endpoint.getSecurityMode(),
+                      e);
                 }
               } else {
                 logger.warn("No OpcServerTransport for TransportProfile: {}", transportProfile);
               }
             });
 
-    return CompletableFuture.completedFuture(this);
+    if (boundEndpoints.isEmpty()) {
+      return CompletableFuture.failedFuture(
+          new UaException(StatusCodes.Bad_ConfigurationError, "No endpoints bound"));
+    } else {
+      return CompletableFuture.completedFuture(this);
+    }
   }
 
   public CompletableFuture<OpcUaServer> shutdown() {
@@ -456,6 +469,15 @@ public class OpcUaServer extends AbstractServiceHandler {
 
   public Optional<RoleMapper> getRoleMapper() {
     return config.getRoleMapper();
+  }
+
+  /**
+   * Get the {@link EndpointConfig}s that were successfully bound during {@link #startup()}.
+   *
+   * @return the {@link EndpointConfig}s that were successfully bound during {@link #startup()}.
+   */
+  public List<EndpointConfig> getBoundEndpoints() {
+    return List.copyOf(boundEndpoints);
   }
 
   private class ServerApplicationContextImpl implements ServerApplicationContext {
