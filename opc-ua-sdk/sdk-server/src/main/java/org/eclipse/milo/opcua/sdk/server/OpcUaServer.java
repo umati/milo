@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -125,7 +125,10 @@ public class OpcUaServer extends AbstractServiceHandler {
   private final Lazy<DataTypeTree> dataTypeTree = new Lazy<>();
   private final Lazy<ReferenceTypeTree> referenceTypeTree = new Lazy<>();
 
-  private final DataTypeManager dataTypeManager =
+  private final DataTypeManager staticDataTypeManager =
+      DefaultDataTypeManager.createAndInitialize(namespaceTable);
+
+  private final DataTypeManager dynamicDataTypeManager =
       DefaultDataTypeManager.createAndInitialize(namespaceTable);
 
   private final Set<NodeId> registeredViews = Sets.newConcurrentHashSet();
@@ -149,7 +152,8 @@ public class OpcUaServer extends AbstractServiceHandler {
   private final EventFactory eventFactory = new EventFactory(this);
   private final EventNotifier eventNotifier = new ServerEventNotifier();
 
-  private final EncodingContext encodingContext;
+  private final EncodingContext staticEncodingContext;
+  private final EncodingContext dynamicEncodingContext;
 
   private final OpcUaNamespace opcUaNamespace;
   private final ServerNamespace serverNamespace;
@@ -166,11 +170,39 @@ public class OpcUaServer extends AbstractServiceHandler {
 
     applicationContext = new ServerApplicationContextImpl();
 
-    encodingContext =
+    staticEncodingContext =
         new EncodingContext() {
           @Override
           public DataTypeManager getDataTypeManager() {
-            return dataTypeManager;
+            return staticDataTypeManager;
+          }
+
+          @Override
+          public EncodingManager getEncodingManager() {
+            return encodingManager;
+          }
+
+          @Override
+          public EncodingLimits getEncodingLimits() {
+            return config.getEncodingLimits();
+          }
+
+          @Override
+          public NamespaceTable getNamespaceTable() {
+            return namespaceTable;
+          }
+
+          @Override
+          public ServerTable getServerTable() {
+            return serverTable;
+          }
+        };
+
+    dynamicEncodingContext =
+        new EncodingContext() {
+          @Override
+          public DataTypeManager getDataTypeManager() {
+            return dynamicDataTypeManager;
           }
 
           @Override
@@ -332,12 +364,24 @@ public class OpcUaServer extends AbstractServiceHandler {
     return serverNamespace;
   }
 
-  public DataTypeManager getDataTypeManager() {
-    return dataTypeManager;
-  }
-
   public EncodingManager getEncodingManager() {
     return encodingManager;
+  }
+
+  public DataTypeManager getStaticDataTypeManager() {
+    return staticDataTypeManager;
+  }
+
+  public DataTypeManager getDynamicDataTypeManager() {
+    return dynamicDataTypeManager;
+  }
+
+  public EncodingContext getStaticEncodingContext() {
+    return staticEncodingContext;
+  }
+
+  public EncodingContext getDynamicEncodingContext() {
+    return dynamicEncodingContext;
   }
 
   public NamespaceTable getNamespaceTable() {
@@ -346,10 +390,6 @@ public class OpcUaServer extends AbstractServiceHandler {
 
   public ServerTable getServerTable() {
     return serverTable;
-  }
-
-  public EncodingContext getEncodingContext() {
-    return encodingContext;
   }
 
   public ServerDiagnosticsSummary getDiagnosticsSummary() {
@@ -491,7 +531,7 @@ public class OpcUaServer extends AbstractServiceHandler {
 
     @Override
     public EncodingContext getEncodingContext() {
-      return encodingContext;
+      return staticEncodingContext;
     }
 
     @Override
