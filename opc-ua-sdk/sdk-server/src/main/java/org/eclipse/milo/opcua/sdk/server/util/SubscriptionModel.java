@@ -114,6 +114,15 @@ public class SubscriptionModel extends AbstractLifecycle {
     executionQueue.submit(this::reschedule);
   }
 
+  /**
+   * Get a copy of the {@link DataItem}s in this {@link SubscriptionModel}.
+   *
+   * @return a copy of the {@link DataItem}s in this {@link SubscriptionModel}.
+   */
+  public List<DataItem> getDataItems() {
+    return List.copyOf(itemSet);
+  }
+
   private void reschedule() {
     Map<Double, List<DataItem>> bySamplingInterval =
         itemSet.stream()
@@ -128,7 +137,7 @@ public class SubscriptionModel extends AbstractLifecycle {
 
                   return new ScheduledUpdate(samplingInterval, items);
                 })
-            .collect(Collectors.toList());
+            .toList();
 
     schedule.forEach(ScheduledUpdate::cancel);
     schedule.clear();
@@ -165,7 +174,7 @@ public class SubscriptionModel extends AbstractLifecycle {
                     List<PendingRead> pending =
                         sessionItems.stream()
                             .map(item -> new PendingRead(item.getReadValueId()))
-                            .collect(Collectors.toList());
+                            .toList();
 
                     List<ReadValueId> ids =
                         pending.stream().map(PendingRead::getInput).collect(Collectors.toList());
