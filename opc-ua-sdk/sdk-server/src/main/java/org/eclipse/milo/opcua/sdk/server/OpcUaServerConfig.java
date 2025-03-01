@@ -38,11 +38,16 @@ public interface OpcUaServerConfig {
   /** A {@link UserTokenPolicy} for username-based access. */
   UserTokenPolicy USER_TOKEN_POLICY_USERNAME =
       new UserTokenPolicy(
-          "username", UserTokenType.UserName, null, null, SecurityPolicy.Basic256.getUri());
+          "username", UserTokenType.UserName, null, null, SecurityPolicy.Basic256Sha256.getUri());
 
+  /** A {@link UserTokenPolicy} for X.509 certificate-based access. */
   UserTokenPolicy USER_TOKEN_POLICY_X509 =
       new UserTokenPolicy(
-          "certificate", UserTokenType.Certificate, null, null, SecurityPolicy.Basic256.getUri());
+          "certificate",
+          UserTokenType.Certificate,
+          null,
+          null,
+          SecurityPolicy.Basic256Sha256.getUri());
 
   /**
    * @return the {@link EndpointConfig}s for this server.
