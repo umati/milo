@@ -104,6 +104,26 @@ public class ArrayUtil {
     return dimensions.toArray();
   }
 
+  /**
+   * Get the ValueRank of an Object that may or may not be an array.
+   *
+   * <p>The return value is either -1 (scalar) or the number of dimensions (>=1).
+   *
+   * @param array the Object to check.
+   * @return the ValueRank of the object.
+   */
+  public static int getValueRank(Object array) {
+    Class<?> type = array.getClass();
+    int rank = 0;
+
+    while (type.isArray()) {
+      rank++;
+      type = type.getComponentType();
+    }
+
+    return rank == 0 ? -1 : rank;
+  }
+
   public static Class<?> getType(Object array) {
     Class<?> type = array.getClass();
 

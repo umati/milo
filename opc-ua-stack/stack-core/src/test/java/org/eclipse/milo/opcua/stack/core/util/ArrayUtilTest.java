@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.lang.reflect.Array;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -92,5 +93,13 @@ public class ArrayUtilTest {
   @MethodSource("getTypedArrays")
   public void testGetType(Object array, Class<?> type) throws Exception {
     assertEquals(type, ArrayUtil.getType(array));
+  }
+
+  @Test
+  void getValueRank() {
+    assertEquals(-1, ArrayUtil.getValueRank(0));
+    assertEquals(1, ArrayUtil.getValueRank(new int[1]));
+    assertEquals(2, ArrayUtil.getValueRank(new int[1][1]));
+    assertEquals(3, ArrayUtil.getValueRank(new int[1][1][1]));
   }
 }

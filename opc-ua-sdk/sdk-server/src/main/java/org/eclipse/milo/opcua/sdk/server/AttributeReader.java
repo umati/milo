@@ -116,7 +116,15 @@ public class AttributeReader {
         try {
           NumericRange range = NumericRange.parse(indexRange);
 
-          Object valueAtRange = NumericRange.readFromValueAtRange(dv.getValue().getValue(), range);
+          Object valueAtRange;
+          if (dv.getValue().getValue() instanceof Matrix matrix) {
+            valueAtRange = NumericRange.readFromValueAtRange(matrix.nestedArrayValue(), range);
+            if (ArrayUtil.getValueRank(valueAtRange) > 1) {
+              valueAtRange = new Matrix(valueAtRange);
+            }
+          } else {
+            valueAtRange = NumericRange.readFromValueAtRange(dv.getValue(), range);
+          }
 
           return dvb.setValue(Variant.of(valueAtRange))
               .applyTimestamps(attributeId, timestamps)

@@ -28,13 +28,7 @@ import org.eclipse.milo.opcua.stack.core.AttributeId;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaException;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
-import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.util.ArrayUtil;
@@ -107,10 +101,24 @@ public class AttributeWriter {
       try {
         NumericRange range = NumericRange.parse(indexRange);
 
-        Object current = node.getAttribute(AccessContext.INTERNAL, attributeId);
+        Object currentValue = node.getAttribute(AccessContext.INTERNAL, attributeId);
+        if (currentValue instanceof DataValue dataValue) {
+          currentValue = dataValue.getValue().getValue();
+        }
+        if (currentValue instanceof Matrix matrix) {
+          currentValue = matrix.nestedArrayValue();
+        }
 
-        Object valueAtRange =
-            NumericRange.writeToValueAtRange(Variant.of(current), updateVariant, range);
+        Object updateValue = updateVariant.getValue();
+        if (updateValue instanceof Matrix matrix) {
+          updateValue = matrix.nestedArrayValue();
+        }
+
+        Object valueAtRange = NumericRange.writeToValueAtRange(currentValue, updateValue, range);
+
+        if (ArrayUtil.getValueRank(valueAtRange) > 1) {
+          valueAtRange = new Matrix(valueAtRange);
+        }
 
         updateVariant = new Variant(valueAtRange);
       } catch (UaException e) {
@@ -252,6 +260,10 @@ public class AttributeWriter {
       }
     }
 
+    if (o instanceof Matrix matrix) {
+      o = matrix.nestedArrayValue();
+    }
+
     Class<?> valueClass = o.getClass().isArray() ? ArrayUtil.getType(o) : o.getClass();
 
     Class<?> expectedClass = getExpectedClass(server, dataType, valueClass);
@@ -295,6 +307,10 @@ public class AttributeWriter {
 
     Object o = variant.getValue();
     if (o == null) return;
+
+    if (o instanceof Matrix matrix) {
+      o = matrix.nestedArrayValue();
+    }
 
     boolean valueIsArray = o.getClass().isArray();
 
