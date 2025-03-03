@@ -34,7 +34,7 @@ public final class DataValue {
   }
 
   public DataValue(StatusCode statusCode) {
-    this(Variant.NULL_VALUE, statusCode, DateTime.MIN_VALUE);
+    this(Variant.NULL_VALUE, statusCode, null, DateTime.now());
   }
 
   public DataValue(Variant value) {
@@ -243,6 +243,11 @@ public final class DataValue {
 
     public Builder setValue(Variant value) {
       this.value = value;
+      return this;
+    }
+
+    public Builder setStatus(long statusCode) {
+      this.status = new StatusCode(statusCode);
       return this;
     }
 
