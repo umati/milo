@@ -30,7 +30,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.milo.opcua.sdk.core.typetree.DataTypeTree;
 import org.eclipse.milo.opcua.sdk.core.typetree.ReferenceTypeTree;
@@ -524,9 +523,7 @@ public class OpcUaServer extends AbstractServiceHandler {
 
     @Override
     public List<EndpointDescription> getEndpointDescriptions() {
-      return config.getEndpoints().stream()
-          .map(this::transformEndpoint)
-          .collect(Collectors.toUnmodifiableList());
+      return config.getEndpoints().stream().map(this::transformEndpoint).toList();
     }
 
     @Override
@@ -606,16 +603,14 @@ public class OpcUaServer extends AbstractServiceHandler {
               context.getChannel().remoteAddress());
         }
 
-        if (serviceHandler instanceof AsyncServiceHandler) {
-          AsyncServiceHandler asyncServiceHandler = (AsyncServiceHandler) serviceHandler;
-
+        if (serviceHandler instanceof AsyncServiceHandler asyncServiceHandler) {
           CompletableFuture<UaResponseMessageType> response =
               asyncServiceHandler
                   .handleAsync(context, requestMessage)
                   .whenComplete(
                       (r, ex) -> {
                         if (ex != null) {
-                          logger.warn(
+                          logger.debug(
                               "Service request completed exceptionally: path={} handle={}"
                                   + " service={} remote={}",
                               path,
@@ -651,7 +646,7 @@ public class OpcUaServer extends AbstractServiceHandler {
 
             future.complete(response);
           } catch (UaException e) {
-            logger.warn(
+            logger.debug(
                 "Service request completed exceptionally: path={} handle={} service={} remote={}",
                 path,
                 requestMessage.getRequestHeader().getRequestHandle(),
@@ -687,17 +682,15 @@ public class OpcUaServer extends AbstractServiceHandler {
       Service service = Service.from(requestMessage.getTypeId());
 
       if (service != null) {
-        switch (service) {
-          case DISCOVERY_FIND_SERVERS:
-          case DISCOVERY_GET_ENDPOINTS:
-          case DISCOVERY_REGISTER_SERVER:
-          case DISCOVERY_FIND_SERVERS_ON_NETWORK:
-          case DISCOVERY_REGISTER_SERVER_2:
-            return true;
-
-          default:
-            return false;
-        }
+        return switch (service) {
+          case DISCOVERY_FIND_SERVERS,
+              DISCOVERY_GET_ENDPOINTS,
+              DISCOVERY_REGISTER_SERVER,
+              DISCOVERY_FIND_SERVERS_ON_NETWORK,
+              DISCOVERY_REGISTER_SERVER_2 ->
+              true;
+          default -> false;
+        };
       }
 
       return false;
@@ -743,7 +736,7 @@ public class OpcUaServer extends AbstractServiceHandler {
                   config.getEndpoints().stream()
                       .map(EndpointConfig::getEndpointUrl)
                       .distinct()
-                      .collect(toList());
+                      .toList();
             }
 
             return new ApplicationDescription(
