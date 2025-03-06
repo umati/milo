@@ -52,8 +52,9 @@ public abstract class AbstractX509IdentityValidator extends AbstractIdentityVali
           .getAsymmetricSignatureAlgorithm()
           .getUri()
           .equals(signature.getAlgorithm())) {
+
         throw new UaException(
-            StatusCodes.Bad_SecurityChecksFailed,
+            StatusCodes.Bad_IdentityTokenInvalid,
             "algorithm in token signature did not match algorithm specified by token policy");
       }
     } else {
@@ -63,8 +64,9 @@ public abstract class AbstractX509IdentityValidator extends AbstractIdentityVali
           .getAsymmetricSignatureAlgorithm()
           .getUri()
           .equals(signature.getAlgorithm())) {
+
         throw new UaException(
-            StatusCodes.Bad_SecurityChecksFailed,
+            StatusCodes.Bad_IdentityTokenInvalid,
             "algorithm in token signature did not match algorithm specified by secure channel");
       }
     }
@@ -72,7 +74,14 @@ public abstract class AbstractX509IdentityValidator extends AbstractIdentityVali
     SecurityAlgorithm algorithm = SecurityAlgorithm.fromUri(signature.getAlgorithm());
 
     if (algorithm != SecurityAlgorithm.None) {
-      verifySignature(session, signature, certificate, algorithm);
+      try {
+        verifySignature(session, signature, certificate, algorithm);
+      } catch (UaException e) {
+        throw new UaException(
+            StatusCodes.Bad_IdentityTokenInvalid,
+            "signature verification failed: " + e.getMessage(),
+            e);
+      }
     }
 
     return authenticateCertificateOrThrow(session, certificate);
@@ -86,7 +95,7 @@ public abstract class AbstractX509IdentityValidator extends AbstractIdentityVali
     if (identity != null) {
       return identity;
     } else {
-      throw new UaException(StatusCodes.Bad_UserAccessDenied);
+      throw new UaException(StatusCodes.Bad_IdentityTokenRejected);
     }
   }
 
