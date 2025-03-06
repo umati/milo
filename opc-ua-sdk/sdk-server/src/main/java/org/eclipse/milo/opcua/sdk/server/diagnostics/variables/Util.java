@@ -25,7 +25,9 @@ import org.eclipse.milo.opcua.sdk.server.nodes.filters.AttributeFilters;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
+import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
+import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 
 class Util {
 
@@ -74,7 +76,8 @@ class Util {
           if (diagnosticsEnabled.get()) {
             return get.apply(ctx);
           } else {
-            return new DataValue(new StatusCode(StatusCodes.Bad_NotReadable));
+            return new DataValue(
+                Variant.NULL_VALUE, new StatusCode(StatusCodes.Bad_NotReadable), DateTime.now());
           }
         });
   }
