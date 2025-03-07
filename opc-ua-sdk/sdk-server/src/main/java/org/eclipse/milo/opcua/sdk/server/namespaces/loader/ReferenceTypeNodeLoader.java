@@ -47,7 +47,7 @@ class ReferenceTypeNodeLoader {
             new AccessRestrictionType(UShort.valueOf(0)),
             true,
             true,
-            LocalizedText.NULL_VALUE);
+            null);
     this.nodeManager.addNode(node);
   }
 
@@ -66,7 +66,7 @@ class ReferenceTypeNodeLoader {
             new AccessRestrictionType(UShort.valueOf(0)),
             true,
             true,
-            LocalizedText.NULL_VALUE);
+            null);
     node.addReference(
         new Reference(new NodeId(0, 32), new NodeId(0, 45), new NodeId(0, 31).expanded(), false));
     this.nodeManager.addNode(node);
@@ -571,7 +571,7 @@ class ReferenceTypeNodeLoader {
             new AccessRestrictionType(UShort.valueOf(0)),
             false,
             true,
-            LocalizedText.NULL_VALUE);
+            null);
     node.addReference(
         new Reference(
             new NodeId(0, 24137), new NodeId(0, 45), new NodeId(0, 32).expanded(), false));
@@ -1402,7 +1402,7 @@ class ReferenceTypeNodeLoader {
             new AccessRestrictionType(UShort.valueOf(0)),
             false,
             true,
-            LocalizedText.NULL_VALUE);
+            null);
     node.addReference(
         new Reference(
             new NodeId(0, 25257), new NodeId(0, 45), new NodeId(0, 32).expanded(), false));
@@ -1424,7 +1424,7 @@ class ReferenceTypeNodeLoader {
             new AccessRestrictionType(UShort.valueOf(0)),
             false,
             true,
-            LocalizedText.NULL_VALUE);
+            null);
     node.addReference(
         new Reference(
             new NodeId(0, 25258), new NodeId(0, 45), new NodeId(0, 32).expanded(), false));
@@ -1446,7 +1446,7 @@ class ReferenceTypeNodeLoader {
             new AccessRestrictionType(UShort.valueOf(0)),
             false,
             true,
-            LocalizedText.NULL_VALUE);
+            null);
     node.addReference(
         new Reference(
             new NodeId(0, 25259), new NodeId(0, 45), new NodeId(0, 25258).expanded(), false));
@@ -1468,7 +1468,7 @@ class ReferenceTypeNodeLoader {
             new AccessRestrictionType(UShort.valueOf(0)),
             false,
             true,
-            LocalizedText.NULL_VALUE);
+            null);
     node.addReference(
         new Reference(
             new NodeId(0, 25260), new NodeId(0, 45), new NodeId(0, 25258).expanded(), false));
