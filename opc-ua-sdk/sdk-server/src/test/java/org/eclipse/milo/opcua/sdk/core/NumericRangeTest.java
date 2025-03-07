@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
@@ -72,6 +73,36 @@ public class NumericRangeTest {
 
     assertInstanceOf(int[].class, result);
     assertArrayEquals(array, (int[]) result);
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("getLowBoundTestData")
+  public void testLowBoundTooLarge(String testCase, Object value, int length) {
+    // Test when low bound equals length
+    UaException ex1 =
+        assertThrows(
+            UaException.class,
+            () ->
+                NumericRange.readFromValueAtRange(
+                    new Variant(value), NumericRange.parse(length + ":" + (length + 1))));
+    assertEquals(StatusCodes.Bad_IndexRangeNoData, ex1.getStatusCode().getValue());
+
+    // Test when low bound is greater than length
+    UaException ex2 =
+        assertThrows(
+            UaException.class,
+            () ->
+                NumericRange.readFromValueAtRange(
+                    new Variant(value), NumericRange.parse((length + 1) + ":" + (length + 2))));
+    assertEquals(StatusCodes.Bad_IndexRangeNoData, ex2.getStatusCode().getValue());
+  }
+
+  private static Object[][] getLowBoundTestData() {
+    return new Object[][] {
+      {"Array length=4", new int[] {0, 1, 2, 3}, 4},
+      {"String length=6", "abcdef", 6},
+      {"ByteString length=4", new ByteString(new byte[] {1, 2, 3, 4}), 4}
+    };
   }
 
   @Test

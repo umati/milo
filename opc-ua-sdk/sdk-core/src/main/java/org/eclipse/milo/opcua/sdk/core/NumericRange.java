@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -141,7 +141,11 @@ public final class NumericRange {
 
     if (dimension == dimensionCount) {
       if (array.getClass().isArray()) {
-        int len = Math.min(high + 1, Array.getLength(array)) - low;
+        int length = Array.getLength(array);
+        if (low >= length) {
+          throw new UaException(StatusCodes.Bad_IndexRangeNoData);
+        }
+        int len = Math.min(high + 1, length) - low;
         Class<?> type = array.getClass().getComponentType();
         Object a = Array.newInstance(type, len);
 
@@ -151,13 +155,19 @@ public final class NumericRange {
         }
 
         return a;
-      } else if (array instanceof String) {
-        String s = (String) array;
-        int to = Math.min(high + 1, s.length());
+      } else if (array instanceof String s) {
+        int length = s.length();
+        if (low >= length) {
+          throw new UaException(StatusCodes.Bad_IndexRangeNoData);
+        }
+        int to = Math.min(high + 1, length);
         return s.substring(low, to);
-      } else if (array instanceof ByteString) {
-        ByteString bs = (ByteString) array;
-        int to = Math.min(high + 1, bs.length());
+      } else if (array instanceof ByteString bs) {
+        int length = bs.length();
+        if (low >= length) {
+          throw new UaException(StatusCodes.Bad_IndexRangeNoData);
+        }
+        int to = Math.min(high + 1, length);
         byte[] copy = Arrays.copyOfRange(bs.bytesOrEmpty(), low, to);
         return new ByteString(copy);
       } else {
