@@ -142,7 +142,7 @@ public class SubscriptionModel extends AbstractLifecycle {
     schedule.forEach(ScheduledUpdate::cancel);
     schedule.clear();
     schedule.addAll(updates);
-    schedule.forEach(scheduler::execute);
+    schedule.forEach(executor::execute);
   }
 
   private class ScheduledUpdate implements Runnable {
