@@ -294,7 +294,7 @@ public class OpcUaXmlDecoder implements UaDecoder {
   public UUID decodeGuid(String field) throws UaSerializationException {
     if (currentNode(field)) {
       try {
-        return UUID.fromString(currentNode.getTextContent());
+        return UUID.fromString(currentNode.getTextContent().trim());
       } catch (IllegalArgumentException e) {
         throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
       } finally {
@@ -309,9 +309,14 @@ public class OpcUaXmlDecoder implements UaDecoder {
   public ByteString decodeByteString(String field) throws UaSerializationException {
     if (currentNode(field)) {
       try {
-        byte[] bs = DatatypeConverter.parseBase64Binary(currentNode.getTextContent());
+        String textContent = currentNode.getTextContent().trim();
+        if (textContent.isEmpty()) {
+          return ByteString.NULL_VALUE;
+        } else {
+          byte[] bs = DatatypeConverter.parseBase64Binary(textContent);
 
-        return ByteString.of(bs);
+          return ByteString.of(bs);
+        }
       } catch (IllegalArgumentException e) {
         throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
       } finally {
