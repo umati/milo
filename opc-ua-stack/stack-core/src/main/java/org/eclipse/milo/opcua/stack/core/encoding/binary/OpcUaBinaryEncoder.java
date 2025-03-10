@@ -595,7 +595,18 @@ public class OpcUaBinaryEncoder implements UaEncoder {
       boolean structure = false;
       boolean enumeration = false;
       boolean optionSet = false;
-      Class<?> valueClass = getClass(value);
+      Class<?> valueClass;
+
+      if (value instanceof Matrix matrix) {
+        Object elements = matrix.getElements();
+        if (elements == null) {
+          buffer.writeByte(0);
+          return;
+        }
+        valueClass = getClass(elements);
+      } else {
+        valueClass = getClass(value);
+      }
 
       if (UaStructuredType.class.isAssignableFrom(valueClass)) {
         valueClass = ExtensionObject.class;
@@ -604,15 +615,9 @@ public class OpcUaBinaryEncoder implements UaEncoder {
         valueClass = Integer.class;
         enumeration = true;
       } else if (OptionSetUInteger.class.isAssignableFrom(valueClass)) {
+        assert value instanceof OptionSetUInteger<?>;
         valueClass = ((OptionSetUInteger<?>) value).getValue().getClass();
         optionSet = true;
-      } else if (Matrix.class.isAssignableFrom(valueClass)) {
-        Matrix m = (Matrix) value;
-        if (m.isNull()) {
-          buffer.writeByte(0);
-          return;
-        }
-        valueClass = ((Matrix) value).getDataType().orElseThrow().getBackingClass();
       }
 
       int typeId = TypeUtil.getBuiltinTypeId(valueClass);
