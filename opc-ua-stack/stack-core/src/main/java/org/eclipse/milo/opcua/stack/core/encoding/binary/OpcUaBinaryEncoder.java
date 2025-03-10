@@ -447,7 +447,7 @@ public class OpcUaBinaryEncoder implements UaEncoder {
   }
 
   public void encodeExtensionObject(ExtensionObject value) throws UaSerializationException {
-    if (value == null || value.getBody() == null) {
+    if (value == null || value.isNull()) {
       encodeNodeId(NodeId.NULL_VALUE);
       buffer.writeByte(0); // No body is encoded
     } else {
