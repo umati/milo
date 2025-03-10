@@ -17,6 +17,7 @@ import java.io.StringReader;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.encoding.DefaultEncodingContext;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.junit.jupiter.api.Test;
@@ -68,6 +69,30 @@ public class OpcUaXmlDecoderTest {
 
     UUID decodedUuid = decoder.decodeGuid(fieldName);
     assertEquals(expectedUuid, decodedUuid);
+  }
+
+  @Test
+  void decodeEmptyEnumArray() throws Exception {
+    String xml = "<TestEnumArray/>";
+
+    OpcUaXmlDecoder decoder =
+        new OpcUaXmlDecoder(DefaultEncodingContext.INSTANCE).setInput(new StringReader(xml));
+
+    Integer[] values = decoder.decodeEnumArray("TestEnumArray");
+    assertNotNull(values);
+    assertEquals(0, values.length);
+  }
+
+  @Test
+  void decodeEmptyStructArray() throws Exception {
+    String xml = "<TestStructArray/>";
+
+    OpcUaXmlDecoder decoder =
+        new OpcUaXmlDecoder(DefaultEncodingContext.INSTANCE).setInput(new StringReader(xml));
+
+    Object[] values = decoder.decodeStructArray("TestStructArray", NodeIds.XVType);
+    assertNotNull(values);
+    assertEquals(0, values.length);
   }
 
   static Stream<Arguments> guidProvider() {

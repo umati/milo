@@ -1149,13 +1149,16 @@ public class OpcUaXmlDecoder implements UaDecoder {
 
       List<Integer> values = new ArrayList<>();
       Node listNode = node.getFirstChild();
-      NodeList children = listNode.getChildNodes();
 
-      for (int i = 0; i < children.getLength(); i++) {
-        currentNode = children.item(i);
+      if (listNode != null) {
+        NodeList children = listNode.getChildNodes();
 
-        if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
-          values.add(decodeEnum(currentNode.getLocalName()));
+        for (int i = 0; i < children.getLength(); i++) {
+          currentNode = children.item(i);
+
+          if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
+            values.add(decodeEnum(currentNode.getLocalName()));
+          }
         }
       }
 
@@ -1184,13 +1187,16 @@ public class OpcUaXmlDecoder implements UaDecoder {
 
       List<Object> values = new ArrayList<>();
       Node listNode = node.getFirstChild();
-      NodeList children = listNode.getChildNodes();
 
-      for (int i = 0; i < children.getLength(); i++) {
-        currentNode = children.item(i);
+      if (listNode != null) {
+        NodeList children = listNode.getChildNodes();
 
-        if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
-          values.add(decodeStruct(currentNode.getLocalName(), dataTypeId));
+        for (int i = 0; i < children.getLength(); i++) {
+          currentNode = children.item(i);
+
+          if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
+            values.add(decodeStruct(currentNode.getLocalName(), dataTypeId));
+          }
         }
       }
 
@@ -1230,22 +1236,38 @@ public class OpcUaXmlDecoder implements UaDecoder {
 
   @Override
   public Matrix decodeMatrix(String field, OpcUaDataType dataType) throws UaSerializationException {
-    return null;
+    // TODO implement decodeMatrix
+    if (currentNode(field)) {
+      currentNode = currentNode.getNextSibling();
+    }
+    return Matrix.ofNull();
   }
 
   @Override
   public Matrix decodeEnumMatrix(String field) {
-    return null;
+    // TODO implement decodeEnumMatrix
+    if (currentNode(field)) {
+      currentNode = currentNode.getNextSibling();
+    }
+    return Matrix.ofNull();
   }
 
   @Override
   public Matrix decodeStructMatrix(String field, NodeId dataTypeId) {
-    return null;
+    // TODO implement decodeStructMatrix
+    if (currentNode(field)) {
+      currentNode = currentNode.getNextSibling();
+    }
+    return Matrix.ofNull();
   }
 
   @Override
   public Matrix decodeStructMatrix(String field, ExpandedNodeId dataTypeId) {
-    return null;
+    // TODO implement decodeStructMatrix
+    if (currentNode(field)) {
+      currentNode = currentNode.getNextSibling();
+    }
+    return Matrix.ofNull();
   }
 
   /**
