@@ -30,18 +30,18 @@ public class OpcUaXmlDecoderTest {
   void readVariantValue() throws Exception {
     String xml =
         """
-            <ListOfExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd"\
-             xmlns:xsd="http://www.w3.org/2001/XMLSchema"\
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ExtensionObject><TypeId><Identifier>i=297</Identifier>
-                     \
-             </TypeId><Body><Argument><Name>BreakLockStatus</Name><DataType><Identifier>i=6</Identifier>
-                          </DataType><ValueRank>-1</ValueRank><ArrayDimensions/><Description\
-             xmlns:p5="http://www.w3.org/2001/XMLSchema-instance" p5:nil="true"/>
-                        </Argument>
-                      </Body>
-                    </ExtensionObject>
-                  </ListOfExtensionObject>
-            """;
+<ListOfExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd"\
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"\
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ExtensionObject><TypeId><Identifier>i=297</Identifier>
+         \
+ </TypeId><Body><Argument><Name>BreakLockStatus</Name><DataType><Identifier>i=6</Identifier>
+              </DataType><ValueRank>-1</ValueRank><ArrayDimensions/><Description\
+ xmlns:p5="http://www.w3.org/2001/XMLSchema-instance" p5:nil="true"/>
+            </Argument>
+          </Body>
+        </ExtensionObject>
+      </ListOfExtensionObject>
+""";
 
     OpcUaXmlDecoder decoder =
         new OpcUaXmlDecoder(DefaultEncodingContext.INSTANCE).setInput(new StringReader(xml));
