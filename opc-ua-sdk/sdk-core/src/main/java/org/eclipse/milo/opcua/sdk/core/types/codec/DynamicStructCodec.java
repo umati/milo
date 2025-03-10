@@ -78,9 +78,9 @@ public class DynamicStructCodec extends GenericDataTypeCodec<DynamicStructType> 
   private @NonNull DynamicStructType decodeStruct(UaDecoder decoder) {
     LinkedHashMap<String, Object> members = new LinkedHashMap<>();
 
-    long switchField = 0xFFFFFFFFL;
+    long encodingMask = 0xFFFFFFFFL;
     if (definition.getStructureType() == StructureType.StructureWithOptionalFields) {
-      switchField = decoder.decodeUInt32("SwitchField").longValue();
+      encodingMask = decoder.decodeUInt32("EncodingMask").longValue();
     }
 
     StructureField[] fields = requireNonNullElse(definition.getFields(), new StructureField[0]);
@@ -88,7 +88,7 @@ public class DynamicStructCodec extends GenericDataTypeCodec<DynamicStructType> 
     if (definition.getStructureType() == StructureType.StructureWithOptionalFields) {
       int optionalFieldIndex = 0;
       for (StructureField field : fields) {
-        if (!field.getIsOptional() || (switchField >>> optionalFieldIndex++ & 1L) == 1L) {
+        if (!field.getIsOptional() || (encodingMask >>> optionalFieldIndex++ & 1L) == 1L) {
           Object value = FieldUtil.decodeFieldValue(decoder, definition, field, getFieldHints());
 
           members.put(requireNonNull(field.getName()), value);
@@ -108,22 +108,22 @@ public class DynamicStructCodec extends GenericDataTypeCodec<DynamicStructType> 
   private void encodeStruct(UaEncoder encoder, DynamicStructType struct) {
     StructureField[] fields = requireNonNullElse(definition.getFields(), new StructureField[0]);
 
-    var switchField = 0L;
+    var encodingMask = 0L;
     if (definition.getStructureType() == StructureType.StructureWithOptionalFields) {
       int optionalFieldIndex = 0;
       for (StructureField field : fields) {
         if (field.getIsOptional()
             && struct.getMembers().containsKey(requireNonNull(field.getName()))) {
-          switchField = switchField | (1L << optionalFieldIndex++);
+          encodingMask = encodingMask | (1L << optionalFieldIndex++);
         }
       }
-      encoder.encodeUInt32("SwitchField", UInteger.valueOf(switchField));
+      encoder.encodeUInt32("EncodingMask", UInteger.valueOf(encodingMask));
     }
 
     if (definition.getStructureType() == StructureType.StructureWithOptionalFields) {
       int optionalFieldIndex = 0;
       for (StructureField field : fields) {
-        if (!field.getIsOptional() || ((switchField >>> optionalFieldIndex++) & 1L) == 1L) {
+        if (!field.getIsOptional() || ((encodingMask >>> optionalFieldIndex++) & 1L) == 1L) {
           Object value = struct.getMembers().get(field.getName());
           FieldUtil.encodeFieldValue(encoder, definition, field, getFieldHints(), value);
         }
