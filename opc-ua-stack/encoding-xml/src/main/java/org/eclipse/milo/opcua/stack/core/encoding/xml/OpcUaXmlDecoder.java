@@ -478,7 +478,7 @@ public class OpcUaXmlDecoder implements UaDecoder {
   public ExtensionObject decodeExtensionObject(String field) throws UaSerializationException {
     NodeId typeId = NodeId.NULL_VALUE;
 
-    ExtensionObject extensionObject = new ExtensionObject(new XmlElement(""), NodeId.NULL_VALUE);
+    ExtensionObject extensionObject = new ExtensionObject(XmlElement.NULL_VALUE, NodeId.NULL_VALUE);
 
     if (currentNode(field)) {
       Node node = currentNode;

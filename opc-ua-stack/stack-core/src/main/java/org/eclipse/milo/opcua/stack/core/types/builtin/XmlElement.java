@@ -15,6 +15,8 @@ import java.util.Objects;
 
 public final class XmlElement {
 
+  public static XmlElement NULL_VALUE = XmlElement.of(null);
+
   private final String fragment;
 
   public XmlElement(String fragment) {

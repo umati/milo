@@ -77,16 +77,11 @@ public final class ExtensionObject {
   }
 
   public boolean isNull() {
-    switch (bodyType) {
-      case ByteString:
-        return body == null || ((ByteString) body).isNull();
-      case XmlElement:
-        return body == null || ((XmlElement) body).isNull();
-      case JsonString:
-        return body == null;
-      default:
-        throw new IllegalStateException("BodyType: " + bodyType);
-    }
+    return switch (bodyType) {
+      case ByteString -> body == null || ((ByteString) body).isNull();
+      case XmlElement -> body == null || ((XmlElement) body).isNull();
+      case JsonString -> body == null;
+    };
   }
 
   public Object decode(EncodingContext context) throws UaSerializationException {
