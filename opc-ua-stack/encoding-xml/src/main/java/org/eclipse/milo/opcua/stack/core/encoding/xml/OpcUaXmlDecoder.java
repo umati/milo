@@ -39,7 +39,6 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.eclipse.milo.opcua.stack.core.util.ArrayUtil;
 import org.eclipse.milo.opcua.stack.core.util.Namespaces;
 import org.eclipse.milo.opcua.stack.core.util.SecureXmlUtil;
 import org.w3c.dom.Document;
@@ -662,7 +661,7 @@ public class OpcUaXmlDecoder implements UaDecoder {
           dims[i] = dimensions.get(i);
         }
 
-        return ArrayUtil.unflatten(array, dims);
+        return new Matrix(array, dims);
       } else {
         return readBuiltinType(nodeName, nodeName);
       }
@@ -1245,11 +1244,12 @@ public class OpcUaXmlDecoder implements UaDecoder {
 
   @Override
   public Matrix decodeEnumMatrix(String field) {
-    // TODO implement decodeEnumMatrix
     if (currentNode(field)) {
-      currentNode = currentNode.getNextSibling();
+      // TODO implement decodeEnumMatrix
+      return Matrix.ofNull();
+    } else {
+      return Matrix.ofNull();
     }
-    return Matrix.ofNull();
   }
 
   @Override
