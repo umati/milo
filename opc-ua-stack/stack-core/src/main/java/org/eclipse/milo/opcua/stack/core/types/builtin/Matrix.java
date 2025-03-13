@@ -44,7 +44,7 @@ public class Matrix {
   private final Object flatArray;
   private final int[] dimensions;
   private final OpcUaDataType dataType;
-  private final ExpandedNodeId dataTypeId;
+  private final @Nullable ExpandedNodeId dataTypeId;
 
   public Matrix(@Nullable Object nestedArray) {
     if (nestedArray == null) {
@@ -230,8 +230,8 @@ public class Matrix {
   public String toString() {
     StringJoiner joiner =
         new StringJoiner(", ", Matrix.class.getSimpleName() + "{", "}")
-            .add("builtinDataType=" + dataType)
-            .add("dataType=" + dataTypeId.toParseableString())
+            .add("dataType=" + dataType)
+            .add("dataTypeId=" + (dataTypeId != null ? dataTypeId.toParseableString() : null))
             .add("dimensions=" + Arrays.toString(dimensions));
 
     Class<?> clazz = ArrayUtil.getType(flatArray);
