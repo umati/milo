@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -55,7 +55,6 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
-import org.eclipse.milo.opcua.stack.core.util.TypeUtil;
 
 public class OpcUaJsonDecoder implements UaDecoder {
 
@@ -883,17 +882,13 @@ public class OpcUaJsonDecoder implements UaDecoder {
             encoding = jsonReader.nextInt();
             break;
           case "Body":
-            switch (encoding) {
-              case 0:
-                body = JsonParser.parseReader(jsonReader);
-                break;
-              case 1:
-                body = decodeByteString(null);
-                break;
-              case 2:
-                body = decodeXmlElement(null);
-                break;
-            }
+            body =
+                switch (encoding) {
+                  case 0 -> JsonParser.parseReader(jsonReader);
+                  case 1 -> decodeByteString(null);
+                  case 2 -> decodeXmlElement(null);
+                  default -> body;
+                };
             break;
           default:
             throw new UaSerializationException(
@@ -908,21 +903,24 @@ public class OpcUaJsonDecoder implements UaDecoder {
         throw new UaSerializationException(
             StatusCodes.Bad_DecodingError, "readExtensionObject: encodingId == null");
       } else {
-        switch (encoding) {
-          case 0:
+        return switch (encoding) {
+          case 0 -> {
             assert body instanceof JsonElement;
-            return new ExtensionObject(body.toString(), encodingId);
-          case 1:
+            yield ExtensionObject.of(body.toString(), encodingId);
+          }
+          case 1 -> {
             assert body instanceof ByteString;
-            return new ExtensionObject((ByteString) body, encodingId);
-          case 2:
+            yield ExtensionObject.of((ByteString) body, encodingId);
+          }
+          case 2 -> {
             assert body instanceof XmlElement;
-            return new ExtensionObject((XmlElement) body, encodingId);
-          default:
-            throw new UaSerializationException(
-                StatusCodes.Bad_DecodingError,
-                "readExtensionObject: unexpected encoding: " + encoding);
-        }
+            yield ExtensionObject.of((XmlElement) body, encodingId);
+          }
+          default ->
+              throw new UaSerializationException(
+                  StatusCodes.Bad_DecodingError,
+                  "readExtensionObject: unexpected encoding: " + encoding);
+        };
       }
     } catch (IOException e) {
       throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
@@ -1045,7 +1043,7 @@ public class OpcUaJsonDecoder implements UaDecoder {
             }
             jsonReader.endArray();
             Object value =
-                Array.newInstance(TypeUtil.getPrimitiveBackingClass(typeId), elements.size());
+                Array.newInstance(OpcUaDataType.getPrimitiveBackingClass(typeId), elements.size());
             for (int i = 0; i < elements.size(); i++) {
               Array.set(value, i, elements.get(i));
             }
@@ -1071,7 +1069,7 @@ public class OpcUaJsonDecoder implements UaDecoder {
           jsonReader.endArray();
 
           Object flatArray =
-              Array.newInstance(TypeUtil.getPrimitiveBackingClass(typeId), elements.size());
+              Array.newInstance(OpcUaDataType.getPrimitiveBackingClass(typeId), elements.size());
           for (int i = 0; i < elements.size(); i++) {
             Array.set(flatArray, i, elements.get(i));
           }
@@ -1104,7 +1102,8 @@ public class OpcUaJsonDecoder implements UaDecoder {
 
     if (dimensionIndex == dimensions.length - 1) {
       value =
-          Array.newInstance(TypeUtil.getPrimitiveBackingClass(typeId), dimensions[dimensionIndex]);
+          Array.newInstance(
+              OpcUaDataType.getPrimitiveBackingClass(typeId), dimensions[dimensionIndex]);
       for (int i = 0; i < dimensions[dimensionIndex]; i++) {
         Object e = readBuiltinTypeValue(null, typeId);
         Array.set(value, i, e);
@@ -1112,7 +1111,7 @@ public class OpcUaJsonDecoder implements UaDecoder {
     } else {
       value =
           Array.newInstance(
-              TypeUtil.getPrimitiveBackingClass(typeId),
+              OpcUaDataType.getPrimitiveBackingClass(typeId),
               Arrays.copyOfRange(dimensions, dimensionIndex, dimensions.length));
       for (int i = 0; i < dimensions[dimensionIndex]; i++) {
         Object e =

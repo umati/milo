@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -48,7 +48,6 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.eclipse.milo.opcua.stack.core.util.TypeUtil;
 import org.jspecify.annotations.Nullable;
 
 public class OpcUaBinaryDecoder implements UaDecoder {
@@ -295,15 +294,15 @@ public class OpcUaBinaryDecoder implements UaDecoder {
     int encoding = buffer.readByte();
 
     if (encoding == 0) {
-      return new ExtensionObject(ByteString.NULL_VALUE, encodingTypeId);
+      return ExtensionObject.of(ByteString.NULL_VALUE, encodingTypeId);
     } else if (encoding == 1) {
       ByteString byteString = decodeByteString();
 
-      return new ExtensionObject(byteString, encodingTypeId);
+      return ExtensionObject.of(byteString, encodingTypeId);
     } else if (encoding == 2) {
       XmlElement xmlElement = decodeXmlElement();
 
-      return new ExtensionObject(xmlElement, encodingTypeId);
+      return ExtensionObject.of(xmlElement, encodingTypeId);
     } else {
       throw new UaSerializationException(
           StatusCodes.Bad_DecodingError, "unknown ExtensionObject encoding: " + encoding);
@@ -393,7 +392,7 @@ public class OpcUaBinaryDecoder implements UaDecoder {
         boolean arrayEncoded = (encodingMask & 0x80) == 0x80;
 
         if (arrayEncoded) {
-          Class<?> backingClass = TypeUtil.getBackingClass(typeId);
+          Class<?> backingClass = OpcUaDataType.getBackingClass(typeId);
           int length = decodeInt32();
 
           if (length == -1) {

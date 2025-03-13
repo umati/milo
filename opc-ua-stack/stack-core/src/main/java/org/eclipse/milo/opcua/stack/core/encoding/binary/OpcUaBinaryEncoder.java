@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import org.eclipse.milo.opcua.stack.core.OpcUaDataType;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaSerializationException;
 import org.eclipse.milo.opcua.stack.core.encoding.DataTypeCodec;
@@ -46,7 +47,6 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
 import org.eclipse.milo.opcua.stack.core.util.ArrayUtil;
-import org.eclipse.milo.opcua.stack.core.util.TypeUtil;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.LoggerFactory;
 
@@ -451,42 +451,21 @@ public class OpcUaBinaryEncoder implements UaEncoder {
       encodeNodeId(NodeId.NULL_VALUE);
       buffer.writeByte(0); // No body is encoded
     } else {
-      Object body = value.getBody();
-
-      switch (value.getBodyType()) {
-        case ByteString:
-          {
-            ByteString byteString = (ByteString) body;
-
-            encodeNodeId(value.getEncodingId());
-            buffer.writeByte(1); // Body is binary encoded
-            encodeByteString(byteString);
-
-            break;
-          }
-        case XmlElement:
-          {
-            XmlElement xmlElement = (XmlElement) body;
-
-            encodeNodeId(value.getEncodingId());
-            buffer.writeByte(2);
-            encodeXmlElement(xmlElement);
-
-            break;
-          }
-        case JsonString:
-          {
-            String jsonString = (String) body;
-
-            encodeNodeId(value.getEncodingId());
-            buffer.writeByte(1);
-            encodeByteString(ByteString.of(jsonString.getBytes(StandardCharsets.UTF_8)));
-
-            break;
-          }
-
-        default:
-          throw new IllegalStateException("unknown body type: " + value.getBodyType());
+      if (value instanceof ExtensionObject.Binary xo) {
+        encodeNodeId(xo.getEncodingOrTypeId());
+        buffer.writeByte(1); // Body is binary encoded
+        encodeByteString(xo.getBody());
+      } else if (value instanceof ExtensionObject.Xml xo) {
+        encodeNodeId(xo.getEncodingOrTypeId());
+        buffer.writeByte(2);
+        encodeXmlElement(xo.getBody());
+      } else if (value instanceof ExtensionObject.Json xo) {
+        encodeNodeId(xo.getEncodingOrTypeId());
+        buffer.writeByte(1);
+        encodeByteString(ByteString.of(xo.getBody().getBytes(StandardCharsets.UTF_8)));
+      } else {
+        throw new UaSerializationException(
+            StatusCodes.Bad_EncodingError, "unknown ExtensionObject type: " + value.getClass());
       }
     }
   }
@@ -620,7 +599,7 @@ public class OpcUaBinaryEncoder implements UaEncoder {
         optionSet = true;
       }
 
-      int typeId = TypeUtil.getBuiltinTypeId(valueClass);
+      int typeId = OpcUaDataType.getBuiltinTypeId(valueClass);
 
       if (typeId == -1) {
         LoggerFactory.getLogger(getClass())
