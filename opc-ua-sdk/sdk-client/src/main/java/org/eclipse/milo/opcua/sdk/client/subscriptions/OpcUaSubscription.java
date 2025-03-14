@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
@@ -414,22 +415,52 @@ public class OpcUaSubscription {
             .filter(item -> item.getSyncState() == OpcUaMonitoredItem.SyncState.INITIAL)
             .collect(Collectors.toList());
 
-    if (!itemsToCreate.isEmpty()) {
-      return createMonitoredItems(itemsToCreate);
-    } else {
-      return Collections.emptyList();
-    }
+    return createMonitoredItems(itemsToCreate);
+  }
+
+  /**
+   * Create any MonitoredItems that have been added to the Subscription but not yet created on the
+   * Server, filtered by the given predicate.
+   *
+   * <p>This could be used to e.g. further restrict the MonitoredItems to be created to only those
+   * that have not had a previous creation attempt:
+   *
+   * <pre>
+   *   List<MonitoredItemServiceOperationResult> results = subscription.createMonitoredItems(
+   *      item -> item.getCreateResult().isEmpty()
+   *   );
+   * </pre>
+   *
+   * @param filter a predicate that allows further restriction of the MonitoredItems to be created.
+   * @return a List of {@link MonitoredItemServiceOperationResult}s that contain the MonitoredItem
+   *     and the service- and operation-level results associated with the attempt to create it.
+   */
+  public List<MonitoredItemServiceOperationResult> createMonitoredItems(
+      Predicate<OpcUaMonitoredItem> filter) {
+
+    List<OpcUaMonitoredItem> itemsToCreate =
+        monitoredItems.values().stream()
+            .filter(item -> item.getSyncState() == OpcUaMonitoredItem.SyncState.INITIAL)
+            .filter(filter)
+            .collect(Collectors.toList());
+
+    return createMonitoredItems(itemsToCreate);
   }
 
   private List<MonitoredItemServiceOperationResult> createMonitoredItems(
       List<OpcUaMonitoredItem> itemsToCreate) {
+
+    if (itemsToCreate.isEmpty()) {
+      return Collections.emptyList();
+    }
+
     var serviceOperationsResults =
         new ArrayList<MonitoredItemServiceOperationResult>(itemsToCreate.size());
 
     UInteger partitionSize = getMonitoredItemPartitionSize();
 
     List<List<OpcUaMonitoredItem>> partitions =
-        Lists.partition(itemsToCreate, partitionSize.intValue()).collect(Collectors.toList());
+        Lists.partition(itemsToCreate, partitionSize.intValue()).toList();
 
     for (List<OpcUaMonitoredItem> partition : partitions) {
       try {
@@ -495,7 +526,7 @@ public class OpcUaSubscription {
     UInteger partitionSize = getMonitoredItemPartitionSize();
 
     List<List<OpcUaMonitoredItem>> partitions =
-        Lists.partition(itemsToModify, partitionSize.intValue()).collect(Collectors.toList());
+        Lists.partition(itemsToModify, partitionSize.intValue()).toList();
 
     for (List<OpcUaMonitoredItem> partition : partitions) {
       try {
@@ -563,7 +594,7 @@ public class OpcUaSubscription {
     UInteger partitionSize = getMonitoredItemPartitionSize();
 
     List<List<OpcUaMonitoredItem>> partitions =
-        Lists.partition(itemsToDelete, partitionSize.intValue()).collect(Collectors.toList());
+        Lists.partition(itemsToDelete, partitionSize.intValue()).toList();
 
     for (List<OpcUaMonitoredItem> partition : partitions) {
       try {
@@ -656,7 +687,7 @@ public class OpcUaSubscription {
     UInteger partitionSize = getMonitoredItemPartitionSize();
 
     List<List<OpcUaMonitoredItem>> partitions =
-        Lists.partition(monitoredItems, partitionSize.intValue()).collect(Collectors.toList());
+        Lists.partition(monitoredItems, partitionSize.intValue()).toList();
 
     for (List<OpcUaMonitoredItem> partition : partitions) {
       try {

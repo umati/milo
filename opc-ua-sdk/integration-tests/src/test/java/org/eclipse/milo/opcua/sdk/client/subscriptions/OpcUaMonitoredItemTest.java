@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -20,6 +20,7 @@ import java.util.List;
 import org.eclipse.milo.opcua.sdk.test.AbstractClientServerTest;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.UaException;
+import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,20 @@ public class OpcUaMonitoredItemTest extends AbstractClientServerTest {
     assertTrue(created.get(0).serviceResult().isGood());
     assertTrue(created.get(0).operationResult().orElseThrow().isGood());
     assertEquals(OpcUaMonitoredItem.SyncState.SYNCHRONIZED, monitoredItem.getSyncState());
+  }
+
+  @Test
+  void createMonitoredItemFiltered() {
+    var monitoredItem = OpcUaMonitoredItem.newDataItem(NodeId.parse("ns=9999;s=DoesNotExist"));
+
+    subscription.addMonitoredItem(monitoredItem);
+    List<MonitoredItemServiceOperationResult> results = subscription.createMonitoredItems();
+    assertTrue(results.get(0).operationResult().orElseThrow().isBad());
+
+    List<MonitoredItemServiceOperationResult> results2 =
+        subscription.createMonitoredItems(item -> item.getCreateResult().isEmpty());
+
+    assertTrue(results2.isEmpty());
   }
 
   @Test
