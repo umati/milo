@@ -77,12 +77,12 @@ class MatrixTest {
   @Test
   void matrixToString() {
     assertEquals(
-        "Matrix{builtinDataType=Int32, "
-            + "dataType=ns=0;i=6, dimensions=[2, 2], flatArray=[1, 2, 3, 4]}",
+        "Matrix{dataType=Int32, "
+            + "dataTypeId=ns=0;i=6, dimensions=[2, 2], flatArray=[1, 2, 3, 4]}",
         primitiveMatrix2d.toString());
     assertEquals(
-        "Matrix{builtinDataType=Int32, "
-            + "dataType=ns=0;i=6, dimensions=[2, 2], flatArray=[1, 2, 3, 4]}",
+        "Matrix{dataType=Int32, "
+            + "dataTypeId=ns=0;i=6, dimensions=[2, 2], flatArray=[1, 2, 3, 4]}",
         boxedMatrix2d.toString());
   }
 
