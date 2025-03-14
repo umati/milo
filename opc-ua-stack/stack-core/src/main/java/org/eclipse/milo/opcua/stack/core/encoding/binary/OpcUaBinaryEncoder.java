@@ -1183,7 +1183,12 @@ public class OpcUaBinaryEncoder implements UaEncoder {
       for (int i = 0; i < length; i++) {
         Object o = Array.get(elements, i);
 
-        encodeValue(o, typeId, false, false, o instanceof OptionSetUInteger);
+        encodeValue(
+            o,
+            typeId,
+            o instanceof UaStructuredType,
+            o instanceof UaEnumeratedType,
+            o instanceof OptionSetUInteger);
       }
     }
   }

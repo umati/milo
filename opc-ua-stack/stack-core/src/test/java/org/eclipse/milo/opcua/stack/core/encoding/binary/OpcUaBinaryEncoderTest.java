@@ -15,10 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.eclipse.milo.opcua.stack.core.OpcUaDataType;
 import org.eclipse.milo.opcua.stack.core.encoding.DefaultEncodingContext;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Matrix;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
+import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.ApplicationType;
 import org.eclipse.milo.opcua.stack.core.types.structured.AccessLevelType;
 import org.eclipse.milo.opcua.stack.core.types.structured.XVType;
@@ -92,6 +94,75 @@ public class OpcUaBinaryEncoderTest {
     encoder.encodeVariant(new Variant(accessLevelType));
 
     assertEquals(accessLevelType.getValue(), ubyte(buffer.readUnsignedByte()));
+  }
+
+  @Test
+  void encodeMatrix() {
+    Matrix matrix = Matrix.ofInt32(new Integer[][] {{1, 2}, {3, 4}});
+
+    encoder.encodeMatrix(null, matrix);
+
+    var decoder = new OpcUaBinaryDecoder(DefaultEncodingContext.INSTANCE).setBuffer(buffer);
+    Matrix decodedMatrix = decoder.decodeMatrix(null, OpcUaDataType.Int32);
+
+    assertEquals(matrix, decodedMatrix);
+  }
+
+  @Test
+  void encodeMatrixOfUaStructuredType() {
+    XVType[][] xvTypes = {
+      {new XVType(1.0, 2.0f), new XVType(3.0, 4.0f)},
+      {new XVType(5.0, 6.0f), new XVType(7.0, 8.0f)}
+    };
+
+    Matrix matrix = Matrix.ofStruct(xvTypes);
+    encoder.encodeMatrix(null, matrix);
+
+    var decoder = new OpcUaBinaryDecoder(DefaultEncodingContext.INSTANCE).setBuffer(buffer);
+    Matrix decodedMatrix = decoder.decodeMatrix(null, OpcUaDataType.ExtensionObject);
+
+    assertEquals(
+        matrix,
+        decodedMatrix.transform(
+            v -> ((ExtensionObject) v).decode(DefaultEncodingContext.INSTANCE)));
+  }
+
+  @Test
+  void encodeMatrixOfUaEnumeratedType() {
+    ApplicationType[][] applicationTypes = {
+      {ApplicationType.Server, ApplicationType.Client},
+      {ApplicationType.ClientAndServer, ApplicationType.DiscoveryServer}
+    };
+
+    Matrix matrix = Matrix.ofEnum(applicationTypes);
+    encoder.encodeMatrix(null, matrix);
+
+    var decoder = new OpcUaBinaryDecoder(DefaultEncodingContext.INSTANCE).setBuffer(buffer);
+    Matrix decodedMatrix = decoder.decodeMatrix(null, OpcUaDataType.Int32);
+
+    assertEquals(matrix, decodedMatrix.transform(v -> ApplicationType.from((Integer) v)));
+  }
+
+  @Test
+  void encodeMatrixOfOptionSetUInteger() {
+    AccessLevelType[][] accessLevelTypes = {
+      {
+        AccessLevelType.of(AccessLevelType.Field.CurrentRead),
+        AccessLevelType.of(AccessLevelType.Field.CurrentWrite)
+      },
+      {
+        AccessLevelType.of(AccessLevelType.Field.HistoryRead),
+        AccessLevelType.of(AccessLevelType.Field.HistoryWrite)
+      },
+    };
+
+    Matrix matrix = Matrix.ofOptionSetUI(accessLevelTypes);
+    encoder.encodeMatrix(null, matrix);
+
+    var decoder = new OpcUaBinaryDecoder(DefaultEncodingContext.INSTANCE).setBuffer(buffer);
+    Matrix decodedMatrix = decoder.decodeMatrix(null, OpcUaDataType.Byte);
+
+    assertEquals(matrix, decodedMatrix.transform(v -> new AccessLevelType((UByte) v)));
   }
 
   @Test
