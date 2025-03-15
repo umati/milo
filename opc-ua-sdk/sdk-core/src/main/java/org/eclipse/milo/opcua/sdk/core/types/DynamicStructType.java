@@ -94,9 +94,20 @@ public final class DynamicStructType extends DynamicType implements UaStructured
   @Override
   public String toString() {
     var joiner = new StringJoiner(", ", DynamicStructType.class.getSimpleName() + "[", "]");
-    joiner.add("dataType=" + dataType.getNodeId().toParseableString());
+    joiner.add("browseName=" + dataType.getBrowseName().toParseableString());
+    joiner.add("dataTypeId=" + dataType.getNodeId().toParseableString());
     joiner.add("members=" + joinMembers(members));
     return joiner.toString();
+  }
+
+  /**
+   * Returns a pretty-printed string representation of this struct. Nested structures are indented
+   * for better readability.
+   *
+   * @return a pretty-printed string representation of this struct.
+   */
+  public String toStringPretty() {
+    return PrettyToString.toStringPretty(this);
   }
 
   private static String joinMembers(LinkedHashMap<String, Object> members) {

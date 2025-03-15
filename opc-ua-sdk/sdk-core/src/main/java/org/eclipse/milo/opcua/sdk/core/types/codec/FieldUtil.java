@@ -12,6 +12,7 @@ package org.eclipse.milo.opcua.sdk.core.types.codec;
 
 import static java.util.Objects.requireNonNull;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.eclipse.milo.opcua.stack.core.UaSerializationException;
 import org.eclipse.milo.opcua.stack.core.encoding.UaDecoder;
 import org.eclipse.milo.opcua.stack.core.encoding.UaEncoder;
 import org.eclipse.milo.opcua.stack.core.types.UaEnumeratedType;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
@@ -48,6 +50,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.StructureType;
 import org.eclipse.milo.opcua.stack.core.types.structured.StructureDefinition;
 import org.eclipse.milo.opcua.stack.core.types.structured.StructureField;
+import org.slf4j.LoggerFactory;
 
 /** Field serialization logic shared by {@link DynamicStructCodec} and {@link DynamicUnionCodec}. */
 class FieldUtil {
@@ -55,6 +58,71 @@ class FieldUtil {
   private FieldUtil() {}
 
   static Object decodeFieldValue(
+      UaDecoder decoder,
+      StructureDefinition definition,
+      StructureField field,
+      Map<StructureField, FieldHint> fieldHints) {
+
+    Object value = _decodeFieldValue(decoder, definition, field, fieldHints);
+
+    if (value instanceof Variant v && v.getValue() != null) {
+      value = Variant.of(maybeEagerlyDecodeValue(decoder, field, v.getValue()));
+    } else {
+      value = maybeEagerlyDecodeValue(decoder, field, value);
+    }
+
+    return value;
+  }
+
+  /**
+   * Eagerly decode a value if it is an ExtensionObject, array of ExtensionObject, or Matrix of
+   * ExtensionObject.
+   *
+   * @param decoder the {@link UaDecoder} to use for decoding.
+   * @param field the {@link StructureField} to decode.
+   * @param value the value to decode.
+   * @return the decoded value, or the original value if it cannot be decoded or is not an
+   *     ExtensionObject.
+   */
+  private static Object maybeEagerlyDecodeValue(
+      UaDecoder decoder, StructureField field, Object value) {
+
+    try {
+      if (value instanceof ExtensionObject xo) {
+        return xo.decode(decoder.getEncodingContext());
+      } else if (value instanceof ExtensionObject[] xos) {
+        Object decodedArray = null;
+        for (int i = 0; i < xos.length; i++) {
+          Object decoded = xos[i].decode(decoder.getEncodingContext());
+          if (decodedArray == null) {
+            decodedArray = Array.newInstance(decoded.getClass(), xos.length);
+          }
+          Array.set(decodedArray, i, decoded);
+        }
+        if (decodedArray != null) {
+          return decodedArray;
+        }
+      } else if (value instanceof Matrix matrix) {
+        Class<?> elementType = matrix.getElementType().orElse(Object.class);
+
+        if (elementType == ExtensionObject.class) {
+          return matrix.transform(o -> ((ExtensionObject) o).decode(decoder.getEncodingContext()));
+        }
+      }
+    } catch (Exception e) {
+      // This is okay - ExtensionObjects can be opaque and contain an encoded type we
+      // don't know about for some reason.
+      LoggerFactory.getLogger(FieldUtil.class)
+          .debug(
+              "Failed to decode ExtensionObject for field {} of type {}",
+              field.getName(),
+              field.getDataType());
+    }
+
+    return value;
+  }
+
+  private static Object _decodeFieldValue(
       UaDecoder decoder,
       StructureDefinition definition,
       StructureField field,
@@ -153,7 +221,15 @@ class FieldUtil {
 
     if (valueRank == -1) {
       if (fieldHint instanceof FieldHint.Builtin hint) {
-        encodeBuiltinDataType(encoder, fieldName, hint.dataType, value);
+        if (hint.dataType == OpcUaDataType.ExtensionObject
+            && value instanceof UaStructuredType structuredType) {
+
+          ExtensionObject xo = ExtensionObject.encode(encoder.getEncodingContext(), structuredType);
+
+          encodeBuiltinDataType(encoder, fieldName, hint.dataType, xo);
+        } else {
+          encodeBuiltinDataType(encoder, fieldName, hint.dataType, value);
+        }
       } else if (fieldHint instanceof FieldHint.Enum) {
         encoder.encodeEnum(fieldName, (UaEnumeratedType) value);
       } else if (fieldHint instanceof FieldHint.Struct) {
@@ -169,7 +245,18 @@ class FieldUtil {
       }
     } else if (valueRank == 1) {
       if (fieldHint instanceof FieldHint.Builtin hint) {
-        encodeBuiltinDataTypeArray(encoder, fieldName, hint.dataType, value);
+        if (hint.dataType == OpcUaDataType.ExtensionObject
+            && value instanceof UaStructuredType[] structuredTypes) {
+
+          ExtensionObject[] xos =
+              Arrays.stream(structuredTypes)
+                  .map(s -> ExtensionObject.encode(encoder.getEncodingContext(), s))
+                  .toArray(ExtensionObject[]::new);
+
+          encodeBuiltinDataTypeArray(encoder, fieldName, hint.dataType, xos);
+        } else {
+          encodeBuiltinDataTypeArray(encoder, fieldName, hint.dataType, value);
+        }
       } else if (fieldHint instanceof FieldHint.Enum) {
         encoder.encodeEnumArray(fieldName, (UaEnumeratedType[]) value);
       } else if (fieldHint instanceof FieldHint.Struct) {
@@ -189,13 +276,25 @@ class FieldUtil {
         throw new IllegalArgumentException("hint: " + fieldHint);
       }
     } else if (valueRank > 1) {
-      if (fieldHint instanceof FieldHint.Builtin) {
-        encoder.encodeMatrix(fieldName, (Matrix) value);
+      Matrix matrix = (Matrix) value;
+
+      if (fieldHint instanceof FieldHint.Builtin hint) {
+        if (hint.dataType == OpcUaDataType.ExtensionObject
+            && UaStructuredType.class.isAssignableFrom(
+                matrix.getElementType().orElse(Object.class))) {
+
+          Matrix xoMatrix =
+              matrix.transform(
+                  o -> ExtensionObject.encode(encoder.getEncodingContext(), (UaStructuredType) o));
+
+          encoder.encodeMatrix(fieldName, xoMatrix);
+        } else {
+          encoder.encodeMatrix(fieldName, matrix);
+        }
       } else if (fieldHint instanceof FieldHint.Enum) {
-        encoder.encodeEnumMatrix(fieldName, (Matrix) value);
+        encoder.encodeEnumMatrix(fieldName, matrix);
       } else if (fieldHint instanceof FieldHint.Struct) {
         if (dataTypeId.equals(NodeIds.Structure) || fieldAllowsSubtyping(definition, field)) {
-          Matrix matrix = (Matrix) value;
           Matrix xoMatrix =
               matrix.transform(
                   o -> {
@@ -205,7 +304,7 @@ class FieldUtil {
 
           encoder.encodeMatrix(fieldName, xoMatrix);
         } else {
-          encoder.encodeStructMatrix(fieldName, (Matrix) value, dataTypeId);
+          encoder.encodeStructMatrix(fieldName, matrix, dataTypeId);
         }
       } else {
         throw new IllegalArgumentException("hint: " + fieldHint);
