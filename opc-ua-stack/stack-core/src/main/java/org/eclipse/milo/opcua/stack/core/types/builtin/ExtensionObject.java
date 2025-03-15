@@ -155,33 +155,33 @@ public abstract sealed class ExtensionObject
   }
 
   /**
-   * Create a new ExtensionObject2 with the specified ByteString body and encoding id.
+   * Create a new ExtensionObject with the specified ByteString body and encoding id.
    *
-   * @param body the ByteString body of the ExtensionObject2
+   * @param body the ByteString body of the ExtensionObject
    * @param encodingId the NodeId of the datatype encoding.
-   * @return a new ExtensionObject2 with the specified body and encoding id.
+   * @return a new ExtensionObject with the specified body and encoding id.
    */
   public static ExtensionObject of(ByteString body, NodeId encodingId) {
     return new ExtensionObject.Binary(body, encodingId);
   }
 
   /**
-   * Create a new ExtensionObject2 with the specified XmlElement body and encoding id.
+   * Create a new ExtensionObject with the specified XmlElement body and encoding id.
    *
-   * @param body the XmlElement body of the ExtensionObject2
+   * @param body the XmlElement body of the ExtensionObject
    * @param encodingId the NodeId of the datatype encoding.
-   * @return a new ExtensionObject2 with the specified body and encoding id.
+   * @return a new ExtensionObject with the specified body and encoding id.
    */
   public static ExtensionObject of(XmlElement body, NodeId encodingId) {
     return new ExtensionObject.Xml(body, encodingId);
   }
 
   /**
-   * Create a new ExtensionObject2 with the specified String body and type id.
+   * Create a new ExtensionObject with the specified String body and type id.
    *
-   * @param body the String body of the ExtensionObject2
+   * @param body the String body of the ExtensionObject
    * @param typeId the NodeId of the datatype.
-   * @return a new ExtensionObject2 with the specified body and type id.
+   * @return a new ExtensionObject with the specified body and type id.
    */
   public static ExtensionObject of(String body, NodeId typeId) {
     return new ExtensionObject.Json(body, typeId);
