@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -32,6 +32,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
+import org.jspecify.annotations.Nullable;
 
 public interface UaDecoder {
 
@@ -97,64 +98,68 @@ public interface UaDecoder {
 
   Object decodeStruct(String field, DataTypeCodec codec) throws UaSerializationException;
 
-  Boolean[] decodeBooleanArray(String field) throws UaSerializationException;
+  Boolean @Nullable [] decodeBooleanArray(String field) throws UaSerializationException;
 
-  Byte[] decodeSByteArray(String field) throws UaSerializationException;
+  Byte @Nullable [] decodeSByteArray(String field) throws UaSerializationException;
 
-  Short[] decodeInt16Array(String field) throws UaSerializationException;
+  Short @Nullable [] decodeInt16Array(String field) throws UaSerializationException;
 
-  Integer[] decodeInt32Array(String field) throws UaSerializationException;
+  Integer @Nullable [] decodeInt32Array(String field) throws UaSerializationException;
 
-  Long[] decodeInt64Array(String field) throws UaSerializationException;
+  Long @Nullable [] decodeInt64Array(String field) throws UaSerializationException;
 
-  UByte[] decodeByteArray(String field) throws UaSerializationException;
+  UByte @Nullable [] decodeByteArray(String field) throws UaSerializationException;
 
-  UShort[] decodeUInt16Array(String field) throws UaSerializationException;
+  UShort @Nullable [] decodeUInt16Array(String field) throws UaSerializationException;
 
-  UInteger[] decodeUInt32Array(String field) throws UaSerializationException;
+  UInteger @Nullable [] decodeUInt32Array(String field) throws UaSerializationException;
 
-  ULong[] decodeUInt64Array(String field) throws UaSerializationException;
+  ULong @Nullable [] decodeUInt64Array(String field) throws UaSerializationException;
 
-  Float[] decodeFloatArray(String field) throws UaSerializationException;
+  Float @Nullable [] decodeFloatArray(String field) throws UaSerializationException;
 
-  Double[] decodeDoubleArray(String field) throws UaSerializationException;
+  Double @Nullable [] decodeDoubleArray(String field) throws UaSerializationException;
 
-  String[] decodeStringArray(String field) throws UaSerializationException;
+  String @Nullable [] decodeStringArray(String field) throws UaSerializationException;
 
-  DateTime[] decodeDateTimeArray(String field) throws UaSerializationException;
+  DateTime @Nullable [] decodeDateTimeArray(String field) throws UaSerializationException;
 
-  UUID[] decodeGuidArray(String field) throws UaSerializationException;
+  UUID @Nullable [] decodeGuidArray(String field) throws UaSerializationException;
 
-  ByteString[] decodeByteStringArray(String field) throws UaSerializationException;
+  ByteString @Nullable [] decodeByteStringArray(String field) throws UaSerializationException;
 
-  XmlElement[] decodeXmlElementArray(String field) throws UaSerializationException;
+  XmlElement @Nullable [] decodeXmlElementArray(String field) throws UaSerializationException;
 
-  NodeId[] decodeNodeIdArray(String field) throws UaSerializationException;
+  NodeId @Nullable [] decodeNodeIdArray(String field) throws UaSerializationException;
 
-  ExpandedNodeId[] decodeExpandedNodeIdArray(String field) throws UaSerializationException;
-
-  StatusCode[] decodeStatusCodeArray(String field) throws UaSerializationException;
-
-  QualifiedName[] decodeQualifiedNameArray(String field) throws UaSerializationException;
-
-  LocalizedText[] decodeLocalizedTextArray(String field) throws UaSerializationException;
-
-  ExtensionObject[] decodeExtensionObjectArray(String field) throws UaSerializationException;
-
-  DataValue[] decodeDataValueArray(String field) throws UaSerializationException;
-
-  Variant[] decodeVariantArray(String field) throws UaSerializationException;
-
-  DiagnosticInfo[] decodeDiagnosticInfoArray(String field) throws UaSerializationException;
-
-  Integer[] decodeEnumArray(String field) throws UaSerializationException;
-
-  Object[] decodeStructArray(String field, NodeId dataTypeId) throws UaSerializationException;
-
-  Object[] decodeStructArray(String field, ExpandedNodeId dataTypeId)
+  ExpandedNodeId @Nullable [] decodeExpandedNodeIdArray(String field)
       throws UaSerializationException;
 
-  <T> T[] decodeArray(String field, Function<String, T> decoder, Class<T> clazz)
+  StatusCode @Nullable [] decodeStatusCodeArray(String field) throws UaSerializationException;
+
+  QualifiedName @Nullable [] decodeQualifiedNameArray(String field) throws UaSerializationException;
+
+  LocalizedText @Nullable [] decodeLocalizedTextArray(String field) throws UaSerializationException;
+
+  ExtensionObject @Nullable [] decodeExtensionObjectArray(String field)
+      throws UaSerializationException;
+
+  DataValue @Nullable [] decodeDataValueArray(String field) throws UaSerializationException;
+
+  Variant @Nullable [] decodeVariantArray(String field) throws UaSerializationException;
+
+  DiagnosticInfo @Nullable [] decodeDiagnosticInfoArray(String field)
+      throws UaSerializationException;
+
+  Integer @Nullable [] decodeEnumArray(String field) throws UaSerializationException;
+
+  Object @Nullable [] decodeStructArray(String field, NodeId dataTypeId)
+      throws UaSerializationException;
+
+  Object @Nullable [] decodeStructArray(String field, ExpandedNodeId dataTypeId)
+      throws UaSerializationException;
+
+  <T> T @Nullable [] decodeArray(String field, Function<String, T> decoder, Class<T> clazz)
       throws UaSerializationException;
 
   Matrix decodeMatrix(String field, OpcUaDataType dataType) throws UaSerializationException;
