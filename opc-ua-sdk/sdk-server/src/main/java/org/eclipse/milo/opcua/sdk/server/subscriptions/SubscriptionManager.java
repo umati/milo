@@ -1273,11 +1273,12 @@ public class SubscriptionManager {
    * @param subscriptionId the id of the {@link Subscription} to remove.
    * @return the removed {@link Subscription}.
    */
-  public Subscription removeSubscription(UInteger subscriptionId) {
+  public @Nullable Subscription removeSubscription(UInteger subscriptionId) {
     Subscription subscription = subscriptions.remove(subscriptionId);
-    server.getInternalEventBus().post(new SubscriptionDeletedEvent(subscription));
 
     if (subscription != null) {
+      server.getInternalEventBus().post(new SubscriptionDeletedEvent(subscription));
+
       subscription.setStateListener(null);
 
       monitoredItemCount.getAndUpdate(count -> count - subscription.getMonitoredItems().size());
