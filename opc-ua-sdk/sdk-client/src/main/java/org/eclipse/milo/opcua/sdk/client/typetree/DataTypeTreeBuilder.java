@@ -30,20 +30,13 @@ import org.eclipse.milo.opcua.stack.core.NamespaceTable;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.DataTypeEncoding;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.BrowseDirection;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.BrowseResultMask;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
-import org.eclipse.milo.opcua.stack.core.types.structured.BrowseDescription;
-import org.eclipse.milo.opcua.stack.core.types.structured.DataTypeDefinition;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReadResponse;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReferenceDescription;
+import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.eclipse.milo.opcua.stack.core.util.Tree;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -197,6 +190,8 @@ public class DataTypeTreeBuilder {
                 isAbstract);
 
         dataTypes.add(dataType);
+
+        LOGGER.debug("Added DataType: {}", dataType.getBrowseName().toParseableString());
       }
 
       for (ClientDataType dataType : dataTypes) {
@@ -218,7 +213,7 @@ public class DataTypeTreeBuilder {
       return List.of();
     }
 
-    final List<List<ReferenceDescription>> references = new ArrayList<>();
+    final var referenceDescriptionLists = new ArrayList<List<ReferenceDescription>>();
 
     try {
       client
@@ -226,15 +221,49 @@ public class DataTypeTreeBuilder {
           .forEach(
               result -> {
                 if (result.getStatusCode().isGood()) {
-                  ReferenceDescription[] rds =
+                  var references = new ArrayList<ReferenceDescription>();
+
+                  ReferenceDescription[] refs =
                       requireNonNullElse(result.getReferences(), new ReferenceDescription[0]);
-                  references.add(List.of(rds));
+                  Collections.addAll(references, refs);
+
+                  ByteString continuationPoint = result.getContinuationPoint();
+                  List<ReferenceDescription> nextRefs = maybeBrowseNext(client, continuationPoint);
+                  references.addAll(nextRefs);
+
+                  referenceDescriptionLists.add(references);
                 } else {
-                  references.add(List.of());
+                  referenceDescriptionLists.add(List.of());
                 }
               });
     } catch (UaException e) {
-      references.addAll(Collections.nCopies(browseDescriptions.size(), List.of()));
+      referenceDescriptionLists.addAll(Collections.nCopies(browseDescriptions.size(), List.of()));
+    }
+
+    return referenceDescriptionLists;
+  }
+
+  private static List<ReferenceDescription> maybeBrowseNext(
+      OpcUaClient client, ByteString continuationPoint) {
+
+    var references = new ArrayList<ReferenceDescription>();
+
+    while (continuationPoint != null && continuationPoint.isNotNull()) {
+      try {
+        BrowseNextResponse response = client.browseNext(false, List.of(continuationPoint));
+
+        BrowseResult result = requireNonNull(response.getResults())[0];
+
+        ReferenceDescription[] rds =
+            requireNonNullElse(result.getReferences(), new ReferenceDescription[0]);
+
+        references.addAll(List.of(rds));
+
+        continuationPoint = result.getContinuationPoint();
+      } catch (Exception e) {
+        LOGGER.warn("BrowseNext failed: {}", e.getMessage(), e);
+        return references;
+      }
     }
 
     return references;
