@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -76,19 +76,27 @@ public class DefaultClientCertificateValidator implements CertificateValidator {
     } catch (UaException e) {
       certificateChain.forEach(certificateQuarantine::addRejectedCertificate);
 
+      LOGGER.debug("validateCertificateChain failed, underlying status: {}", e.getStatusCode(), e);
+
       throw e;
     }
 
-    List<X509CRL> crls = new ArrayList<>();
-    crls.addAll(trustListManager.getTrustedCrls());
-    crls.addAll(trustListManager.getIssuerCrls());
+    try {
+      List<X509CRL> crls = new ArrayList<>();
+      crls.addAll(trustListManager.getTrustedCrls());
+      crls.addAll(trustListManager.getIssuerCrls());
 
-    CertificateValidationUtil.validateTrustedCertPath(
-        certPathResult.getCertPath(),
-        certPathResult.getTrustAnchor(),
-        crls,
-        validationChecks,
-        false);
+      CertificateValidationUtil.validateTrustedCertPath(
+          certPathResult.getCertPath(),
+          certPathResult.getTrustAnchor(),
+          crls,
+          validationChecks,
+          false);
+    } catch (UaException e) {
+      LOGGER.debug("validateCertificateChain failed, underlying status: {}", e.getStatusCode(), e);
+
+      throw e;
+    }
 
     X509Certificate certificate = certificateChain.get(0);
 
@@ -97,6 +105,9 @@ public class DefaultClientCertificateValidator implements CertificateValidator {
         CertificateValidationUtil.checkApplicationUri(certificate, applicationUri);
       } catch (UaException e) {
         if (validationChecks.contains(ValidationCheck.APPLICATION_URI)) {
+          LOGGER.debug(
+              "validateCertificateChain failed, underlying status: {}", e.getStatusCode(), e);
+
           throw e;
         } else {
           LOGGER.warn(
@@ -112,6 +123,9 @@ public class DefaultClientCertificateValidator implements CertificateValidator {
         CertificateValidationUtil.checkHostnameOrIpAddress(certificate, validHostNames);
       } catch (UaException e) {
         if (validationChecks.contains(ValidationCheck.HOSTNAME)) {
+          LOGGER.debug(
+              "validateCertificateChain failed, underlying status: {}", e.getStatusCode(), e);
+
           throw e;
         } else {
           LOGGER.warn(
