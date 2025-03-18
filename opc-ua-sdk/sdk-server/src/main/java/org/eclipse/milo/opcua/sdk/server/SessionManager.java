@@ -251,14 +251,13 @@ public class SessionManager {
       }
     }
 
-    ByteString clientCertificateBytesFromRequest = request.getClientCertificate();
-
-    ByteString clientCertificateBytesFromSecureChannel =
-        context.getSecureChannel().getRemoteCertificateBytes();
-
     if (securityPolicy != SecurityPolicy.None) {
+      X509Certificate clientCertificateFromRequest =
+          CertificateUtil.decodeCertificate(request.getClientCertificate().bytesOrEmpty());
+
       if (!Objects.equal(
-          clientCertificateBytesFromRequest, clientCertificateBytesFromSecureChannel)) {
+          clientCertificateFromRequest, context.getSecureChannel().getRemoteCertificate())) {
+
         throw new UaException(
             StatusCodes.Bad_SecurityChecksFailed,
             "certificate used to open secure channel "
