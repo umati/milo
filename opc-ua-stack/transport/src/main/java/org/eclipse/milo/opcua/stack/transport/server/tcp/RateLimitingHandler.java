@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -12,6 +12,7 @@ package org.eclipse.milo.opcua.stack.transport.server.tcp;
 
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
 @ChannelHandler.Sharable
 public class RateLimitingHandler extends AbstractRemoteAddressFilter<InetSocketAddress> {
 
-  /** Cumulative count of all connection rejections for the lifetime of the server. */
+  /** Cumulative count of all connection rejections for the lifetime of the stack. */
   @SuppressWarnings("WeakerAccess")
   public static final AtomicLong CUMULATIVE_CONNECTIONS_REJECTED = new AtomicLong(0L);
 
@@ -95,10 +96,13 @@ public class RateLimitingHandler extends AbstractRemoteAddressFilter<InetSocketA
     this.maxConnectionsPerAddress = maxConnectionsPerAddress;
 
     logger.debug(
-        String.format(
-            "enabled=%s, maxAttempts=%s, rateLimitWindowMs=%s, maxConnections=%s,"
-                + " maxConnectionsPerAddress=%s",
-            enabled, maxAttempts, rateLimitWindowMs, maxConnections, maxConnectionsPerAddress));
+        "enabled={}, maxAttempts={}, rateLimitWindowMs={}, maxConnections={},"
+            + " maxConnectionsPerAddress={}",
+        enabled,
+        maxAttempts,
+        rateLimitWindowMs,
+        maxConnections,
+        maxConnectionsPerAddress);
   }
 
   @Override
@@ -138,27 +142,25 @@ public class RateLimitingHandler extends AbstractRemoteAddressFilter<InetSocketA
 
       if (accept) {
         logger.debug(
-            String.format(
-                "Accepting connection from %s. window=%sms, attemptsInWindow=%s,"
-                    + " connectionsTotal=%s, connectionsFromAddress=%s",
-                isa,
-                rateLimitWindowMs,
-                attemptsInWindow,
-                connectionsTotal,
-                connectionsFromAddress));
+            "Accepting connection from {}. window={}ms, attemptsInWindow={},"
+                + " connectionsTotal={}, connectionsFromAddress={}",
+            isa,
+            rateLimitWindowMs,
+            attemptsInWindow,
+            connectionsTotal,
+            connectionsFromAddress);
       } else {
         logger.debug(
-            String.format(
-                "Rejecting connection from %s. window=%sms, attemptsInWindow=%s,"
-                    + " connectionsTotal=%s, connectionsFromAddress=%s",
-                isa,
-                rateLimitWindowMs,
-                attemptsInWindow,
-                connectionsTotal,
-                connectionsFromAddress));
+            "Rejecting connection from {}. window={}ms, attemptsInWindow={},"
+                + " connectionsTotal={}, connectionsFromAddress={}",
+            isa,
+            rateLimitWindowMs,
+            attemptsInWindow,
+            connectionsTotal,
+            connectionsFromAddress);
 
         long cumulativeConnectionsRejected = CUMULATIVE_CONNECTIONS_REJECTED.incrementAndGet();
-        logger.debug("cumulativeConnectionsRejected=" + cumulativeConnectionsRejected);
+        logger.debug("cumulativeConnectionsRejected={}", cumulativeConnectionsRejected);
       }
 
       return accept;
@@ -179,33 +181,42 @@ public class RateLimitingHandler extends AbstractRemoteAddressFilter<InetSocketA
 
     connections.add(address);
 
-    ctx.channel()
-        .closeFuture()
-        .addListener(
-            (ChannelFutureListener)
-                future -> {
-                  connections.remove(address);
+    ctx.channel().closeFuture().addListener(new ChannelCloseListener(address, ctx));
+  }
+
+  private class ChannelCloseListener implements ChannelFutureListener {
+
+    private final InetAddress address;
+    private final ChannelHandlerContext ctx;
+
+    private ChannelCloseListener(InetAddress address, ChannelHandlerContext ctx) {
+      this.address = address;
+      this.ctx = ctx;
+    }
+
+    @Override
+    public void operationComplete(ChannelFuture channelFuture) {
+      connections.remove(address);
+
+      if (connections.count(address) == 0) {
+        logger.debug("Scheduling timestamp removal for {}", address);
+
+        ctx.executor()
+            .schedule(
+                () -> {
+                  // If there's still no connections from the remote address after the rate limit
+                  // window remove the timestamps.
+                  // Removing them before the window elapses would allow a remote address to
+                  // connect/disconnect at an effectively unlimited rate.
 
                   if (connections.count(address) == 0) {
-                    logger.debug("Scheduling timestamp removal for " + address);
-
-                    ctx.executor()
-                        .schedule(
-                            () -> {
-                              // If there's still no connections from the remote address after the
-                              // rate limit window remove
-                              // the timestamps.
-                              // Removing them before the window elapses would allow a remote
-                              // address to connect/disconnect
-                              // at an effectively unlimited rate.
-                              if (connections.count(address) == 0) {
-                                timestamps.remove(address);
-                                logger.debug("Removed timestamps for " + address);
-                              }
-                            },
-                            rateLimitWindowMs,
-                            TimeUnit.MILLISECONDS);
+                    timestamps.remove(address);
+                    logger.debug("Removed timestamps for {}", address);
                   }
-                });
+                },
+                rateLimitWindowMs,
+                TimeUnit.MILLISECONDS);
+      }
+    }
   }
 }
