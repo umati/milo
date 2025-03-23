@@ -183,6 +183,7 @@ public class OpcUaNamespace extends ManagedNamespaceWithLifecycle {
     serverTypeNode.setAuditing(false);
     serverTypeNode.getServerDiagnosticsNode().setEnabledFlag(false);
     serverTypeNode.setServiceLevel(ubyte(255));
+    serverTypeNode.setEstimatedReturnTime(DateTime.now());
 
     ServerStatusTypeNode serverStatus = serverTypeNode.getServerStatusNode();
 
