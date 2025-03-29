@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,108 +10,39 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin;
 
-import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint;
-import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.ushort;
+import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.*;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.eclipse.milo.opcua.stack.core.NamespaceTable;
+import org.eclipse.milo.opcua.stack.core.ServerTable;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.NamespaceReference.NamespaceIndex;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.ServerReference.ServerIndex;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
-import org.jspecify.annotations.NonNull;
+import org.eclipse.milo.opcua.stack.core.util.Namespaces;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-public final class ExpandedNodeId {
+@NullMarked
+public record ExpandedNodeId(
+    ServerReference server, NamespaceReference namespace, Object identifier) {
 
-  public static final ExpandedNodeId NULL_VALUE =
-      new ExpandedNodeId(UShort.MIN, null, UInteger.MIN, UInteger.MIN);
+  public static final ExpandedNodeId NULL_VALUE = ExpandedNodeId.of(0, 0);
 
-  private final UShort namespaceIndex;
-  private final Object identifier;
-  private final String namespaceUri;
-  private final UInteger serverIndex;
-
-  public ExpandedNodeId(UShort namespaceIndex, String namespaceUri, UInteger identifier) {
-
-    this(namespaceIndex, namespaceUri, identifier, UInteger.MIN);
-  }
-
-  public ExpandedNodeId(
-      UShort namespaceIndex, String namespaceUri, UInteger identifier, UInteger serverIndex) {
-
-    this(namespaceIndex, namespaceUri, (Object) identifier, serverIndex);
-  }
-
-  public ExpandedNodeId(UShort namespaceIndex, String namespaceUri, String identifier) {
-
-    this(namespaceIndex, namespaceUri, identifier, UInteger.MIN);
-  }
-
-  public ExpandedNodeId(
-      UShort namespaceIndex, String namespaceUri, String identifier, UInteger serverIndex) {
-
-    this(namespaceIndex, namespaceUri, (Object) identifier, serverIndex);
-  }
-
-  public ExpandedNodeId(UShort namespaceIndex, String namespaceUri, ByteString identifier) {
-
-    this(namespaceIndex, namespaceUri, identifier, UInteger.MIN);
-  }
-
-  public ExpandedNodeId(
-      UShort namespaceIndex, String namespaceUri, ByteString identifier, UInteger serverIndex) {
-
-    this(namespaceIndex, namespaceUri, (Object) identifier, serverIndex);
-  }
-
-  public ExpandedNodeId(UShort namespaceIndex, String namespaceUri, UUID identifier) {
-
-    this(namespaceIndex, namespaceUri, identifier, UInteger.MIN);
-  }
-
-  public ExpandedNodeId(
-      UShort namespaceIndex, String namespaceUri, UUID identifier, UInteger serverIndex) {
-
-    this(namespaceIndex, namespaceUri, (Object) identifier, serverIndex);
-  }
-
-  public ExpandedNodeId(
-      @NonNull UShort namespaceIndex,
-      @Nullable String namespaceUri,
-      @Nullable Object identifier,
-      @NonNull UInteger serverIndex) {
-
-    Preconditions.checkNotNull(namespaceIndex);
-    Preconditions.checkNotNull(serverIndex);
-
-    this.namespaceIndex = namespaceIndex;
-    this.namespaceUri = namespaceUri;
-    this.identifier = identifier;
-    this.serverIndex = serverIndex;
-  }
-
-  /**
-   * Get the identifier object of this {@link ExpandedNodeId}.
-   *
-   * @return the identifier object of this {@link ExpandedNodeId}.
-   */
   public Object getIdentifier() {
     return identifier;
   }
 
   /**
-   * Get the {@link IdType} of this {@link ExpandedNodeId}.
+   * Get the {@link IdType} of this {@link ExpandedNodeId}'s identifier.
    *
-   * @return the {@link IdType} of this {@link ExpandedNodeId}.
+   * @return the {@link IdType} of this {@link ExpandedNodeId}'s identifier.
    */
   public IdType getType() {
     if (identifier instanceof UInteger) {
@@ -120,102 +51,194 @@ public final class ExpandedNodeId {
       return IdType.String;
     } else if (identifier instanceof UUID) {
       return IdType.Guid;
-    } else {
+    } else if (identifier instanceof ByteString) {
       return IdType.Opaque;
+    } else {
+      throw new IllegalStateException("identifier: " + identifier);
+    }
+  }
+
+  public @Nullable UShort getNamespaceIndex() {
+    if (namespace instanceof NamespaceIndex index) {
+      return index.namespaceIndex;
+    } else {
+      return null;
+    }
+  }
+
+  public @Nullable String getNamespaceUri() {
+    if (namespace instanceof NamespaceReference.NamespaceUri uri) {
+      return uri.namespaceUri;
+    } else {
+      return null;
+    }
+  }
+
+  public @Nullable UInteger getServerIndex() {
+    if (server instanceof ServerIndex index) {
+      return index.serverIndex;
+    } else {
+      return null;
+    }
+  }
+
+  public @Nullable String getServerUri() {
+    if (server instanceof ServerReference.ServerUri uri) {
+      return uri.serverUri;
+    } else {
+      return null;
     }
   }
 
   /**
-   * Get the namespace index of this {@link ExpandedNodeId}.
+   * Check if this {@link ExpandedNodeId} is local, i.e. the server is defined in terms of a server
+   * index, and that index is 0.
    *
-   * <p>This value shall be ignored if {@link #getNamespaceUri()} is non-null.
-   *
-   * @return the namespace index of this {@link ExpandedNodeId}.
-   */
-  public UShort getNamespaceIndex() {
-    return namespaceIndex;
-  }
-
-  /**
-   * Get the namespace URI of this {@link ExpandedNodeId}.
-   *
-   * @return the namespace URI of this {@link ExpandedNodeId}.
-   */
-  @Nullable
-  public String getNamespaceUri() {
-    return namespaceUri;
-  }
-
-  /**
-   * Get the server index of this {@link ExpandedNodeId}.
-   *
-   * @return the server index of this {@link ExpandedNodeId}.
-   */
-  public UInteger getServerIndex() {
-    return serverIndex;
-  }
-
-  /**
-   * @return {@code true} if this {@link ExpandedNodeId} is absolute, i.e. it specifies a namespace
-   *     URI instead of a namespace index.
-   */
-  public boolean isAbsolute() {
-    return namespaceUri != null;
-  }
-
-  /**
-   * @return {@code true} if this {@link ExpandedNodeId} is relative, i.e. it specifies a namespace
-   *     index instead of a namespace URI, and is therefore defined relative to some {@link
-   *     NamespaceTable}.
-   */
-  public boolean isRelative() {
-    return !isAbsolute();
-  }
-
-  /**
-   * @return {@code true} if this {@link ExpandedNodeId} is local (serverIndex == 0).
+   * @return {@code true} if this {@link ExpandedNodeId} is local.
+   * @see #isLocal(ServerTable)
    */
   public boolean isLocal() {
-    return serverIndex.longValue() == 0;
+    if (server instanceof ServerIndex index) {
+      return index.serverIndex.intValue() == 0;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Check if this {@link ExpandedNodeId} is local.
+   *
+   * <p>If the server is defined in terms of a server index, this ExpandedNodeId is local if the
+   * index is 0.
+   *
+   * <p>If the server is defined in terms of a server URI, the server table is used to determine if
+   * the URI is that of the local server (index 0).
+   *
+   * @param serverTable the {@link ServerTable} to use when checking the server URI.
+   * @return {@code true} if this {@link ExpandedNodeId} is local.
+   */
+  public boolean isLocal(ServerTable serverTable) {
+    if (server instanceof ServerIndex index) {
+      return index.serverIndex.intValue() == 0;
+    } else if (server instanceof ServerReference.ServerUri uri) {
+      UShort index = serverTable.getIndex(uri.serverUri);
+      return index != null && index.intValue() == 0;
+    } else {
+      throw new IllegalStateException("ServerReference: " + server);
+    }
+  }
+
+  /**
+   * Check if this {@link ExpandedNodeId} is absolute, i.e. it is defined in terms of a namespace
+   * URI rather than a namespace index.
+   *
+   * @return {@code true} if this {@link ExpandedNodeId} is absolute.
+   */
+  public boolean isAbsolute() {
+    return namespace instanceof NamespaceReference.NamespaceUri;
+  }
+
+  /**
+   * Check if this {@link ExpandedNodeId} is relative, i.e. it is defined in terms of a namespace
+   * index rather than a namespace URI.
+   *
+   * @return {@code true} if this {@link ExpandedNodeId} is relative.
+   */
+  public boolean isRelative() {
+    return namespace instanceof NamespaceIndex;
+  }
+
+  /**
+   * Check if this {@link ExpandedNodeId} is in the OPC UA namespace, i.e. the namespace index is 0,
+   * or the namespace URI is {@link Namespaces#OPC_UA}.
+   *
+   * @return {@code true} if this {@link ExpandedNodeId} is in the OPC UA namespace.
+   */
+  public boolean isOpcUaNamespace() {
+    if (namespace instanceof NamespaceIndex index) {
+      return index.namespaceIndex.intValue() == 0;
+    } else if (namespace instanceof NamespaceReference.NamespaceUri uri) {
+      return uri.namespaceUri.equals(Namespaces.OPC_UA);
+    } else {
+      throw new IllegalStateException("NamespaceReference: " + namespace);
+    }
   }
 
   /**
    * @return {@code true} if this {@link ExpandedNodeId} is null.
    */
   public boolean isNull() {
-    if (namespaceIndex.intValue() > 0) {
+    if (!isOpcUaNamespace()) {
       return false;
     }
 
-    switch (getType()) {
-      case Numeric:
-        {
-          UInteger id = (UInteger) this.identifier;
-          return id.intValue() == 0;
-        }
-      case String:
-        {
-          String id = (String) this.identifier;
-          return Strings.isNullOrEmpty(id);
-        }
-      case Guid:
-        {
-          UUID id = (UUID) this.identifier;
-          return id.getLeastSignificantBits() == 0 && id.getMostSignificantBits() == 0;
-        }
-      case Opaque:
-        {
-          ByteString id = (ByteString) this.identifier;
-          return id == null || id.isNullOrEmpty();
-        }
-
-      default:
-        return true;
+    if (identifier instanceof UInteger id) {
+      return id.intValue() == 0;
+    } else if (identifier instanceof String id) {
+      return id.isEmpty();
+    } else if (identifier instanceof UUID id) {
+      return id.getLeastSignificantBits() == 0 && id.getMostSignificantBits() == 0;
+    } else if (identifier instanceof ByteString id) {
+      return id.isNullOrEmpty();
+    } else {
+      return true;
     }
   }
 
+  /**
+   * @return {@code true} if this {@link ExpandedNodeId} is not null.
+   */
   public boolean isNotNull() {
     return !isNull();
+  }
+
+  /**
+   * Convert this {@link ExpandedNodeId} to a {@link NodeId} if it is local.
+   *
+   * <p>If this {@link ExpandedNodeId} is defined in terms of a namespace URI, the namespace table
+   * is used to determine the namespace index. If the URI is not found in the namespace table, an
+   * empty {@link Optional} is returned.
+   *
+   * @param namespaceTable the {@link NamespaceTable} to use.
+   * @return an {@link Optional} containing the {@link NodeId} if this {@link ExpandedNodeId} is
+   *     local and the namespace index can be determined.
+   */
+  public Optional<NodeId> toNodeId(NamespaceTable namespaceTable) {
+    if (!isLocal()) {
+      return Optional.empty();
+    }
+
+    if (namespace instanceof NamespaceIndex index) {
+      return Optional.of(new NodeId(index.namespaceIndex, identifier));
+    } else if (namespace instanceof NamespaceReference.NamespaceUri uri) {
+      UShort index = namespaceTable.getIndex(uri.namespaceUri);
+      if (index == null) {
+        return Optional.empty();
+      } else {
+        return Optional.of(new NodeId(index, identifier));
+      }
+    } else {
+      throw new IllegalStateException("NamespaceReference: " + namespace);
+    }
+  }
+
+  /**
+   * Like {@link #toNodeId(NamespaceTable)} but throws an exception instead of returning an empty
+   * {@link Optional}.
+   *
+   * @param namespaceTable the {@link NamespaceTable} to use.
+   * @return the {@link NodeId} if this {@link ExpandedNodeId} is local and the namespace index can
+   *     be determined.
+   * @throws Exception if this {@link ExpandedNodeId} is not local or the namespace index cannot be
+   *     determined.
+   */
+  public NodeId toNodeIdOrThrow(NamespaceTable namespaceTable) throws Exception {
+    if (!isLocal()) {
+      throw new Exception("ExpandedNodeId is not local: " + this);
+    } else {
+      return toNodeId(namespaceTable)
+          .orElseThrow(() -> new Exception("namespace not registered: " + namespace));
+    }
   }
 
   /**
@@ -234,10 +257,12 @@ public final class ExpandedNodeId {
     if (isAbsolute()) {
       return Optional.of(this);
     } else {
+      UShort namespaceIndex = ((NamespaceIndex) namespace).namespaceIndex;
       String namespaceUri = namespaceTable.get(namespaceIndex);
 
       if (namespaceUri != null) {
-        ExpandedNodeId xni = new ExpandedNodeId(UShort.MIN, namespaceUri, identifier, serverIndex);
+        ExpandedNodeId xni =
+            new ExpandedNodeId(server, NamespaceReference.of(namespaceUri), identifier);
 
         return Optional.of(xni);
       } else {
@@ -261,10 +286,12 @@ public final class ExpandedNodeId {
     if (isRelative()) {
       return Optional.of(this);
     } else {
+      String namespaceUri = ((NamespaceReference.NamespaceUri) namespace).namespaceUri;
       UShort namespaceIndex = namespaceTable.getIndex(namespaceUri);
 
       if (namespaceIndex != null) {
-        ExpandedNodeId xni = new ExpandedNodeId(namespaceIndex, null, identifier, serverIndex);
+        ExpandedNodeId xni =
+            new ExpandedNodeId(server, NamespaceReference.of(namespaceIndex), identifier);
 
         return Optional.of(xni);
       } else {
@@ -285,133 +312,18 @@ public final class ExpandedNodeId {
    * @return a new {@link NodeId} in the namespace index indicated by {@code namespaceUri}.
    */
   public ExpandedNodeId reindex(NamespaceTable namespaceTable, String namespaceUri) {
-    if (isAbsolute()) {
-      // namespaceUri is specified; namespaceIndex is ignored
-      return this;
-    } else {
+    if (namespace instanceof NamespaceReference.NamespaceUri) {
+      return new ExpandedNodeId(server, NamespaceReference.of(namespaceUri), identifier);
+    } else if (namespace instanceof NamespaceIndex index) {
       UShort newNamespaceIndex = namespaceTable.getIndex(namespaceUri);
-
-      if (newNamespaceIndex != null && !Objects.equals(namespaceIndex, newNamespaceIndex)) {
-
-        return new ExpandedNodeId(newNamespaceIndex, null, identifier, serverIndex);
+      if (newNamespaceIndex != null && !Objects.equals(index.namespaceIndex, newNamespaceIndex)) {
+        return new ExpandedNodeId(server, NamespaceReference.of(newNamespaceIndex), identifier);
       } else {
         return this;
       }
-    }
-  }
-
-  /**
-   * If this {@link ExpandedNodeId} resides on the local server ({@code serverIndex == 0}), return
-   * its representation as a local {@link NodeId}.
-   *
-   * <p>If this ExpandedNodeId specifies a namespace URI instead of a namespace index then the URI
-   * must exist in {@code namespaceTable} or {@link Optional#empty()} is returned.
-   *
-   * @param namespaceTable the {@link NamespaceTable}.
-   * @return a local {@link NodeId}, if {@code serverIndex == 0} and the namespace index can be
-   *     determined.
-   * @deprecated use {@link #toNodeId(NamespaceTable)} instead.
-   */
-  @Deprecated
-  public Optional<NodeId> local(NamespaceTable namespaceTable) {
-    return toNodeId(namespaceTable);
-  }
-
-  /**
-   * Like {@link #local(NamespaceTable)}, but throws if the node is not local or the namespace is
-   * not registered.
-   *
-   * @param namespaceTable the {@link NamespaceTable}.
-   * @return a local {@link NodeId}.
-   * @throws Exception if the node is not local or the namespace is not registered.
-   * @deprecated use {@link #toNodeIdOrThrow(NamespaceTable)} instead.
-   */
-  @Deprecated
-  public NodeId localOrThrow(NamespaceTable namespaceTable) throws Exception {
-    return toNodeIdOrThrow(namespaceTable);
-  }
-
-  /**
-   * If this {@link ExpandedNodeId} resides on the local server ({@code serverIndex == 0}), return
-   * its representation as a local {@link NodeId}.
-   *
-   * <p>If this ExpandedNodeId specifies a namespace URI instead of a namespace index then the URI
-   * must exist in {@code namespaceTable} or {@link Optional#empty()} is returned.
-   *
-   * @param namespaceTable the {@link NamespaceTable}.
-   * @return a local {@link NodeId}, if {@code serverIndex == 0} and the namespace index can be
-   *     determined.
-   */
-  public Optional<NodeId> toNodeId(NamespaceTable namespaceTable) {
-    if (isLocal()) {
-      if (namespaceUri == null || namespaceUri.isEmpty()) {
-        NodeId nodeId = new NodeId(namespaceIndex, identifier);
-
-        return Optional.of(nodeId);
-      } else {
-        UShort namespaceIndex = namespaceTable.getIndex(namespaceUri);
-
-        if (namespaceIndex == null) {
-          return Optional.empty();
-        } else {
-          NodeId nodeId = new NodeId(namespaceIndex, identifier);
-
-          return Optional.of(nodeId);
-        }
-      }
     } else {
-      return Optional.empty();
+      throw new IllegalStateException("NamespaceReference: " + namespace);
     }
-  }
-
-  /**
-   * Like {@link #toNodeId(NamespaceTable)}, but throws if the node is not local or the namespace is
-   * not registered.
-   *
-   * @param namespaceTable the {@link NamespaceTable}.
-   * @return a local {@link NodeId}.
-   * @throws Exception if the node is not local or the namespace is not registered.
-   */
-  public NodeId toNodeIdOrThrow(NamespaceTable namespaceTable) throws Exception {
-    if (isLocal()) {
-      return toNodeId(namespaceTable)
-          .orElseThrow(() -> new Exception("namespace not registered: " + namespaceUri));
-    } else {
-      throw new Exception("not a local node (serverIndex = " + serverIndex + ")");
-    }
-  }
-
-  /**
-   * Check if this {@link ExpandedNodeId} is equal to {@code nodeId}.
-   *
-   * <p>To be considered equal this ExpandedNodeId must be in serverIndex == 0, have the same
-   * namespace index as {@code nodeId} or have a namespace URI at the same index in the default
-   * namespace table, and an equal identifier.
-   *
-   * @param nodeId the {@link NodeId} to check equality against.
-   * @return {@code true} if this {@link ExpandedNodeId} is equal to {@code nodeId}.
-   * @deprecated use {@link #equalTo(NodeId)} instead.
-   */
-  @Deprecated
-  public boolean equals(NodeId nodeId) {
-    return equalTo(nodeId);
-  }
-
-  /**
-   * Check if this {@link ExpandedNodeId} is equal to {@code nodeId}.
-   *
-   * <p>To be considered equal this ExpandedNodeId must be in serverIndex == 0, have the same
-   * namespace index as {@code nodeId} or have a namespace URI at the same index in the default
-   * namespace table, and an equal identifier.
-   *
-   * @param nodeId the {@link NodeId} to check equality against.
-   * @param namespaceTable the {@link NamespaceTable} used to look up the index of a namespace URI.
-   * @return {@code true} if this {@link ExpandedNodeId} is equal to {@code nodeId}.
-   * @deprecated use {@link #equalTo(NodeId, NamespaceTable)} instead.
-   */
-  @Deprecated
-  public boolean equals(NodeId nodeId, NamespaceTable namespaceTable) {
-    return equalTo(nodeId, namespaceTable);
   }
 
   /**
@@ -425,7 +337,7 @@ public final class ExpandedNodeId {
    * @return {@code true} if this {@link ExpandedNodeId} is equal to {@code nodeId}.
    */
   public boolean equalTo(NodeId nodeId) {
-    return nodeId.equalTo(this);
+    return equalTo(nodeId, new NamespaceTable());
   }
 
   /**
@@ -440,53 +352,49 @@ public final class ExpandedNodeId {
    * @return {@code true} if this {@link ExpandedNodeId} is equal to {@code nodeId}.
    */
   public boolean equalTo(NodeId nodeId, NamespaceTable namespaceTable) {
-    return nodeId.equalTo(this, namespaceTable);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    ExpandedNodeId that = (ExpandedNodeId) o;
-    return Objects.equals(namespaceIndex, that.namespaceIndex)
-        && Objects.equals(identifier, that.identifier)
-        && Objects.equals(namespaceUri, that.namespaceUri)
-        && serverIndex.equals(that.serverIndex);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(namespaceIndex, identifier, namespaceUri, serverIndex);
-  }
-
-  @Override
-  public String toString() {
-    ToStringHelper helper = MoreObjects.toStringHelper(this);
-
-    if (namespaceUri != null && namespaceUri.length() > 0) {
-      helper.add("ns", namespaceUri);
-    } else {
-      helper.add("ns", getNamespaceIndex());
+    if (!isLocal()) {
+      return false;
     }
 
-    helper.add("id", getIdentifier());
-    helper.add("serverIndex", getServerIndex());
+    if (namespace instanceof NamespaceIndex index) {
+      int thisIndex = index.namespaceIndex.intValue();
+      int thatIndex = nodeId.getNamespaceIndex().intValue();
 
-    return helper.toString();
+      return thisIndex == thatIndex && identifier.equals(nodeId.getIdentifier());
+    } else if (namespace instanceof NamespaceReference.NamespaceUri uri) {
+      String thisUri = uri.namespaceUri;
+      String thatUri = namespaceTable.get(nodeId.getNamespaceIndex());
+
+      return thisUri.equals(thatUri) && identifier.equals(nodeId.getIdentifier());
+    } else {
+      throw new IllegalStateException("NamespaceReference: " + namespace);
+    }
   }
 
+  /**
+   * Convert this {@link ExpandedNodeId} to its parseable String representation.
+   *
+   * @return the parseable String representation of this {@link ExpandedNodeId}.
+   */
   public String toParseableString() {
     StringBuilder sb = new StringBuilder();
 
-    if (serverIndex.intValue() != 0) {
-      sb.append("svr=").append(serverIndex).append(";");
+    if (server instanceof ServerIndex index) {
+      if (index.serverIndex.intValue() != 0) {
+        sb.append("svr=").append(index.serverIndex).append(";");
+      }
+    } else if (server instanceof ServerReference.ServerUri uri) {
+      sb.append("svu=").append(uri.serverUri).append(";");
     }
 
-    if (namespaceUri != null) {
-      sb.append("nsu=").append(namespaceUri).append(";");
-    } else {
-      int namespaceIndex = getNamespaceIndex().intValue();
-      sb.append("ns=").append(namespaceIndex).append(";");
+    if (namespace instanceof NamespaceIndex index) {
+      if (index.namespaceIndex.intValue() != 0) {
+        sb.append("ns=").append(index.namespaceIndex).append(";");
+      }
+    } else if (namespace instanceof NamespaceReference.NamespaceUri uri) {
+      if (!uri.namespaceUri.equals(Namespaces.OPC_UA)) {
+        sb.append("nsu=").append(uri.namespaceUri).append(";");
+      }
     }
 
     switch (getType()) {
@@ -497,7 +405,7 @@ public final class ExpandedNodeId {
         sb.append("s=").append(getIdentifier());
         break;
       case Guid:
-        sb.append("g=").append(getIdentifier());
+        sb.append("g=").append(getIdentifier().toString().toUpperCase());
         break;
       case Opaque:
         ByteString bs = (ByteString) getIdentifier();
@@ -513,160 +421,301 @@ public final class ExpandedNodeId {
   }
 
   /**
-   * Parse {@code s} into an {@link ExpandedNodeId}.
+   * Parse a String representation of an {@link ExpandedNodeId} into an {@link ExpandedNodeId}.
    *
-   * @param s the String to parse.
-   * @return an {@link ExpandedNodeId}.
-   * @throws UaRuntimeException if parsing fails.
+   * @param s the String representation of an {@link ExpandedNodeId}.
+   * @return the parsed {@link ExpandedNodeId}.
+   * @throws UaRuntimeException if the String representation is invalid.
    */
-  public static ExpandedNodeId parse(String s) {
+  public static ExpandedNodeId parse(String s) throws UaRuntimeException {
     try {
-      UInteger serverIndex = UInteger.MIN;
+      ServerReference server = ServerIndex.LOCAL;
+
       if (s.startsWith("svr=")) {
         int endIndex = s.indexOf(";");
-        serverIndex = uint(Integer.parseInt(s.substring(4, endIndex)));
+        long serverIndex = Long.parseLong(s.substring(4, endIndex));
+        server = ServerReference.of(uint(serverIndex));
+
+        s = s.substring(endIndex + 1);
+      } else if (s.startsWith("svu=")) {
+        int endIndex = s.indexOf(";");
+        String serverUri = s.substring(4, endIndex);
+        server = ServerReference.of(serverUri);
+
         s = s.substring(endIndex + 1);
       }
 
-      UShort namespaceIndex = UShort.MIN;
-      String namespaceUri = null;
+      NamespaceReference namespace = NamespaceIndex.OPC_UA;
+
       if (s.startsWith("ns=")) {
         int endIndex = s.indexOf(";");
-        namespaceIndex = ushort(Integer.parseInt(s.substring(3, endIndex)));
+        int namespaceIndex = Integer.parseInt(s.substring(3, endIndex));
+        namespace = NamespaceReference.of(ushort(namespaceIndex));
+
         s = s.substring(endIndex + 1);
       } else if (s.startsWith("nsu=")) {
         int endIndex = s.indexOf(";");
-        namespaceUri = s.substring(4, endIndex);
+        String namespaceUri = s.substring(4, endIndex);
+        namespace = NamespaceReference.of(namespaceUri);
+
         s = s.substring(endIndex + 1);
       }
 
-      Object identifier;
       String type = s.substring(0, 2);
       String id = s.substring(2);
 
-      switch (type) {
-        case "i=":
-          try {
-            identifier = uint(Long.parseLong(id));
-          } catch (NumberFormatException e) {
-            throw new UaRuntimeException(StatusCodes.Bad_NodeIdInvalid, e);
-          }
-          break;
-        case "s=":
-          identifier = id;
-          break;
-        case "g=":
-          try {
-            identifier = UUID.fromString(id);
-          } catch (IllegalArgumentException e) {
-            throw new UaRuntimeException(StatusCodes.Bad_NodeIdInvalid, e);
-          }
-          break;
-        case "b=":
-          try {
-            identifier = ByteString.of(Base64.getDecoder().decode(id));
-          } catch (IllegalArgumentException e) {
-            throw new UaRuntimeException(StatusCodes.Bad_NodeIdInvalid, e);
-          }
-          break;
-        default:
-          throw new UaRuntimeException(StatusCodes.Bad_NodeIdInvalid);
-      }
+      Object identifier =
+          switch (type) {
+            case "i=":
+              yield uint(Long.parseLong(id));
+            case "s=":
+              yield id;
+            case "g=":
+              yield UUID.fromString(id);
+            case "b=":
+              yield ByteString.of(Base64.getDecoder().decode(id));
+            default:
+              throw new IllegalArgumentException("invalid identifier type: " + type);
+          };
 
-      return new ExpandedNodeId(namespaceIndex, namespaceUri, identifier, serverIndex);
+      return new ExpandedNodeId(server, namespace, identifier);
     } catch (Throwable t) {
       throw new UaRuntimeException(StatusCodes.Bad_NodeIdInvalid, t);
     }
   }
 
+  // region Static Factory Methods
+
   /**
-   * Parse {@code s} into an {@link ExpandedNodeId}, or return {@code null} if parsing fails.
+   * Creates an ExpandedNodeId in the OPC UA namespace (index 0) with a numeric identifier.
    *
-   * @param s the String to parse.
-   * @return an {@link ExpandedNodeId} or {@code null} if parsing fails.
+   * @param identifier the numeric identifier.
+   * @return an ExpandedNodeId with the given numeric identifier in the OPC UA namespace.
    */
-  @Nullable
-  public static ExpandedNodeId parseOrNull(@NonNull String s) {
-    try {
-      return ExpandedNodeId.parse(s);
-    } catch (UaRuntimeException t) {
-      return null;
-    }
+  public static ExpandedNodeId of(long identifier) {
+    return of(uint(identifier));
   }
 
   /**
-   * Parse {@code s} into an Optional containing an {@link ExpandedNodeId}, or return {@link
-   * Optional#empty()}} if parsing fails.
+   * Creates an ExpandedNodeId with the specified namespace index and numeric identifier.
    *
-   * @param s the String to parse.
-   * @return an Optional containing an {@link ExpandedNodeId}, or {@link Optional#empty()} if
-   *     parsing fails.
+   * @param namespaceIndex the namespace index.
+   * @param identifier the numeric identifier.
+   * @return an ExpandedNodeId with the given namespace index and numeric identifier.
    */
-  public static Optional<ExpandedNodeId> parseSafe(@NonNull String s) {
-    return Optional.ofNullable(parseOrNull(s));
+  public static ExpandedNodeId of(int namespaceIndex, long identifier) {
+    return of(ushort(namespaceIndex), uint(identifier));
   }
 
   /**
-   * Return a new {@link ExpandedNodeId.Builder}.
+   * Creates an ExpandedNodeId with the specified namespace URI and numeric identifier.
    *
-   * @return a new {@link ExpandedNodeId.Builder}.
+   * @param namespaceUri the namespace URI.
+   * @param identifier the numeric identifier.
+   * @return an ExpandedNodeId with the given namespace URI and numeric identifier.
    */
-  public static Builder newBuilder() {
-    return new Builder();
+  public static ExpandedNodeId of(String namespaceUri, long identifier) {
+    return of(namespaceUri, uint(identifier));
   }
 
-  public static class Builder {
+  /**
+   * Creates an ExpandedNodeId in the OPC UA namespace (index 0) with a UInteger identifier.
+   *
+   * @param identifier the UInteger identifier.
+   * @return an ExpandedNodeId with the given UInteger identifier in the OPC UA namespace.
+   */
+  public static ExpandedNodeId of(UInteger identifier) {
+    return new ExpandedNodeId(ServerIndex.LOCAL, NamespaceIndex.OPC_UA, identifier);
+  }
 
-    private UShort namespaceIndex = UShort.MIN;
-    private String namespaceUri = null;
-    private Object identifier = null;
-    private UInteger serverIndex = UInteger.MIN;
+  /**
+   * Creates an ExpandedNodeId in the OPC UA namespace (index 0) with a String identifier.
+   *
+   * @param identifier the String identifier.
+   * @return an ExpandedNodeId with the given String identifier in the OPC UA namespace.
+   */
+  public static ExpandedNodeId of(String identifier) {
+    return new ExpandedNodeId(
+        ServerIndex.LOCAL, NamespaceReference.NamespaceUri.OPC_UA, identifier);
+  }
 
-    public Builder setNamespaceIndex(int namespaceIndex) {
-      return setNamespaceIndex(ushort(namespaceIndex));
+  /**
+   * Creates an ExpandedNodeId in the OPC UA namespace (index 0) with a UUID identifier.
+   *
+   * @param identifier the UUID identifier.
+   * @return an ExpandedNodeId with the given UUID identifier in the OPC UA namespace.
+   */
+  public static ExpandedNodeId of(UUID identifier) {
+    return new ExpandedNodeId(
+        ServerIndex.LOCAL, NamespaceReference.NamespaceUri.OPC_UA, identifier);
+  }
+
+  /**
+   * Creates an ExpandedNodeId in the OPC UA namespace (index 0) with a ByteString identifier.
+   *
+   * @param identifier the ByteString identifier.
+   * @return an ExpandedNodeId with the given ByteString identifier in the OPC UA namespace.
+   */
+  public static ExpandedNodeId of(ByteString identifier) {
+    return new ExpandedNodeId(
+        ServerIndex.LOCAL, NamespaceReference.NamespaceUri.OPC_UA, identifier);
+  }
+
+  /**
+   * Creates an ExpandedNodeId with the specified namespace index and UInteger identifier.
+   *
+   * @param namespaceIndex the namespace index.
+   * @param identifier the UInteger identifier.
+   * @return an ExpandedNodeId with the given namespace index and UInteger identifier.
+   */
+  public static ExpandedNodeId of(UShort namespaceIndex, UInteger identifier) {
+    return new ExpandedNodeId(ServerIndex.LOCAL, NamespaceReference.of(namespaceIndex), identifier);
+  }
+
+  /**
+   * Creates an ExpandedNodeId with the specified namespace index and String identifier.
+   *
+   * @param namespaceIndex the namespace index.
+   * @param identifier the String identifier.
+   * @return an ExpandedNodeId with the given namespace index and String identifier.
+   */
+  public static ExpandedNodeId of(UShort namespaceIndex, @Nullable String identifier) {
+    return new ExpandedNodeId(
+        ServerIndex.LOCAL,
+        NamespaceReference.of(namespaceIndex),
+        identifier != null ? identifier : "");
+  }
+
+  /**
+   * Creates an ExpandedNodeId with the specified namespace index and UUID identifier.
+   *
+   * @param namespaceIndex the namespace index.
+   * @param identifier the UUID identifier.
+   * @return an ExpandedNodeId with the given namespace index and UUID identifier.
+   */
+  public static ExpandedNodeId of(UShort namespaceIndex, UUID identifier) {
+    return new ExpandedNodeId(ServerIndex.LOCAL, NamespaceReference.of(namespaceIndex), identifier);
+  }
+
+  /**
+   * Creates an ExpandedNodeId with the specified namespace index and ByteString identifier.
+   *
+   * @param namespaceIndex the namespace index.
+   * @param identifier the ByteString identifier.
+   * @return an ExpandedNodeId with the given namespace index and ByteString identifier.
+   */
+  public static ExpandedNodeId of(UShort namespaceIndex, ByteString identifier) {
+    return new ExpandedNodeId(ServerIndex.LOCAL, NamespaceReference.of(namespaceIndex), identifier);
+  }
+
+  /**
+   * Creates an ExpandedNodeId with the specified namespace URI and UInteger identifier.
+   *
+   * @param namespaceUri the namespace URI.
+   * @param identifier the UInteger identifier.
+   * @return an ExpandedNodeId with the given namespace URI and UInteger identifier.
+   */
+  public static ExpandedNodeId of(String namespaceUri, UInteger identifier) {
+    return new ExpandedNodeId(ServerIndex.LOCAL, NamespaceReference.of(namespaceUri), identifier);
+  }
+
+  /**
+   * Creates an ExpandedNodeId with the specified namespace URI and String identifier.
+   *
+   * @param namespaceUri the namespace URI.
+   * @param identifier the String identifier.
+   * @return an ExpandedNodeId with the given namespace URI and String identifier.
+   */
+  public static ExpandedNodeId of(String namespaceUri, @Nullable String identifier) {
+    return new ExpandedNodeId(
+        ServerIndex.LOCAL,
+        NamespaceReference.of(namespaceUri),
+        identifier != null ? identifier : "");
+  }
+
+  /**
+   * Creates an ExpandedNodeId with the specified namespace URI and UUID identifier.
+   *
+   * @param namespaceUri the namespace URI.
+   * @param identifier the UUID identifier.
+   * @return an ExpandedNodeId with the given namespace URI and UUID identifier.
+   */
+  public static ExpandedNodeId of(String namespaceUri, UUID identifier) {
+    return new ExpandedNodeId(ServerIndex.LOCAL, NamespaceReference.of(namespaceUri), identifier);
+  }
+
+  /**
+   * Creates an ExpandedNodeId with the specified namespace URI and ByteString identifier.
+   *
+   * @param namespaceUri the namespace URI.
+   * @param identifier the ByteString identifier.
+   * @return an ExpandedNodeId with the given namespace URI and ByteString identifier.
+   */
+  public static ExpandedNodeId of(String namespaceUri, ByteString identifier) {
+    return new ExpandedNodeId(ServerIndex.LOCAL, NamespaceReference.of(namespaceUri), identifier);
+  }
+
+  // endregion
+
+  /** A reference to a namespace, either by index or URI. */
+  public sealed interface NamespaceReference
+      permits NamespaceIndex, NamespaceReference.NamespaceUri {
+
+    record NamespaceIndex(UShort namespaceIndex) implements NamespaceReference {
+
+      public static final NamespaceIndex OPC_UA = new NamespaceIndex(UShort.MIN);
     }
 
-    public Builder setNamespaceIndex(UShort namespaceIndex) {
-      this.namespaceIndex = namespaceIndex;
-      return this;
+    record NamespaceUri(String namespaceUri) implements NamespaceReference {
+
+      public static final NamespaceUri OPC_UA = new NamespaceUri(Namespaces.OPC_UA);
     }
 
-    public Builder setNamespaceUri(String namespaceUri) {
-      this.namespaceUri = namespaceUri;
-      return this;
+    static NamespaceReference of(int namespaceIndex) {
+      return NamespaceReference.of(ushort(namespaceIndex));
     }
 
-    public Builder setIdentifier(UInteger identifier) {
-      this.identifier = identifier;
-      return this;
+    static NamespaceReference of(UShort namespaceIndex) {
+      if (namespaceIndex.intValue() == 0) {
+        return NamespaceIndex.OPC_UA;
+      } else {
+        return new NamespaceIndex(namespaceIndex);
+      }
     }
 
-    public Builder setIdentifier(String identifier) {
-      this.identifier = identifier;
-      return this;
+    static NamespaceReference of(String namespaceUri) {
+      if (Namespaces.OPC_UA.equals(namespaceUri)) {
+        return NamespaceUri.OPC_UA;
+      } else {
+        return new NamespaceUri(namespaceUri);
+      }
+    }
+  }
+
+  /** A reference to a server, either by index or URI. */
+  public sealed interface ServerReference permits ServerIndex, ServerReference.ServerUri {
+
+    record ServerIndex(UInteger serverIndex) implements ServerReference {
+
+      public static final ServerIndex LOCAL = new ServerIndex(UInteger.MIN);
     }
 
-    public Builder setIdentifier(UUID identifier) {
-      this.identifier = identifier;
-      return this;
+    record ServerUri(String serverUri) implements ServerReference {}
+
+    static ServerReference of(long serverIndex) {
+      return ServerReference.of(uint(serverIndex));
     }
 
-    public Builder setIdentifier(ByteString identifier) {
-      this.identifier = identifier;
-      return this;
+    static ServerReference of(UInteger serverIndex) {
+      if (serverIndex.intValue() == 0) {
+        return ServerIndex.LOCAL;
+      } else {
+        return new ServerIndex(serverIndex);
+      }
     }
 
-    public Builder setServerIndex(long serverIndex) {
-      return setServerIndex(uint(serverIndex));
-    }
-
-    public Builder setServerIndex(UInteger serverIndex) {
-      this.serverIndex = serverIndex;
-      return this;
-    }
-
-    public ExpandedNodeId build() {
-      return new ExpandedNodeId(namespaceIndex, namespaceUri, identifier, serverIndex);
+    static ServerReference of(String serverUri) {
+      return new ServerUri(serverUri);
     }
   }
 }
