@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -25,6 +25,7 @@ import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 public class NonceUtil {
 
@@ -56,11 +57,11 @@ public class NonceUtil {
               SECURE_RANDOM.set(sr);
 
               long delta = System.nanoTime() - start;
+              long deltaMillis = TimeUnit.MILLISECONDS.convert(delta, TimeUnit.NANOSECONDS);
 
               LoggerFactory.getLogger(NonceUtil.class)
-                  .info(
-                      "SecureRandom seeded in {}ms.",
-                      TimeUnit.MILLISECONDS.convert(delta, TimeUnit.NANOSECONDS));
+                  .atLevel(deltaMillis < 1000 ? Level.DEBUG : Level.INFO)
+                  .log("SecureRandom seeded in {}ms.", deltaMillis);
 
               SEED_FUTURE.complete(null);
             },
