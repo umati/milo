@@ -25,9 +25,7 @@ import java.lang.reflect.Array;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import org.eclipse.milo.opcua.stack.core.OpcUaDataType;
@@ -42,8 +40,6 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DiagnosticInfo;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.NamespaceReference;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.ServerReference;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Matrix;
@@ -56,7 +52,6 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
 
 public class OpcUaJsonDecoder implements UaDecoder {
 
@@ -66,7 +61,7 @@ public class OpcUaJsonDecoder implements UaDecoder {
   EncodingContext context;
 
   public OpcUaJsonDecoder(EncodingContext context) {
-    this.context = context;
+    this(context, "");
   }
 
   public OpcUaJsonDecoder(EncodingContext context, String s) {
@@ -75,8 +70,7 @@ public class OpcUaJsonDecoder implements UaDecoder {
 
   public OpcUaJsonDecoder(EncodingContext context, Reader reader) {
     this.context = context;
-
-    reset(reader);
+    this.jsonReader = new JsonReader(reader);
   }
 
   @Override
@@ -319,28 +313,23 @@ public class OpcUaJsonDecoder implements UaDecoder {
         }
       }
 
-      switch (jsonReader.peek()) {
-        case NUMBER:
-          return (float) jsonReader.nextDouble();
-        case STRING:
-          {
-            String s = jsonReader.nextString();
-            switch (s) {
-              case "Infinity":
-                return Float.POSITIVE_INFINITY;
-              case "-Infinity":
-                return Float.NEGATIVE_INFINITY;
-              case "NaN":
-                return Float.NaN;
-              default:
+      return switch (jsonReader.peek()) {
+        case NUMBER -> (float) jsonReader.nextDouble();
+        case STRING -> {
+          String s = jsonReader.nextString();
+          yield switch (s) {
+            case "Infinity" -> Float.POSITIVE_INFINITY;
+            case "-Infinity" -> Float.NEGATIVE_INFINITY;
+            case "NaN" -> Float.NaN;
+            default ->
                 throw new UaSerializationException(
                     StatusCodes.Bad_DecodingError, "readFloat: unexpected string value: " + s);
-            }
-          }
-        default:
-          throw new UaSerializationException(
-              StatusCodes.Bad_DecodingError, "readFloat: unexpected token: " + jsonReader.peek());
-      }
+          };
+        }
+        default ->
+            throw new UaSerializationException(
+                StatusCodes.Bad_DecodingError, "readFloat: unexpected token: " + jsonReader.peek());
+      };
     } catch (IOException e) {
       throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
     }
@@ -363,28 +352,24 @@ public class OpcUaJsonDecoder implements UaDecoder {
         }
       }
 
-      switch (jsonReader.peek()) {
-        case NUMBER:
-          return jsonReader.nextDouble();
-        case STRING:
-          {
-            String s = jsonReader.nextString();
-            switch (s) {
-              case "Infinity":
-                return Double.POSITIVE_INFINITY;
-              case "-Infinity":
-                return Double.NEGATIVE_INFINITY;
-              case "NaN":
-                return Double.NaN;
-              default:
+      return switch (jsonReader.peek()) {
+        case NUMBER -> jsonReader.nextDouble();
+        case STRING -> {
+          String s = jsonReader.nextString();
+          yield switch (s) {
+            case "Infinity" -> Double.POSITIVE_INFINITY;
+            case "-Infinity" -> Double.NEGATIVE_INFINITY;
+            case "NaN" -> Double.NaN;
+            default ->
                 throw new UaSerializationException(
                     StatusCodes.Bad_DecodingError, "readDouble: unexpected string value: " + s);
-            }
-          }
-        default:
-          throw new UaSerializationException(
-              StatusCodes.Bad_DecodingError, "readDouble: unexpected token: " + jsonReader.peek());
-      }
+          };
+        }
+        default ->
+            throw new UaSerializationException(
+                StatusCodes.Bad_DecodingError,
+                "readDouble: unexpected token: " + jsonReader.peek());
+      };
     } catch (IOException e) {
       throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
     }
@@ -553,69 +538,10 @@ public class OpcUaJsonDecoder implements UaDecoder {
         }
       }
 
-      IdType idType = IdType.Numeric;
-      int namespaceIndex = 0;
-      Object id = null;
-
-      try {
-        jsonReader.beginObject();
-
-        while (jsonReader.peek() == JsonToken.NAME) {
-          String propertyName = nextName();
-          if (propertyName == null) continue;
-
-          switch (propertyName) {
-            case "IdType":
-              {
-                int value = jsonReader.nextInt();
-                idType = IdType.from(value);
-                if (idType == null) {
-                  throw new UaSerializationException(
-                      StatusCodes.Bad_DecodingError, "readNodeId: invalid IdType: " + value);
-                }
-                break;
-              }
-            case "Id":
-              {
-                id = readIdObject(jsonReader, idType);
-                break;
-              }
-            case "Namespace":
-              {
-                namespaceIndex = jsonReader.nextInt();
-                break;
-              }
-          }
-        }
-
-        jsonReader.endObject();
-
-        if (id == null) {
-          throw new UaSerializationException(
-              StatusCodes.Bad_DecodingError, "readNodeId: id == null");
-        } else {
-          switch (idType) {
-            case Numeric:
-              assert id instanceof UInteger;
-              return new NodeId(namespaceIndex, (UInteger) id);
-            case String:
-              assert id instanceof String;
-              return new NodeId(namespaceIndex, (String) id);
-            case Guid:
-              assert id instanceof UUID;
-              return new NodeId(namespaceIndex, (UUID) id);
-            case Opaque:
-              assert id instanceof ByteString;
-              return new NodeId(namespaceIndex, (ByteString) id);
-            default:
-              throw new UaSerializationException(
-                  StatusCodes.Bad_DecodingError, "readNodeId: idType: " + idType);
-          }
-        }
-      } catch (IOException e) {
-        throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
-      }
-    } catch (IOException e) {
+      String id = jsonReader.nextString();
+      ExpandedNodeId xni = ExpandedNodeId.parse(id);
+      return xni.toNodeId(getEncodingContext().getNamespaceTable()).orElse(new NodeId(0, id));
+    } catch (Exception e) {
       throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
     }
   }
@@ -631,114 +557,14 @@ public class OpcUaJsonDecoder implements UaDecoder {
         }
       }
 
-      IdType idType = IdType.Numeric;
-      Object id = null;
-      int namespaceIndex = 0;
-      String namespaceUri = null;
-      int serverIndex = 0;
-
-      try {
-        jsonReader.beginObject();
-
-        while (jsonReader.peek() == JsonToken.NAME) {
-          String propertyName = nextName();
-          if (propertyName == null) continue;
-
-          switch (propertyName) {
-            case "IdType":
-              {
-                int value = jsonReader.nextInt();
-                idType = IdType.from(value);
-                if (idType == null) {
-                  throw new UaSerializationException(
-                      StatusCodes.Bad_DecodingError,
-                      "readExpandedNodeId: invalid IdType: " + value);
-                }
-                break;
-              }
-            case "Id":
-              {
-                id = readIdObject(jsonReader, idType);
-                break;
-              }
-            case "Namespace":
-              {
-                switch (jsonReader.peek()) {
-                  case NUMBER:
-                    namespaceIndex = jsonReader.nextInt();
-                    break;
-                  case STRING:
-                    namespaceUri = jsonReader.nextString();
-                    break;
-                  default:
-                    throw new UaSerializationException(
-                        StatusCodes.Bad_DecodingError,
-                        "readExpandedNodeId: unexpected Namespace token: " + jsonReader.peek());
-                }
-                break;
-              }
-            case "ServerUri":
-              {
-                serverIndex = jsonReader.nextInt();
-                break;
-              }
-          }
-        }
-
-        jsonReader.endObject();
-
-        if (id == null) {
-          throw new UaSerializationException(
-              StatusCodes.Bad_DecodingError, "readExpandedNodeId: id == null");
-        } else {
-          if (namespaceUri == null) {
-            return new ExpandedNodeId(
-                ServerReference.of(serverIndex), NamespaceReference.of(namespaceIndex), id);
-          } else {
-            return new ExpandedNodeId(
-                ServerReference.of(serverIndex), NamespaceReference.of(namespaceUri), id);
-          }
-        }
-      } catch (IOException e) {
-        throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
-      }
+      return ExpandedNodeId.parse(jsonReader.nextString());
     } catch (IOException e) {
       throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
     }
   }
 
-  /**
-   * Read the {@code id} Object for a {@link NodeId} or {@link ExpandedNodeId}.
-   *
-   * @param jsonReader the {@link JsonReader} to read from.
-   * @param idType the expected {@link IdType}.
-   * @return the {@code id} Object read from {@code jsonReader}.
-   * @throws IOException if {@code jsonReader} throws while reading the next token.
-   */
-  private static Object readIdObject(JsonReader jsonReader, IdType idType) throws IOException {
-    Object id = null;
-    switch (idType) {
-      case Numeric:
-        id = uint(jsonReader.nextInt());
-        break;
-      case String:
-        id = jsonReader.nextString();
-        break;
-      case Guid:
-        id = UUID.fromString(jsonReader.nextString());
-        break;
-      case Opaque:
-        id = ByteString.of(Base64.getDecoder().decode(jsonReader.nextString()));
-        break;
-    }
-    return id;
-  }
-
   @Override
   public StatusCode decodeStatusCode(String field) throws UaSerializationException {
-    // StatusCode values shall be encoded as a JSON number for the
-    // reversible encoding.
-
     try {
       if (field != null) {
         String nextName = nextName();
@@ -773,38 +599,31 @@ public class OpcUaJsonDecoder implements UaDecoder {
         }
       }
 
-      jsonReader.beginObject();
-
-      String name = null;
-      int namespaceIndex = 0;
-
-      while (jsonReader.peek() == JsonToken.NAME) {
-        String nextName = nextName();
-        if (nextName == null) continue;
-
-        switch (nextName) {
-          case "Name":
-            {
-              if (jsonReader.peek() == JsonToken.NULL) {
-                jsonReader.nextNull();
-              } else {
-                name = jsonReader.nextString();
-              }
-              break;
-            }
-          case "Uri":
-            namespaceIndex = jsonReader.nextInt();
-            break;
-          default:
-            throw new UaSerializationException(
-                StatusCodes.Bad_DecodingError,
-                String.format("readQualifiedName: unexpected field: " + nextName));
-        }
+      if (jsonReader.peek() == JsonToken.NULL) {
+        jsonReader.nextNull();
+        return QualifiedName.NULL_VALUE;
       }
 
-      jsonReader.endObject();
+      String s = jsonReader.nextString();
 
-      return new QualifiedName(namespaceIndex, name);
+      if (s == null || s.isEmpty()) {
+        return QualifiedName.NULL_VALUE;
+      }
+
+      if (s.startsWith("nsu=")) {
+        String uri = s.substring(4, s.indexOf(";"));
+        String name = s.substring(s.indexOf(";") + 1);
+        UShort index = context.getNamespaceTable().getIndex(uri);
+
+        if (index == null) {
+          index = UShort.MIN;
+          name = s;
+        }
+
+        return new QualifiedName(index, name);
+      } else {
+        return new QualifiedName(0, s);
+      }
     } catch (IOException e) {
       throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
     }
@@ -1090,100 +909,37 @@ public class OpcUaJsonDecoder implements UaDecoder {
     }
   }
 
-  private Object readFlattenedMultiDimensionalVariantValue(int typeId, int[] dimensions)
-      throws IOException {
-    jsonReader.beginArray();
-    try {
-      return readFlattenedMultiDimensionalVariantValue(typeId, dimensions, 0);
-    } finally {
-      jsonReader.endArray();
-    }
-  }
-
-  private Object readFlattenedMultiDimensionalVariantValue(
-      int typeId, int[] dimensions, int dimensionIndex) {
-    Object value;
-
-    if (dimensionIndex == dimensions.length - 1) {
-      value =
-          Array.newInstance(
-              OpcUaDataType.getPrimitiveBackingClass(typeId), dimensions[dimensionIndex]);
-      for (int i = 0; i < dimensions[dimensionIndex]; i++) {
-        Object e = readBuiltinTypeValue(null, typeId);
-        Array.set(value, i, e);
-      }
-    } else {
-      value =
-          Array.newInstance(
-              OpcUaDataType.getPrimitiveBackingClass(typeId),
-              Arrays.copyOfRange(dimensions, dimensionIndex, dimensions.length));
-      for (int i = 0; i < dimensions[dimensionIndex]; i++) {
-        Object e =
-            readFlattenedMultiDimensionalVariantValue(typeId, dimensions, dimensionIndex + 1);
-        Array.set(value, i, e);
-      }
-    }
-
-    return value;
-  }
-
   private Object readBuiltinTypeValue(String field, int typeId) throws UaSerializationException {
-    switch (typeId) {
-      case 1:
-        return decodeBoolean(field);
-      case 2:
-        return decodeSByte(field);
-      case 3:
-        return decodeByte(field);
-      case 4:
-        return decodeInt16(field);
-      case 5:
-        return decodeUInt16(field);
-      case 6:
-        return decodeInt32(field);
-      case 7:
-        return decodeUInt32(field);
-      case 8:
-        return decodeInt64(field);
-      case 9:
-        return decodeUInt64(field);
-      case 10:
-        return decodeFloat(field);
-      case 11:
-        return decodeDouble(field);
-      case 12:
-        return decodeString(field);
-      case 13:
-        return decodeDateTime(field);
-      case 14:
-        return decodeGuid(field);
-      case 15:
-        return decodeByteString(field);
-      case 16:
-        return decodeXmlElement(field);
-      case 17:
-        return decodeNodeId(field);
-      case 18:
-        return decodeExpandedNodeId(field);
-      case 19:
-        return decodeStatusCode(field);
-      case 20:
-        return decodeQualifiedName(field);
-      case 21:
-        return decodeLocalizedText(field);
-      case 22:
-        return decodeExtensionObject(field);
-      case 23:
-        return decodeDataValue(field);
-      case 24:
-        return decodeVariant(field);
-      case 25:
-        return decodeDiagnosticInfo(field);
-
-      default:
-        throw new UaSerializationException(
-            StatusCodes.Bad_EncodingError, "not a built-in type: " + typeId);
-    }
+    return switch (typeId) {
+      case 1 -> decodeBoolean(field);
+      case 2 -> decodeSByte(field);
+      case 3 -> decodeByte(field);
+      case 4 -> decodeInt16(field);
+      case 5 -> decodeUInt16(field);
+      case 6 -> decodeInt32(field);
+      case 7 -> decodeUInt32(field);
+      case 8 -> decodeInt64(field);
+      case 9 -> decodeUInt64(field);
+      case 10 -> decodeFloat(field);
+      case 11 -> decodeDouble(field);
+      case 12 -> decodeString(field);
+      case 13 -> decodeDateTime(field);
+      case 14 -> decodeGuid(field);
+      case 15 -> decodeByteString(field);
+      case 16 -> decodeXmlElement(field);
+      case 17 -> decodeNodeId(field);
+      case 18 -> decodeExpandedNodeId(field);
+      case 19 -> decodeStatusCode(field);
+      case 20 -> decodeQualifiedName(field);
+      case 21 -> decodeLocalizedText(field);
+      case 22 -> decodeExtensionObject(field);
+      case 23 -> decodeDataValue(field);
+      case 24 -> decodeVariant(field);
+      case 25 -> decodeDiagnosticInfo(field);
+      default ->
+          throw new UaSerializationException(
+              StatusCodes.Bad_EncodingError, "not a built-in type: " + typeId);
+    };
   }
 
   @Override
@@ -1565,9 +1321,71 @@ public class OpcUaJsonDecoder implements UaDecoder {
         }
       }
 
-      Object nestedArray = decodeNestedMultiDimensionalArrayBuiltinValue(dataType.getTypeId());
+      if (jsonReader.peek() == JsonToken.NULL) {
+        jsonReader.nextNull();
+        return Matrix.ofNull();
+      }
 
-      return new Matrix(nestedArray);
+      if (jsonReader.peek() != JsonToken.BEGIN_OBJECT) {
+        throw new UaSerializationException(
+            StatusCodes.Bad_DecodingError,
+            String.format("readMatrix: unexpected token: %s", jsonReader.peek()));
+      }
+
+      jsonReader.beginObject();
+      try {
+        int[] dimensions = null;
+        Object flatArray = null;
+
+        while (jsonReader.peek() == JsonToken.NAME) {
+          String nextName = nextName();
+          if (nextName == null) continue;
+
+          switch (nextName) {
+            case "Array":
+              {
+                var elements = new ArrayList<>();
+                jsonReader.beginArray();
+                while (jsonReader.peek() != JsonToken.END_ARRAY) {
+                  elements.add(readBuiltinTypeValue(null, dataType.getTypeId()));
+                }
+                jsonReader.endArray();
+
+                flatArray =
+                    Array.newInstance(
+                        OpcUaDataType.getPrimitiveBackingClass(dataType.getTypeId()),
+                        elements.size());
+
+                for (int i = 0; i < elements.size(); i++) {
+                  Array.set(flatArray, i, elements.get(i));
+                }
+              }
+              break;
+            case "Dimensions":
+              {
+                var dims = new ArrayList<Integer>();
+                jsonReader.beginArray();
+                while (jsonReader.peek() == JsonToken.NUMBER) {
+                  dims.add(jsonReader.nextInt());
+                }
+                jsonReader.endArray();
+                dimensions = new int[dims.size()];
+                for (int i = 0; i < dims.size(); i++) {
+                  dimensions[i] = dims.get(i);
+                }
+              }
+              break;
+            default:
+              throw new UaSerializationException(
+                  StatusCodes.Bad_DecodingError,
+                  String.format("readLocalizedText: unexpected field: " + nextName));
+          }
+        }
+
+        return new Matrix(flatArray, dimensions, dataType);
+      } finally {
+        jsonReader.endObject();
+      }
     } catch (IOException e) {
       throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
     }
@@ -1594,9 +1412,68 @@ public class OpcUaJsonDecoder implements UaDecoder {
           }
         }
 
-        Object nestedArray = decodeNestedMultiDimensionalArrayStructValue(codec);
+        if (jsonReader.peek() == JsonToken.NULL) {
+          jsonReader.nextNull();
+          return Matrix.ofNull();
+        }
 
-        return new Matrix(nestedArray);
+        if (jsonReader.peek() != JsonToken.BEGIN_OBJECT) {
+          throw new UaSerializationException(
+              StatusCodes.Bad_DecodingError,
+              String.format("readMatrix: unexpected token: %s", jsonReader.peek()));
+        }
+
+        jsonReader.beginObject();
+        try {
+          int[] dimensions = null;
+          Object flatArray = null;
+
+          while (jsonReader.peek() == JsonToken.NAME) {
+            String nextName = nextName();
+            if (nextName == null) continue;
+
+            switch (nextName) {
+              case "Array":
+                {
+                  var elements = new ArrayList<>();
+                  jsonReader.beginArray();
+                  while (jsonReader.peek() != JsonToken.END_ARRAY) {
+                    elements.add(decodeStruct(null, codec));
+                  }
+                  jsonReader.endArray();
+
+                  flatArray = Array.newInstance(codec.getType(), elements.size());
+
+                  for (int i = 0; i < elements.size(); i++) {
+                    Array.set(flatArray, i, elements.get(i));
+                  }
+                }
+                break;
+              case "Dimensions":
+                {
+                  var dims = new ArrayList<Integer>();
+                  jsonReader.beginArray();
+                  while (jsonReader.peek() == JsonToken.NUMBER) {
+                    dims.add(jsonReader.nextInt());
+                  }
+                  jsonReader.endArray();
+                  dimensions = new int[dims.size()];
+                  for (int i = 0; i < dims.size(); i++) {
+                    dimensions[i] = dims.get(i);
+                  }
+                }
+                break;
+              default:
+                throw new UaSerializationException(
+                    StatusCodes.Bad_DecodingError,
+                    String.format("readLocalizedText: unexpected field: " + nextName));
+            }
+          }
+
+          return new Matrix(flatArray, dimensions, OpcUaDataType.ExtensionObject);
+        } finally {
+          jsonReader.endObject();
+        }
       } catch (IOException e) {
         throw new UaSerializationException(StatusCodes.Bad_DecodingError, e);
       }
@@ -1619,45 +1496,6 @@ public class OpcUaJsonDecoder implements UaDecoder {
                         "decodeStructMatrix: namespace not registered: " + dataTypeId));
 
     return decodeStructMatrix(field, localDataTypeId);
-  }
-
-  private Object decodeNestedMultiDimensionalArrayBuiltinValue(int typeId) throws IOException {
-    if (jsonReader.peek() == JsonToken.BEGIN_ARRAY) {
-      jsonReader.beginArray();
-      List<Object> elements = new ArrayList<>();
-      while (jsonReader.peek() != JsonToken.END_ARRAY) {
-        elements.add(decodeNestedMultiDimensionalArrayBuiltinValue(typeId));
-      }
-      jsonReader.endArray();
-
-      Object array = Array.newInstance(elements.get(0).getClass(), elements.size());
-      for (int i = 0; i < elements.size(); i++) {
-        Array.set(array, i, elements.get(i));
-      }
-      return array;
-    } else {
-      return readBuiltinTypeValue(null, typeId);
-    }
-  }
-
-  private Object decodeNestedMultiDimensionalArrayStructValue(DataTypeCodec codec)
-      throws IOException {
-    if (jsonReader.peek() == JsonToken.BEGIN_ARRAY) {
-      jsonReader.beginArray();
-      List<Object> elements = new ArrayList<>();
-      while (jsonReader.peek() != JsonToken.END_ARRAY) {
-        elements.add(decodeNestedMultiDimensionalArrayStructValue(codec));
-      }
-      jsonReader.endArray();
-
-      Object array = Array.newInstance(elements.get(0).getClass(), elements.size());
-      for (int i = 0; i < elements.size(); i++) {
-        Array.set(array, i, elements.get(i));
-      }
-      return array;
-    } else {
-      return decodeStruct(null, codec);
-    }
   }
 
   /**

@@ -24,45 +24,34 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.OpcUaDataType;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.encoding.DefaultEncodingContext;
 import org.eclipse.milo.opcua.stack.core.encoding.EncodingContext;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DiagnosticInfo;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.NamespaceReference;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.ServerReference;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
-import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
-import org.eclipse.milo.opcua.stack.core.types.builtin.Matrix;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
-import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
-import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
-import org.eclipse.milo.opcua.stack.core.types.builtin.XmlElement;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.ApplicationType;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
-import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReadRequest;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
-import org.eclipse.milo.opcua.stack.core.types.structured.RequestHeader;
-import org.eclipse.milo.opcua.stack.core.types.structured.XVType;
+import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class OpcUaJsonDecoderTest {
 
-  private final EncodingContext context = DefaultEncodingContext.INSTANCE;
+  private final EncodingContext context = new DefaultEncodingContext();
 
   @Test
-  void readBoolean() throws IOException {
+  void decodeBoolean() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("true"));
@@ -83,7 +72,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readSByte() throws IOException {
+  void decodeSByte() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("0"));
@@ -102,7 +91,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readInt16() throws IOException {
+  void decodeInt16() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("0"));
@@ -121,7 +110,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readInt32() throws IOException {
+  void decodeInt32() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("0"));
@@ -140,7 +129,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readInt64() throws IOException {
+  void decodeInt64() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("\"0\""));
@@ -159,7 +148,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readByte() throws IOException {
+  void decodeByte() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader(String.valueOf(UByte.MIN)));
@@ -175,7 +164,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readUInt16() throws IOException {
+  void decodeUInt16() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader(String.valueOf(UShort.MIN)));
@@ -191,7 +180,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readUInt32() throws IOException {
+  void decodeUInt32() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader(String.valueOf(UInteger.MIN)));
@@ -207,7 +196,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readUInt64() throws IOException {
+  void decodeUInt64() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader(String.format("\"%s\"", ULong.MIN)));
@@ -223,7 +212,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readFloat() throws IOException {
+  void decodeFloat() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("0.0"));
@@ -251,7 +240,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readDouble() throws IOException {
+  void decodeDouble() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("0.0"));
@@ -279,7 +268,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readString() throws IOException {
+  void decodeString() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("\"\""));
@@ -295,7 +284,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readDateTime() throws IOException {
+  void decodeDateTime() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader(String.format("\"%s\"", DateTime.MIN_ISO_8601_STRING)));
@@ -324,7 +313,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readGuid() throws IOException {
+  void decodeGuid() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     UUID uuid = UUID.randomUUID();
@@ -342,7 +331,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readByteString() throws IOException {
+  void decodeByteString() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     byte[] emptyBytes = new byte[0];
@@ -364,7 +353,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readXmlElement() throws IOException {
+  void decodeXmlElement() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     var emptyElement = new XmlElement("");
@@ -381,94 +370,201 @@ class OpcUaJsonDecoderTest {
     decoder.jsonReader.endObject();
   }
 
-  @Test
-  void readNodeId() throws IOException {
-    var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
+  @MethodSource("decodeNodeIdArguments")
+  @ParameterizedTest(name = "field={0} json={1} expected={2}")
+  void decodeNodeId(String field, String json, NodeId expected) throws IOException {
+    var decoder = new OpcUaJsonDecoder(context, new StringReader(json));
 
-    // IdType == UInt32, Namespace = 0
-    var nodeId = new NodeId(0, 0);
-    decoder.reset(new StringReader("{\"Id\":0}"));
-    assertEquals(nodeId, decoder.decodeNodeId(null));
+    if (field != null) {
+      decoder.jsonReader.beginObject();
+      assertEquals(expected, decoder.decodeNodeId(field));
+      decoder.jsonReader.endObject();
+    } else {
+      assertEquals(expected, decoder.decodeNodeId(null));
+    }
+  }
 
-    // IdType == UInt32, Namespace != 0
-    nodeId = new NodeId(1, 0);
-    decoder.reset(new StringReader("{\"Id\":0,\"Namespace\":1}"));
-    assertEquals(nodeId, decoder.decodeNodeId(null));
+  static Stream<Arguments> decodeNodeIdArguments() {
+    var uuid = UUID.randomUUID();
+    var bs = ByteString.of(randomBytes16());
 
-    // IdType == String, Namespace = 0
-    nodeId = new NodeId(0, "foo");
-    decoder.reset(new StringReader("{\"IdType\":1,\"Id\":\"foo\"}"));
-    assertEquals(nodeId, decoder.decodeNodeId(null));
+    return Stream.of(
+        // field, json, expected
+        // IdType == UInt32, Namespace = 0
+        Arguments.of(null, "\"i=0\"", new NodeId(0, 0)),
+        // IdType == UInt32, Namespace != 0
+        Arguments.of(null, "\"ns=1;i=0\"", new NodeId(1, 0)),
+        // IdType == String, Namespace = 0
+        Arguments.of(null, "\"s=foo\"", new NodeId(0, "foo")),
+        // IdType == String, Namespace != 0
+        Arguments.of(null, "\"ns=1;s=foo\"", new NodeId(1, "foo")),
+        // IdType == UInt32, Namespace > 1
+        Arguments.of(null, "\"ns=2;i=0\"", new NodeId(2, 0)),
 
-    // IdType == String, Namespace != 0
-    nodeId = new NodeId(1, "foo");
-    decoder.reset(new StringReader("{\"IdType\":1,\"Id\":\"foo\",\"Namespace\":1}"));
-    assertEquals(nodeId, decoder.decodeNodeId(null));
+        // IdType == Guid, Namespace = 0
+        Arguments.of(
+            null, "\"g=%s\"".formatted(uuid.toString().toUpperCase()), new NodeId(0, uuid)),
 
-    // IdType == Guid, Namespace = 0
-    UUID uuid = UUID.randomUUID();
-    nodeId = new NodeId(0, uuid);
-    decoder.reset(
-        new StringReader("{\"IdType\":2,\"Id\":\"" + uuid.toString().toUpperCase() + "\"}"));
-    assertEquals(nodeId, decoder.decodeNodeId(null));
+        // IdType == Guid, Namespace != 0
+        Arguments.of(
+            null, "\"ns=1;g=%s\"".formatted(uuid.toString().toUpperCase()), new NodeId(1, uuid)),
 
-    // IdType == Guid, Namespace != 0
-    nodeId = new NodeId(1, uuid);
-    decoder.reset(
-        new StringReader(
-            "{\"IdType\":2,\"Id\":\"" + uuid.toString().toUpperCase() + "\",\"Namespace\":1}"));
-    assertEquals(nodeId, decoder.decodeNodeId(null));
+        // IdType == ByteString, Namespace = 0
+        Arguments.of(
+            null,
+            "\"b=%s\"".formatted(Base64.getEncoder().encodeToString(bs.bytesOrEmpty())),
+            new NodeId(0, bs)),
 
-    // IdType == ByteString, Namespace = 0
-    ByteString bs = ByteString.of(randomBytes16());
-    nodeId = new NodeId(0, bs);
-    decoder.reset(
-        new StringReader(
-            "{\"IdType\":3,\"Id\":\""
-                + Base64.getEncoder().encodeToString(bs.bytesOrEmpty())
-                + "\"}"));
-    assertEquals(nodeId, decoder.decodeNodeId(null));
+        // IdType == ByteString, Namespace != 0
+        Arguments.of(
+            null,
+            "\"ns=1;b=%s\"".formatted(Base64.getEncoder().encodeToString(bs.bytesOrEmpty())),
+            new NodeId(1, bs)),
 
-    // IdType == ByteString, Namespace != 0
-    nodeId = new NodeId(1, bs);
-    decoder.reset(
-        new StringReader(
-            "{\"IdType\":3,\"Id\":\""
-                + Base64.getEncoder().encodeToString(bs.bytesOrEmpty())
-                + "\",\"Namespace\":1}"));
-    assertEquals(nodeId, decoder.decodeNodeId(null));
+        // Namespace > 1 but not in table
+        Arguments.of(null, "\"ns=99;i=0\"", new NodeId(99, 0)),
 
-    nodeId = new NodeId(0, 0);
-    decoder.reset(new StringReader("{\"foo\":{\"Id\":0}}"));
-    decoder.jsonReader.beginObject();
-    assertEquals(nodeId, decoder.decodeNodeId("foo"));
-    decoder.jsonReader.endObject();
+        // key != null
+        Arguments.of("foo", "{\"foo\":\"ns=1;s=foo\"}", new NodeId(1, "foo")));
+  }
+
+  @MethodSource("decodeExpandedNodeIdArguments")
+  @ParameterizedTest(name = "field={0} json={1} expected={2}")
+  void decodeExpandedNodeId(String field, String json, ExpandedNodeId expected) throws IOException {
+    var decoder = new OpcUaJsonDecoder(context, new StringReader(json));
+
+    if (field != null) {
+      decoder.jsonReader.beginObject();
+      assertEquals(expected, decoder.decodeExpandedNodeId(field));
+      decoder.jsonReader.endObject();
+    } else {
+      assertEquals(expected, decoder.decodeExpandedNodeId(null));
+    }
+  }
+
+  static Stream<Arguments> decodeExpandedNodeIdArguments() {
+    var uuid = UUID.randomUUID();
+    var bs = ByteString.of(randomBytes16());
+
+    return Stream.of(
+        // field, json, expected
+        // Local server (serverIndex = 0), namespace = 0, different identifier types
+        Arguments.of(null, "\"i=0\"", ExpandedNodeId.of(uint(0))),
+        Arguments.of(
+            null,
+            "\"s=foo\"",
+            new ExpandedNodeId(
+                ServerReference.of(uint(0)), NamespaceReference.of(ushort(0)), "foo")),
+        Arguments.of(
+            null,
+            "\"g=%s\"".formatted(uuid.toString().toUpperCase()),
+            new ExpandedNodeId(
+                ServerReference.of(uint(0)), NamespaceReference.of(ushort(0)), uuid)),
+        Arguments.of(
+            null,
+            "\"b=%s\"".formatted(Base64.getEncoder().encodeToString(bs.bytesOrEmpty())),
+            new ExpandedNodeId(ServerReference.of(uint(0)), NamespaceReference.of(ushort(0)), bs)),
+
+        // Local server (serverIndex = 0), namespace != 0, different identifier types
+        Arguments.of(
+            null,
+            "\"nsu=urn:eclipse:milo:test1;i=0\"",
+            new ExpandedNodeId(
+                ServerReference.of(uint(0)),
+                NamespaceReference.of("urn:eclipse:milo:test1"),
+                uint(0))),
+        Arguments.of(
+            null,
+            "\"nsu=urn:eclipse:milo:test1;s=foo\"",
+            new ExpandedNodeId(
+                ServerReference.of(uint(0)),
+                NamespaceReference.of("urn:eclipse:milo:test1"),
+                "foo")),
+        Arguments.of(
+            null,
+            "\"nsu=urn:eclipse:milo:test1;g=%s\"".formatted(uuid.toString().toUpperCase()),
+            new ExpandedNodeId(
+                ServerReference.of(uint(0)),
+                NamespaceReference.of("urn:eclipse:milo:test1"),
+                uuid)),
+        Arguments.of(
+            null,
+            "\"nsu=urn:eclipse:milo:test1;b=%s\""
+                .formatted(Base64.getEncoder().encodeToString(bs.bytesOrEmpty())),
+            new ExpandedNodeId(
+                ServerReference.of(uint(0)), NamespaceReference.of("urn:eclipse:milo:test1"), bs)),
+
+        // Local server (serverIndex = 0), namespace > 1
+        Arguments.of(
+            null,
+            "\"nsu=urn:eclipse:milo:test2;i=0\"",
+            new ExpandedNodeId(
+                ServerReference.of(uint(0)),
+                NamespaceReference.of("urn:eclipse:milo:test2"),
+                uint(0))),
+
+        // Non-local server (serverIndex != 0), namespace = 0
+        Arguments.of(
+            null,
+            "\"svu=urn:eclipse:milo:server1;i=0\"",
+            new ExpandedNodeId(
+                ServerReference.of("urn:eclipse:milo:server1"), NamespaceReference.of(0), uint(0))),
+
+        // Non-local server (serverIndex != 0), namespace != 0
+        Arguments.of(
+            null,
+            "\"svu=urn:eclipse:milo:server1;nsu=urn:eclipse:milo:test1;i=0\"",
+            new ExpandedNodeId(
+                ServerReference.of("urn:eclipse:milo:server1"),
+                NamespaceReference.of("urn:eclipse:milo:test1"),
+                uint(0))),
+
+        // Server URI, namespace = 0
+        Arguments.of(
+            null,
+            "\"svu=urn:eclipse:milo:server1;i=0\"",
+            new ExpandedNodeId(
+                ServerReference.of("urn:eclipse:milo:server1"), NamespaceReference.of(0), uint(0))),
+
+        // Server URI, namespace URI
+        Arguments.of(
+            null,
+            "\"svu=urn:eclipse:milo:server1;nsu=urn:eclipse:milo:test1;i=0\"",
+            new ExpandedNodeId(
+                ServerReference.of("urn:eclipse:milo:server1"),
+                NamespaceReference.of("urn:eclipse:milo:test1"),
+                uint(0))),
+
+        // Namespace URI, local server
+        Arguments.of(
+            null,
+            "\"nsu=urn:eclipse:milo:test1;i=0\"",
+            new ExpandedNodeId(
+                ServerReference.of(uint(0)),
+                NamespaceReference.of("urn:eclipse:milo:test1"),
+                uint(0))),
+
+        // With field name
+        Arguments.of(
+            "foo",
+            "{\"foo\":\"nsu=urn:eclipse:milo:test1;s=bar\"}",
+            new ExpandedNodeId(
+                ServerReference.of(uint(0)),
+                NamespaceReference.of("urn:eclipse:milo:test1"),
+                "bar")),
+
+        // With field name, server URI, namespace URI
+        Arguments.of(
+            "foo",
+            "{\"foo\":\"svu=urn:eclipse:milo:server1;nsu=urn:eclipse:milo:test1;s=bar\"}",
+            new ExpandedNodeId(
+                ServerReference.of("urn:eclipse:milo:server1"),
+                NamespaceReference.of("urn:eclipse:milo:test1"),
+                "bar")));
   }
 
   @Test
-  void readExpandedNodeId() throws IOException {
-    var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
-
-    // namespace URI specified
-    var xni = ExpandedNodeId.of("http://opcfoundation.org/UA/", "foo");
-    decoder.reset(
-        new StringReader(
-            "{\"IdType\":1,\"Id\":\"foo\",\"Namespace\":\"http://opcfoundation.org/UA/\"}"));
-    assertEquals(xni, decoder.decodeExpandedNodeId(null));
-
-    // remote server index
-    xni = new ExpandedNodeId(ServerReference.of(1), NamespaceReference.of(0), "foo");
-    decoder.reset(new StringReader("{\"IdType\":1,\"Id\":\"foo\",\"ServerUri\":1}"));
-    assertEquals(xni, decoder.decodeExpandedNodeId(null));
-
-    decoder.reset(new StringReader("{\"foo\":{\"IdType\":1,\"Id\":\"foo\",\"ServerUri\":1}}"));
-    decoder.jsonReader.beginObject();
-    assertEquals(xni, decoder.decodeExpandedNodeId("foo"));
-    decoder.jsonReader.endObject();
-  }
-
-  @Test
-  void readStatusCode() throws IOException {
+  void decodeStatusCode() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("0"));
@@ -499,29 +595,37 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readQualifiedName() throws IOException {
+  void decodeQualifiedName() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
-    decoder.reset(new StringReader("{}"));
-    assertEquals(new QualifiedName(0, null), decoder.decodeQualifiedName(null));
+    // Test name in namespace 0
+    decoder.reset(new StringReader("\"TestName\""));
+    assertEquals(new QualifiedName(0, "TestName"), decoder.decodeQualifiedName(null));
 
-    decoder.reset(new StringReader("{\"Uri\":1}"));
-    assertEquals(new QualifiedName(1, null), decoder.decodeQualifiedName(null));
+    // Test name in non-zero namespace
+    context.getNamespaceTable().add("urn:test:namespace");
+    decoder.reset(new StringReader("\"nsu=urn:test:namespace;TestName\""));
+    assertEquals(new QualifiedName(1, "TestName"), decoder.decodeQualifiedName(null));
 
-    decoder.reset(new StringReader("{\"Name\":\"foo\"}"));
-    assertEquals(new QualifiedName(0, "foo"), decoder.decodeQualifiedName(null));
-
-    decoder.reset(new StringReader("{\"Name\":\"foo\",\"Uri\":1}"));
-    assertEquals(new QualifiedName(1, "foo"), decoder.decodeQualifiedName(null));
-
-    decoder.reset(new StringReader("{\"foo\":{\"Name\":\"foo\"}}"));
+    // Test with field name
+    decoder.reset(new StringReader("{\"qname\":\"TestName\"}"));
     decoder.jsonReader.beginObject();
-    assertEquals(new QualifiedName(0, "foo"), decoder.decodeQualifiedName("foo"));
+    assertEquals(new QualifiedName(0, "TestName"), decoder.decodeQualifiedName("qname"));
     decoder.jsonReader.endObject();
+
+    // Test with field name and non-zero namespace
+    decoder.reset(new StringReader("{\"qname\":\"nsu=urn:test:namespace;TestName\"}"));
+    decoder.jsonReader.beginObject();
+    assertEquals(new QualifiedName(1, "TestName"), decoder.decodeQualifiedName("qname"));
+    decoder.jsonReader.endObject();
+
+    // Test null name
+    decoder.reset(new StringReader("null"));
+    assertEquals(QualifiedName.NULL_VALUE, decoder.decodeQualifiedName(null));
   }
 
   @Test
-  void readLocalizedText() throws IOException {
+  void decodeLocalizedText() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     decoder.reset(new StringReader("{\"Locale\":\"en\",\"Text\":\"foo\"}"));
@@ -540,7 +644,10 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readExtensionObject() throws IOException {
+  void decodeExtensionObject() throws IOException {
+    context.getNamespaceTable().add("urn:eclipse:milo:test1");
+    context.getNamespaceTable().add("urn:eclipse:milo:test2");
+
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     var jsonStringXo = ExtensionObject.of("{\"foo\":\"bar\",\"baz\":42}", new NodeId(2, 42));
@@ -552,17 +659,17 @@ class OpcUaJsonDecoderTest {
 
     decoder.reset(
         new StringReader(
-            "{\"TypeId\":{\"Id\":42,\"Namespace\":2},\"Body\":{\"foo\":\"bar\",\"baz\":42}}"));
+            "{\"TypeId\":\"nsu=urn:eclipse:milo:test2;i=42\",\"Body\":{\"foo\":\"bar\",\"baz\":42}}"));
     assertEquals(jsonStringXo, decoder.decodeExtensionObject(null));
 
     decoder.reset(
         new StringReader(
-            "{\"TypeId\":{\"Id\":42,\"Namespace\":2},\"Encoding\":1,\"Body\":\"AAECAw==\"}"));
+            "{\"TypeId\":\"nsu=urn:eclipse:milo:test2;i=42\",\"Encoding\":1,\"Body\":\"AAECAw==\"}"));
     assertEquals(byteStringXo, decoder.decodeExtensionObject(null));
 
     decoder.reset(
         new StringReader(
-            "{\"TypeId\":{\"Id\":42,\"Namespace\":2},\"Encoding\":2,\"Body\":\"<foo>bar</foo>\"}"));
+            "{\"TypeId\":\"nsu=urn:eclipse:milo:test2;i=42\",\"Encoding\":2,\"Body\":\"<foo>bar</foo>\"}"));
     assertEquals(xmlElementXo, decoder.decodeExtensionObject(null));
 
     decoder.reset(new StringReader("null"));
@@ -570,14 +677,14 @@ class OpcUaJsonDecoderTest {
 
     decoder.reset(
         new StringReader(
-            "{\"foo\":{\"TypeId\":{\"Id\":42,\"Namespace\":2},\"Body\":{\"foo\":\"bar\",\"baz\":42}}}"));
+            "{\"foo\":{\"TypeId\":\"nsu=urn:eclipse:milo:test2;i=42\",\"Body\":{\"foo\":\"bar\",\"baz\":42}}}"));
     decoder.jsonReader.beginObject();
     assertEquals(jsonStringXo, decoder.decodeExtensionObject("foo"));
     decoder.jsonReader.endObject();
   }
 
   @Test
-  void readDataValue() throws IOException {
+  void decodeDataValue() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     DateTime now = DateTime.now();
@@ -667,13 +774,14 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readVariant() throws IOException {
+  void decodeVariant() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
+    context.getNamespaceTable().add("urn:eclipse:milo:test1");
 
     decoder.reset(new StringReader("{\"Type\":1,\"Body\":true}"));
     assertEquals(new Variant(true), decoder.decodeVariant(null));
 
-    decoder.reset(new StringReader("{\"Type\":20,\"Body\":{\"Name\":\"foo\",\"Uri\":1}}"));
+    decoder.reset(new StringReader("{\"Type\":20,\"Body\":\"nsu=urn:eclipse:milo:test1;foo\"}"));
     assertEquals(new Variant(new QualifiedName(1, "foo")), decoder.decodeVariant(null));
 
     decoder.reset(
@@ -716,7 +824,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readDiagnosticInfo() throws IOException {
+  void decodeDiagnosticInfo() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     var diagnosticInfo = new DiagnosticInfo(0, 1, 2, 3, "foo", null, null);
@@ -743,7 +851,7 @@ class OpcUaJsonDecoderTest {
   }
 
   @Test
-  void readMessage() {
+  void decodeMessage() {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     var message =
@@ -758,12 +866,12 @@ class OpcUaJsonDecoderTest {
 
     decoder.reset(
         new StringReader(
-            "{\"TypeId\":{\"Id\":15257},\"Body\":{\"RequestHeader\":{\"AuthenticationToken\":{\"Id\":0},\"Timestamp\":\"1601-01-01T00:00:00Z\",\"RequestHandle\":0,\"ReturnDiagnostics\":0,\"AuditEntryId\":\"foo\",\"TimeoutHint\":0,\"AdditionalHeader\":null},\"MaxAge\":0.0,\"TimestampsToReturn\":2,\"NodesToRead\":[{\"NodeId\":{\"Id\":1},\"AttributeId\":13,\"IndexRange\":null,\"DataEncoding\":{\"Name\":null}}]}}"));
+            "{\"TypeId\":\"i=15257\",\"Body\":{\"RequestHeader\":{\"AuthenticationToken\":\"i=0\",\"Timestamp\":\"1601-01-01T00:00:00Z\",\"RequestHandle\":0,\"ReturnDiagnostics\":0,\"AuditEntryId\":\"foo\",\"TimeoutHint\":0,\"AdditionalHeader\":null},\"MaxAge\":0.0,\"TimestampsToReturn\":2,\"NodesToRead\":[{\"NodeId\":\"i=1\",\"AttributeId\":13,\"IndexRange\":null,\"DataEncoding\":null}]}}"));
     assertEquals(message, decoder.decodeMessage(null));
   }
 
   @Test
-  void readEnum() throws IOException {
+  void decodeEnum() throws IOException {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
     for (ApplicationType applicationType : ApplicationType.values()) {
@@ -777,17 +885,27 @@ class OpcUaJsonDecoderTest {
     decoder.jsonReader.endObject();
   }
 
-  @Test
-  void readStruct() throws IOException {
-    var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
+  @MethodSource("decodeStructArguments")
+  @ParameterizedTest
+  void decodeStruct(UaStructuredType struct, String json) {
+    var decoder = new OpcUaJsonDecoder(context, json);
 
-    var struct = new Argument("foo", NodeIds.Int32, -1, null, LocalizedText.english("foo desc"));
+    assertEquals(struct, decoder.decodeStruct(null, struct.getTypeId()));
+  }
 
-    decoder.reset(
-        new StringReader(
-            "{\"Name\":\"foo\",\"DataType\":{\"Id\":6},\"ValueRank\":-1,\"Description\":{\"Locale\":\"en\",\"Text\":\"foo"
-                + " desc\"}}"));
-    assertEquals(struct, decoder.decodeStruct(null, Argument.TYPE_ID));
+  static Stream<Arguments> decodeStructArguments() {
+    return Stream.of(
+        Arguments.of(new XVType(0.0, 0.0f), "{}"),
+        Arguments.of(new XVType(1.0, 0.0f), "{\"X\":1.0}"),
+        Arguments.of(new XVType(0.0, 1.0f), "{\"Value\":1.0}"),
+        Arguments.of(
+            new Argument("foo", NodeIds.Int32, -1, null, LocalizedText.english("foo desc")),
+            "{\"Name\":\"foo\",\"DataType\":\"i=6\",\"ValueRank\":-1,\"Description\":{\"Locale\":\"en\",\"Text\":\"foo"
+                + " desc\"}}"),
+        Arguments.of(
+            new EUInformation(
+                null, 0, LocalizedText.NULL_VALUE, LocalizedText.english("description")),
+            "{\"Description\":{\"Locale\":\"en\",\"Text\":\"description\"}}"));
   }
 
   @Test
@@ -808,18 +926,19 @@ class OpcUaJsonDecoderTest {
               new Integer[][] {{4, 5}, {6, 7}}
             });
 
-    decoder.reset(new StringReader("[[0,1],[2,3]]"));
+    decoder.reset(new StringReader("{\"Array\":[0,1,2,3],\"Dimensions\":[2,2]}"));
     assertEquals(matrix2d, decoder.decodeMatrix(null, OpcUaDataType.Int32));
 
-    decoder.reset(new StringReader("[[[0,1],[2,3]],[[4,5],[6,7]]]"));
+    decoder.reset(new StringReader("{\"Array\":[0,1,2,3,4,5,6,7],\"Dimensions\":[2,2,2]}"));
     assertEquals(matrix3d, decoder.decodeMatrix(null, OpcUaDataType.Int32));
 
-    decoder.reset(new StringReader("{\"foo\":[[0,1],[2,3]]}"));
+    decoder.reset(new StringReader("{\"foo\":{\"Array\":[0,1,2,3],\"Dimensions\":[2,2]}}"));
     decoder.jsonReader.beginObject();
     assertEquals(matrix2d, decoder.decodeMatrix("foo", OpcUaDataType.Int32));
     decoder.jsonReader.endObject();
 
-    decoder.reset(new StringReader("{\"foo\":[[[0,1],[2,3]],[[4,5],[6,7]]]}"));
+    decoder.reset(
+        new StringReader("{\"foo\":{\"Array\":[0,1,2,3,4,5,6,7],\"Dimensions\":[2,2,2]}}"));
     decoder.jsonReader.beginObject();
     assertEquals(matrix3d, decoder.decodeMatrix("foo", OpcUaDataType.Int32));
     decoder.jsonReader.endObject();
@@ -829,10 +948,10 @@ class OpcUaJsonDecoderTest {
   void decodeEnumMatrix() throws Exception {
     var decoder = new OpcUaJsonDecoder(context, new StringReader(""));
 
-    decoder.reset(new StringReader("[[0,1],[2,3]]"));
+    decoder.reset(new StringReader("{\"Array\":[0,1,2,3],\"Dimensions\":[2,2]}"));
     assertEquals(Matrix.ofInt32(new Integer[][] {{0, 1}, {2, 3}}), decoder.decodeEnumMatrix(null));
 
-    decoder.reset(new StringReader("{\"foo\":[[0,1],[2,3]]}"));
+    decoder.reset(new StringReader("{\"foo\":{\"Array\":[0,1,2,3],\"Dimensions\":[2,2]}}"));
     decoder.jsonReader.beginObject();
     assertEquals(Matrix.ofInt32(new Integer[][] {{0, 1}, {2, 3}}), decoder.decodeEnumMatrix("foo"));
     decoder.jsonReader.endObject();
@@ -852,12 +971,12 @@ class OpcUaJsonDecoderTest {
 
     decoder.reset(
         new StringReader(
-            "[[{\"X\":0.0,\"Value\":1.0},{\"X\":2.0,\"Value\":3.0}],[{\"X\":4.0,\"Value\":5.0},{\"X\":6.0,\"Value\":7.0}]]"));
+            "{\"Array\":[{\"Value\":1.0},{\"X\":2.0,\"Value\":3.0},{\"X\":4.0,\"Value\":5.0},{\"X\":6.0,\"Value\":7.0}],\"Dimensions\":[2,2]}"));
     assertEquals(matrix, decoder.decodeStructMatrix(null, XVType.TYPE_ID));
 
     decoder.reset(
         new StringReader(
-            "{\"foo\":[[{\"X\":0.0,\"Value\":1.0},{\"X\":2.0,\"Value\":3.0}],[{\"X\":4.0,\"Value\":5.0},{\"X\":6.0,\"Value\":7.0}]]}"));
+            "{\"foo\":{\"Array\":[{\"Value\":1.0},{\"X\":2.0,\"Value\":3.0},{\"X\":4.0,\"Value\":5.0},{\"X\":6.0,\"Value\":7.0}],\"Dimensions\":[2,2]}}"));
     decoder.jsonReader.beginObject();
     assertEquals(matrix, decoder.decodeStructMatrix("foo", XVType.TYPE_ID));
     decoder.jsonReader.endObject();

@@ -11,13 +11,9 @@
 package org.eclipse.milo.opcua.stack.core.encoding.json;
 
 import com.google.gson.stream.JsonWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Stack;
 import java.util.UUID;
@@ -36,6 +32,10 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DiagnosticInfo;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.NamespaceReference.NamespaceIndex;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.NamespaceReference.NamespaceUri;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.ServerReference.ServerIndex;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.ServerReference.ServerUri;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Matrix;
@@ -49,8 +49,8 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
 import org.eclipse.milo.opcua.stack.core.util.ArrayUtil;
+import org.eclipse.milo.opcua.stack.core.util.Namespaces;
 import org.jspecify.annotations.NonNull;
 
 public class OpcUaJsonEncoder implements UaEncoder {
@@ -60,20 +60,24 @@ public class OpcUaJsonEncoder implements UaEncoder {
     STRUCT
   }
 
+  public enum Encoding {
+    COMPACT,
+    VERBOSE
+  }
+
   private final Stack<EncoderContext> contextStack = new Stack<>();
 
-  boolean reversible = true;
+  Encoding encoding = Encoding.COMPACT;
   JsonWriter jsonWriter;
   EncodingContext encodingContext;
 
   public OpcUaJsonEncoder(EncodingContext encodingContext) {
-    this.encodingContext = encodingContext;
+    this(encodingContext, new StringWriter());
   }
 
   public OpcUaJsonEncoder(EncodingContext encodingContext, Writer writer) {
     this.encodingContext = encodingContext;
-
-    reset(writer);
+    this.jsonWriter = new JsonWriter(writer);
   }
 
   @Override
@@ -101,6 +105,22 @@ public class OpcUaJsonEncoder implements UaEncoder {
     jsonWriter.setHtmlSafe(false);
   }
 
+  /**
+   * Set the encoding to use.
+   *
+   * <p>{@link Encoding#COMPACT} is the default, and is used for serialization between OPC UA
+   * applications.
+   *
+   * <p>{@link Encoding#VERBOSE} is used when the consumer of the encoded JSON is something like a
+   * "cloud application", or otherwise not an OPC UA application, and cannot be deserialized by
+   * another OPC UA application's JSON decoder.
+   *
+   * @param encoding the encoding to use.
+   */
+  public void setEncoding(Encoding encoding) {
+    this.encoding = encoding;
+  }
+
   private EncoderContext contextPeek() {
     return contextStack.isEmpty() ? EncoderContext.BUILTIN : contextStack.peek();
   }
@@ -117,7 +137,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeBoolean(String field, Boolean value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value) {
+      if (encoding == Encoding.VERBOSE || context == EncoderContext.BUILTIN || value) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -132,7 +152,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeSByte(String field, Byte value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value != 0) {
+      if (encoding == Encoding.VERBOSE || context == EncoderContext.BUILTIN || value != 0) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -147,7 +167,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeInt16(String field, Short value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value != 0) {
+      if (encoding == Encoding.VERBOSE || context == EncoderContext.BUILTIN || value != 0) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -162,7 +182,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeInt32(String field, Integer value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value != 0) {
+      if (encoding == Encoding.VERBOSE || context == EncoderContext.BUILTIN || value != 0) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -180,7 +200,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
 
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value != 0) {
+      if (encoding == Encoding.VERBOSE || context == EncoderContext.BUILTIN || value != 0) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -195,7 +215,9 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeByte(String field, UByte value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value.intValue() != 0) {
+      if (encoding == Encoding.VERBOSE
+          || context == EncoderContext.BUILTIN
+          || value.intValue() != 0) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -210,7 +232,9 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeUInt16(String field, UShort value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value.intValue() != 0) {
+      if (encoding == Encoding.VERBOSE
+          || context == EncoderContext.BUILTIN
+          || value.intValue() != 0) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -225,7 +249,9 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeUInt32(String field, UInteger value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value.longValue() != 0L) {
+      if (encoding == Encoding.VERBOSE
+          || context == EncoderContext.BUILTIN
+          || value.longValue() != 0L) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -244,7 +270,9 @@ public class OpcUaJsonEncoder implements UaEncoder {
 
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value.longValue() != 0L) {
+      if (encoding == Encoding.VERBOSE
+          || context == EncoderContext.BUILTIN
+          || value.longValue() != 0L) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -265,7 +293,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
 
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value != 0.0f) {
+      if (encoding == Encoding.VERBOSE || context == EncoderContext.BUILTIN || value != 0.0f) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -294,7 +322,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
 
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value != 0.0d) {
+      if (encoding == Encoding.VERBOSE || context == EncoderContext.BUILTIN || value != 0.0d) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -321,7 +349,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
 
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value != null) {
+      if (encoding == Encoding.VERBOSE || context == EncoderContext.BUILTIN || value != null) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -344,7 +372,9 @@ public class OpcUaJsonEncoder implements UaEncoder {
 
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || (value != null && value.isValid())) {
+      if (encoding == Encoding.VERBOSE
+          || context == EncoderContext.BUILTIN
+          || (value != null && value.isValid())) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -366,7 +396,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeGuid(String field, UUID value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null
               && value.getLeastSignificantBits() != 0L
@@ -391,7 +421,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
 
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null && value.isNotNull())) {
         if (field != null) {
@@ -408,7 +438,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeXmlElement(String field, XmlElement value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null && value.isNotNull())) {
         if (field != null) {
@@ -425,16 +455,26 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeNodeId(String field, NodeId value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null && value.isNotNull())) {
+
         if (field != null) {
           jsonWriter.name(field);
         }
-        jsonWriter.beginObject();
-        writeNodeIdCommonFields(
-            value.getType(), value.getIdentifier(), value.getNamespaceIndex().intValue());
-        jsonWriter.endObject();
+
+        ExpandedNodeId expanded;
+        try {
+          expanded = value.expanded(encodingContext.getNamespaceTable());
+        } catch (IllegalStateException e) {
+          // This is kind of similar to what's required of the decoder when it encounters a
+          // namespace URI it can't map to a namespace index:
+          // "When decoders need to replace a NamespaceUri with a NamespaceIndex and the
+          // NamespaceUri cannot be mapped to a NamespaceIndex, then decoders shall use 0 for the
+          // NamespaceIndex, String for the IdType and the JSON string as the Identifier."
+          expanded = ExpandedNodeId.of(value.toParseableString());
+        }
+        jsonWriter.value(expanded.toParseableString());
       }
     } catch (IOException e) {
       throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
@@ -444,111 +484,106 @@ public class OpcUaJsonEncoder implements UaEncoder {
   @Override
   public void encodeExpandedNodeId(String field, ExpandedNodeId value)
       throws UaSerializationException {
+
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null && value.isNotNull())) {
+
         if (field != null) {
           jsonWriter.name(field);
         }
-        jsonWriter.beginObject();
-        if (value.isAbsolute()) {
-          writeNodeIdCommonFields(value.getType(), value.getIdentifier(), 0);
-          jsonWriter.name("Namespace").value(value.getNamespaceUri());
-        } else {
-          writeNodeIdCommonFields(
-              value.getType(), value.getIdentifier(), value.getNamespaceIndex().intValue());
-        }
-        if (!value.isLocal()) {
-          int serverIndex = value.getServerIndex().intValue();
-          if (reversible) {
-            jsonWriter.name("ServerUri").value(serverIndex);
-          } else {
-            String serverUri = encodingContext.getServerTable().get(serverIndex);
-            if (serverUri != null) {
-              jsonWriter.name("ServerUri").value(serverUri);
+
+        var sb = new StringBuilder();
+
+        if (value.server() instanceof ServerIndex index) {
+          if (index.serverIndex().intValue() != 0) {
+            String uri = encodingContext.getServerTable().get(index.serverIndex().intValue());
+            if (uri != null) {
+              sb.append("svu=").append(uri).append(";");
             } else {
-              jsonWriter.name("ServerUri").value(serverIndex);
+              throw new UaSerializationException(
+                  StatusCodes.Bad_EncodingError,
+                  "server index=" + index.serverIndex() + " not found");
             }
           }
+        } else if (value.server() instanceof ServerUri uri) {
+          UInteger index = encodingContext.getServerTable().getIndex(uri.serverUri());
+          if (index == null || index.intValue() != 0) {
+            sb.append("svu=").append(uri.serverUri()).append(";");
+          }
         }
-        jsonWriter.endObject();
-      }
-    } catch (IOException e) {
-      throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
-    }
-  }
 
-  /** Writes the fields that are common to both NodeId and ExpandedNodeId. */
-  private void writeNodeIdCommonFields(IdType idType, Object identifier, int namespaceIndex)
-      throws IOException {
-    if (idType != IdType.Numeric) {
-      jsonWriter.name("IdType").value(idType.getValue());
-    }
-    jsonWriter.name("Id");
-    switch (idType) {
-      case Numeric:
-        jsonWriter.value((Number) identifier);
-        break;
-      case String:
-        jsonWriter.value((String) identifier);
-        break;
-      case Guid:
-        {
-          UUID uuid = (UUID) identifier;
-          jsonWriter.value(uuid.toString().toUpperCase());
-          break;
+        if (value.namespace() instanceof NamespaceIndex index) {
+          if (index.namespaceIndex().intValue() != 0) {
+            String uri = encodingContext.getNamespaceTable().get(index.namespaceIndex().intValue());
+            if (uri != null) {
+              sb.append("nsu=").append(uri).append(";");
+            } else {
+              throw new UaSerializationException(
+                  StatusCodes.Bad_EncodingError,
+                  "namespace index=" + index.namespaceIndex() + " not found");
+            }
+          }
+        } else if (value.namespace() instanceof NamespaceUri uri) {
+          if (!uri.namespaceUri().equals(Namespaces.OPC_UA)) {
+            sb.append("nsu=").append(uri.namespaceUri()).append(";");
+          }
         }
-      case Opaque:
-        {
-          ByteString bs = (ByteString) identifier;
-          jsonWriter.value(Base64.getEncoder().encodeToString(bs.bytesOrEmpty()));
-          break;
+
+        switch (value.getType()) {
+          case Numeric:
+            sb.append("i=").append(value.identifier());
+            break;
+          case String:
+            sb.append("s=").append(value.identifier());
+            break;
+          case Guid:
+            sb.append("g=").append(value.identifier().toString().toUpperCase());
+            break;
+          case Opaque:
+            ByteString bs = (ByteString) value.identifier();
+            if (bs.isNull()) sb.append("b=");
+            else sb.append("b=").append(Base64.getEncoder().encodeToString(bs.bytes()));
+            break;
+
+          default:
+            throw new IllegalStateException("IdType " + value.getType());
         }
-    }
-    if (namespaceIndex > 0) {
-      if (reversible || namespaceIndex == 1) {
-        jsonWriter.name("Namespace").value(namespaceIndex);
-      } else {
-        String namespaceUri = encodingContext.getNamespaceTable().get(namespaceIndex);
-        if (namespaceUri != null) {
-          jsonWriter.name("Namespace").value(namespaceUri);
-        } else {
-          jsonWriter.name("Namespace").value(namespaceIndex);
-        }
+
+        jsonWriter.value(sb.toString());
       }
+    } catch (Exception e) {
+      throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
     }
   }
 
   @Override
   public void encodeStatusCode(String field, StatusCode value) throws UaSerializationException {
-    // StatusCode values shall be encoded as a JSON number for the
-    // reversible encoding.
+    // # Compact
+    // StatusCode values shall be encoded as a JSON number.
     //
-    // For the non-reversible form, StatusCode values shall be encoded as
-    // a JSON object with the fields defined as follows:
-    //
-    // "Code":
+    // # Verbose
+    // StatusCode values shall be encoded as a JSON object with the fields defined as follows:
+    // - "Code"
     // The numeric code encoded as a JSON number.
     // The Code is omitted if the numeric code is 0 (Good).
-    //
-    // "Symbol":
-    // The string literal associated with the numeric code encoded as JSON
-    // string. e.g. 0x80AB0000 has the associated literal
-    // “BadInvalidArgument”.
+    // - "Symbol"
+    // The string literal associated with the numeric code encoded as JSON string. e.g. 0x80AB0000
+    // has the associated literal "BadInvalidArgument".
     // The Symbol is omitted if the numeric code is 0 (Good).
-    //
-    // A StatusCode of Good (0) is treated like a NULL and not encoded. If
-    // it is an element of an JSON array it is encoded as the JSON literal
-    // `null`.
+    // If the string literal is not known to the encoder the field is omitted.
 
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || (value != null && !value.isGood())) {
+      if (encoding == Encoding.VERBOSE
+          || context == EncoderContext.BUILTIN
+          || (value != null && !value.isGood())) {
+
         long code = value.value();
 
-        if (reversible) {
+        if (encoding == Encoding.COMPACT) {
           if (field != null) {
             jsonWriter.name(field);
           }
@@ -577,31 +612,30 @@ public class OpcUaJsonEncoder implements UaEncoder {
   @Override
   public void encodeQualifiedName(String field, QualifiedName value)
       throws UaSerializationException {
+
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null && value.isNotNull())) {
+
         if (field != null) {
           jsonWriter.name(field);
         }
 
-        jsonWriter.beginObject();
-        jsonWriter.name("Name").value(value.name());
-        int namespaceIndex = value.namespaceIndex().intValue();
-        if (namespaceIndex > 0) {
-          if (reversible || namespaceIndex == 1) {
-            jsonWriter.name("Uri").value(namespaceIndex);
+        int index = value.namespaceIndex().intValue();
+
+        if (index == 0) {
+          jsonWriter.value(value.name());
+        } else {
+          String namespaceUri = encodingContext.getNamespaceTable().get(index);
+          if (namespaceUri != null) {
+            jsonWriter.value("nsu=%s;%s".formatted(namespaceUri, value.name()));
           } else {
-            String namespaceUri = encodingContext.getNamespaceTable().get(namespaceIndex);
-            if (namespaceUri != null) {
-              jsonWriter.name("Uri").value(namespaceUri);
-            } else {
-              jsonWriter.name("Uri").value(namespaceIndex);
-            }
+            throw new UaSerializationException(
+                StatusCodes.Bad_EncodingError, "namespace index=" + index + " not found");
           }
         }
-        jsonWriter.endObject();
       }
     } catch (IOException e) {
       throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
@@ -611,27 +645,30 @@ public class OpcUaJsonEncoder implements UaEncoder {
   @Override
   public void encodeLocalizedText(String field, LocalizedText value)
       throws UaSerializationException {
+
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null && value.isNotNull())) {
+
         if (field != null) {
           jsonWriter.name(field);
         }
 
-        if (reversible) {
-          jsonWriter.beginObject();
-          if (value.locale() != null) {
-            jsonWriter.name("Locale").value(value.locale());
-          }
-          if (value.text() != null) {
-            jsonWriter.name("Text").value(value.text());
-          }
-          jsonWriter.endObject();
-        } else {
-          jsonWriter.value(value.text());
+        if (value == null || value.isNull()) {
+          jsonWriter.nullValue();
+          return;
         }
+
+        jsonWriter.beginObject();
+        if (value.locale() != null) {
+          jsonWriter.name("Locale").value(value.locale());
+        }
+        if (value.text() != null) {
+          jsonWriter.name("Text").value(value.text());
+        }
+        jsonWriter.endObject();
       }
     } catch (IOException e) {
       throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
@@ -641,42 +678,32 @@ public class OpcUaJsonEncoder implements UaEncoder {
   @Override
   public void encodeExtensionObject(String field, ExtensionObject value)
       throws UaSerializationException {
+
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value != null) {
+      if (context == EncoderContext.BUILTIN || value != null) {
         if (field != null) {
           jsonWriter.name(field);
         }
 
-        if (value == null || value.getBody() == null) {
+        if (value == null) {
           jsonWriter.nullValue();
         } else {
-          if (reversible) {
-            jsonWriter.beginObject();
-            encodeNodeId("TypeId", value.getEncodingOrTypeId());
-            if (value instanceof ExtensionObject.Json xo) {
-              jsonWriter.name("Body").jsonValue(xo.getBody());
-            } else if (value instanceof ExtensionObject.Binary xo) {
-              jsonWriter.name("Encoding").value(1);
-              encodeByteString("Body", xo.getBody());
-            } else if (value instanceof ExtensionObject.Xml xo) {
-              jsonWriter.name("Encoding").value(2);
-              encodeXmlElement("Body", xo.getBody());
-            }
-            jsonWriter.endObject();
-          } else {
-            if (value instanceof ExtensionObject.Json xo) {
-              jsonWriter.jsonValue(xo.getBody());
-            } else if (value instanceof ExtensionObject.Binary xo) {
-              contextPush(EncoderContext.BUILTIN);
-              encodeByteString(null, xo.getBody());
-              contextPop();
-            } else if (value instanceof ExtensionObject.Xml xo) {
-              contextPush(EncoderContext.BUILTIN);
-              encodeXmlElement(null, xo.getBody());
-              contextPop();
-            }
+          value.getBody();
+          jsonWriter.beginObject();
+
+          encodeNodeId("TypeId", value.getEncodingOrTypeId());
+          if (value instanceof ExtensionObject.Json xo) {
+            jsonWriter.name("Body").jsonValue(xo.getBody());
+          } else if (value instanceof ExtensionObject.Binary xo) {
+            jsonWriter.name("Encoding").value(1);
+            encodeByteString("Body", xo.getBody());
+          } else if (value instanceof ExtensionObject.Xml xo) {
+            jsonWriter.name("Encoding").value(2);
+            encodeXmlElement("Body", xo.getBody());
           }
+
+          jsonWriter.endObject();
         }
       }
     } catch (IOException e) {
@@ -699,11 +726,11 @@ public class OpcUaJsonEncoder implements UaEncoder {
       jsonWriter.beginObject();
 
       Variant v = value.value();
-      if (v != null && v.isNotNull()) {
+      if (v.isNotNull()) {
         encodeVariant("Value", v);
       }
       StatusCode s = value.statusCode();
-      if (s != null && s.value() != 0L) {
+      if (s.value() != 0L) {
         encodeStatusCode("Status", s);
       }
       DateTime sourceTime = value.sourceTime();
@@ -734,8 +761,8 @@ public class OpcUaJsonEncoder implements UaEncoder {
    * @return {@code true} if all fields in {@code value} would be omitted from the encoding.
    */
   private static boolean allFieldsAreOmitted(DataValue value) {
-    return (value.value() == null || value.value().isNull())
-        && (value.statusCode() == null || value.statusCode().value() == 0L)
+    return value.value().isNull()
+        && value.statusCode().value() == 0L
         && (value.sourceTime() == null || value.sourceTime().isNull())
         && (value.sourcePicoseconds() == null || value.sourcePicoseconds().intValue() == 0)
         && (value.serverTime() == null || value.serverTime().isNull())
@@ -769,8 +796,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
 
   private void encodeVariantValue(@NonNull Object value) throws IOException {
     Class<?> valueClass;
-    if (value instanceof Matrix) {
-      Matrix m = (Matrix) value;
+    if (value instanceof Matrix m) {
       if (m.getElements() == null) return;
       valueClass = getClass(m.getElements());
     } else {
@@ -803,13 +829,12 @@ public class OpcUaJsonEncoder implements UaEncoder {
     }
 
     if (value.getClass().isArray()) {
-      if (reversible) {
-        jsonWriter.beginObject();
-        jsonWriter.name("Type").value(typeId);
-        jsonWriter.name("Body");
-      }
+      jsonWriter.beginObject();
 
+      jsonWriter.name("Type").value(typeId);
+      jsonWriter.name("Body");
       int length = Array.getLength(value);
+
       jsonWriter.beginArray();
       for (int i = 0; i < length; i++) {
         Object o = Array.get(value, i);
@@ -818,51 +843,39 @@ public class OpcUaJsonEncoder implements UaEncoder {
       }
       jsonWriter.endArray();
 
-      if (reversible) {
-        jsonWriter.endObject();
-      }
-    } else if (value instanceof Matrix) {
-      if (reversible) {
-        jsonWriter.beginObject();
-        jsonWriter.name("Type").value(typeId);
-        jsonWriter.name("Body");
-      }
+      jsonWriter.endObject();
+    } else if (value instanceof Matrix m) {
+      jsonWriter.beginObject();
 
-      Matrix m = (Matrix) value;
-      if (reversible) {
-        Object flatArray = m.getElements();
-        int length = Array.getLength(flatArray);
-        jsonWriter.beginArray();
-        for (int i = 0; i < length; i++) {
-          Object o = Array.get(flatArray, i);
+      jsonWriter.name("Type").value(typeId);
+      jsonWriter.name("Body");
 
-          encodeVariantBodyValue(o, typeHint, typeId);
-        }
-        jsonWriter.endArray();
+      Object flatArray = m.getElements();
+      int length = Array.getLength(flatArray);
+      jsonWriter.beginArray();
+      for (int i = 0; i < length; i++) {
+        Object o = Array.get(flatArray, i);
 
-        jsonWriter.name("Dimensions");
-        jsonWriter.beginArray();
-        for (int dimension : m.getDimensions()) {
-          jsonWriter.value(dimension);
-        }
-        jsonWriter.endArray();
-        jsonWriter.endObject();
-      } else {
-        Object nestedArray = ArrayUtil.unflatten(m.getElements(), m.getDimensions());
-        writeNestedMultiDimensionalVariantValue(typeId, nestedArray, m.getDimensions(), 0);
+        encodeVariantBodyValue(o, typeHint, typeId);
       }
+      jsonWriter.endArray();
+
+      jsonWriter.name("Dimensions");
+      jsonWriter.beginArray();
+      for (int dimension : m.getDimensions()) {
+        jsonWriter.value(dimension);
+      }
+      jsonWriter.endArray();
+
+      jsonWriter.endObject();
     } else {
-      if (reversible) {
-        jsonWriter.beginObject();
-        jsonWriter.name("Type").value(typeId);
-        jsonWriter.name("Body");
-      }
+      jsonWriter.beginObject();
+      jsonWriter.name("Type").value(typeId);
+      jsonWriter.name("Body");
 
       encodeVariantBodyValue(value, typeHint, typeId);
 
-      if (reversible) {
-        jsonWriter.endObject();
-      }
+      jsonWriter.endObject();
     }
   }
 
@@ -892,51 +905,6 @@ public class OpcUaJsonEncoder implements UaEncoder {
           encodeBuiltinTypeValue(null, typeId, optionSetValue);
           break;
         }
-    }
-  }
-
-  /** Write a multidimensional value in the reversible (flattened array) format. */
-  private void writeFlattenedMultiDimensionalVariantValue(
-      int typeId, Object value, int[] dimensions, int dimensionIndex) throws IOException {
-
-    if (dimensionIndex == 0) {
-      jsonWriter.beginArray();
-      for (int i = 0; i < dimensions[dimensionIndex]; i++) {
-        Object e = Array.get(value, i);
-        writeFlattenedMultiDimensionalVariantValue(typeId, e, dimensions, dimensionIndex + 1);
-      }
-      jsonWriter.endArray();
-    } else if (dimensionIndex == dimensions.length - 1) {
-      for (int i = 0; i < dimensions[dimensionIndex]; i++) {
-        Object e = Array.get(value, i);
-        encodeBuiltinTypeValue(null, typeId, e);
-      }
-    } else {
-      for (int i = 0; i < dimensions[dimensionIndex]; i++) {
-        Object e = Array.get(value, i);
-        writeFlattenedMultiDimensionalVariantValue(typeId, e, dimensions, dimensionIndex + 1);
-      }
-    }
-  }
-
-  /** Write a multidimensional value in the non-reversible (nested array) format. */
-  private void writeNestedMultiDimensionalVariantValue(
-      int typeId, Object value, int[] dimensions, int dimensionIndex) throws IOException {
-
-    if (dimensionIndex == dimensions.length - 1) {
-      jsonWriter.beginArray();
-      for (int i = 0; i < dimensions[dimensionIndex]; i++) {
-        Object e = Array.get(value, i);
-        encodeBuiltinTypeValue(null, typeId, e);
-      }
-      jsonWriter.endArray();
-    } else {
-      jsonWriter.beginArray();
-      for (int i = 0; i < dimensions[dimensionIndex]; i++) {
-        Object e = Array.get(value, i);
-        writeNestedMultiDimensionalVariantValue(typeId, e, dimensions, dimensionIndex + 1);
-      }
-      jsonWriter.endArray();
     }
   }
 
@@ -1039,7 +1007,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
       throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible || context == EncoderContext.BUILTIN || value != null) {
+      if (encoding == Encoding.VERBOSE || context == EncoderContext.BUILTIN || value != null) {
         if (field != null) {
           jsonWriter.name(field);
         }
@@ -1097,7 +1065,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
 
   @Override
   public void encodeEnum(String field, UaEnumeratedType value) throws UaSerializationException {
-    if (reversible) {
+    if (encoding == Encoding.COMPACT) {
       encodeInt32(field, value.getValue());
     } else {
       if (value.getName() != null) {
@@ -1346,14 +1314,16 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeMatrix(String field, Matrix value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null && value.isNotNull())) {
+
         if (field != null) {
           jsonWriter.name(field);
         }
 
         Object flatArray = value.getElements();
+
         if (flatArray == null) {
           try {
             jsonWriter.nullValue();
@@ -1361,12 +1331,30 @@ public class OpcUaJsonEncoder implements UaEncoder {
             throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
           }
         } else {
-          int[] dimensions = value.getDimensions();
           OpcUaDataType dataType = value.getDataType().orElseThrow();
+
+          int[] dimensions = value.getDimensions();
+
+          jsonWriter.beginObject();
           try {
-            encodeFlatArrayAsNested(flatArray, dimensions, dataType, 0);
-          } catch (IOException e) {
-            throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
+            // "Array" member
+            jsonWriter.name("Array");
+            jsonWriter.beginArray();
+            for (int i = 0; i < Array.getLength(flatArray); i++) {
+              Object e = Array.get(flatArray, i);
+              encodeBuiltinTypeValue(null, dataType.getTypeId(), e);
+            }
+            jsonWriter.endArray();
+
+            // "Dimensions" member
+            jsonWriter.name("Dimensions");
+            jsonWriter.beginArray();
+            for (int dimension : dimensions) {
+              jsonWriter.value(dimension);
+            }
+            jsonWriter.endArray();
+          } finally {
+            jsonWriter.endObject();
           }
         }
       }
@@ -1379,14 +1367,16 @@ public class OpcUaJsonEncoder implements UaEncoder {
   public void encodeEnumMatrix(String field, Matrix value) throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null && value.isNotNull())) {
+
         if (field != null) {
           jsonWriter.name(field);
         }
 
         Object flatArray = value.getElements();
+
         if (flatArray == null) {
           try {
             jsonWriter.nullValue();
@@ -1396,10 +1386,26 @@ public class OpcUaJsonEncoder implements UaEncoder {
         } else {
           int[] dimensions = value.getDimensions();
 
+          jsonWriter.beginObject();
           try {
-            encodeFlatEnumArrayAsNested((UaEnumeratedType[]) flatArray, dimensions, 0);
-          } catch (IOException e) {
-            throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
+            // "Array" member
+            jsonWriter.name("Array");
+            jsonWriter.beginArray();
+            for (int i = 0; i < Array.getLength(flatArray); i++) {
+              Object e = Array.get(flatArray, i);
+              encodeEnum(null, (UaEnumeratedType) e);
+            }
+            jsonWriter.endArray();
+
+            // "Dimensions" member
+            jsonWriter.name("Dimensions");
+            jsonWriter.beginArray();
+            for (int dimension : dimensions) {
+              jsonWriter.value(dimension);
+            }
+            jsonWriter.endArray();
+          } finally {
+            jsonWriter.endObject();
           }
         }
       }
@@ -1413,14 +1419,16 @@ public class OpcUaJsonEncoder implements UaEncoder {
       throws UaSerializationException {
     try {
       EncoderContext context = contextPeek();
-      if (!reversible
+      if (encoding == Encoding.VERBOSE
           || context == EncoderContext.BUILTIN
           || (value != null && value.isNotNull())) {
+
         if (field != null) {
           jsonWriter.name(field);
         }
 
         Object flatArray = value.getElements();
+
         if (flatArray == null) {
           try {
             jsonWriter.nullValue();
@@ -1430,10 +1438,26 @@ public class OpcUaJsonEncoder implements UaEncoder {
         } else {
           int[] dimensions = value.getDimensions();
 
+          jsonWriter.beginObject();
           try {
-            encodeFlatStructArrayAsNested(flatArray, dataTypeId, dimensions, 0);
-          } catch (IOException e) {
-            throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
+            // "Array" member
+            jsonWriter.name("Array");
+            jsonWriter.beginArray();
+            for (int i = 0; i < Array.getLength(flatArray); i++) {
+              Object e = Array.get(flatArray, i);
+              encodeStruct(null, e, dataTypeId);
+            }
+            jsonWriter.endArray();
+
+            // "Dimensions" member
+            jsonWriter.name("Dimensions");
+            jsonWriter.beginArray();
+            for (int dimension : dimensions) {
+              jsonWriter.value(dimension);
+            }
+            jsonWriter.endArray();
+          } finally {
+            jsonWriter.endObject();
           }
         }
       }
@@ -1455,73 +1479,5 @@ public class OpcUaJsonEncoder implements UaEncoder {
                         "encodeStructArray: namespace not registered: " + dataTypeId));
 
     encodeStructMatrix(field, value, localDataTypeId);
-  }
-
-  private void encodeFlatArrayAsNested(
-      Object value, int[] dimensions, OpcUaDataType dataType, int offset) throws IOException {
-
-    if (dimensions.length == 1) {
-      jsonWriter.beginArray();
-      for (int i = 0; i < dimensions[0]; i++) {
-        Object e = Array.get(value, offset + i);
-        encodeBuiltinTypeValue(null, dataType.getTypeId(), e);
-      }
-      jsonWriter.endArray();
-    } else {
-      jsonWriter.beginArray();
-      int[] tail = Arrays.copyOfRange(dimensions, 1, dimensions.length);
-      for (int i = 0; i < dimensions[0]; i++) {
-        encodeFlatArrayAsNested(value, tail, dataType, offset + i * length(tail));
-      }
-      jsonWriter.endArray();
-    }
-  }
-
-  private void encodeFlatEnumArrayAsNested(UaEnumeratedType[] value, int[] dimensions, int offset)
-      throws IOException {
-
-    if (dimensions.length == 1) {
-      jsonWriter.beginArray();
-      for (int i = 0; i < dimensions[0]; i++) {
-        Object e = Array.get(value, offset + i);
-        encodeEnum(null, (UaEnumeratedType) e);
-      }
-      jsonWriter.endArray();
-    } else {
-      jsonWriter.beginArray();
-      int[] tail = Arrays.copyOfRange(dimensions, 1, dimensions.length);
-      for (int i = 0; i < dimensions[0]; i++) {
-        encodeFlatEnumArrayAsNested(value, tail, offset + i * length(tail));
-      }
-      jsonWriter.endArray();
-    }
-  }
-
-  private void encodeFlatStructArrayAsNested(
-      Object value, NodeId dataTypeId, int[] dimensions, int offset) throws IOException {
-
-    if (dimensions.length == 1) {
-      jsonWriter.beginArray();
-      for (int i = 0; i < dimensions[0]; i++) {
-        Object e = Array.get(value, offset + i);
-        encodeStruct(null, e, dataTypeId);
-      }
-      jsonWriter.endArray();
-    } else {
-      jsonWriter.beginArray();
-      int[] tail = Arrays.copyOfRange(dimensions, 1, dimensions.length);
-      for (int i = 0; i < dimensions[0]; i++) {
-        encodeFlatStructArrayAsNested(value, dataTypeId, tail, offset + i * length(tail));
-      }
-      jsonWriter.endArray();
-    }
-  }
-
-  private static int length(int[] tail) {
-    int product = 1;
-    for (int aTail : tail) {
-      product *= aTail;
-    }
-    return product;
   }
 }
