@@ -65,6 +65,18 @@ public class OpcUaXmlDecoder implements UaDecoder {
     }
   }
 
+  public OpcUaXmlDecoder(EncodingContext context, String xml) throws IOException, SAXException {
+    this.context = context;
+
+    try {
+      builder = SecureXmlUtil.SHARED_DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
+    } catch (ParserConfigurationException e) {
+      throw new UaRuntimeException(StatusCodes.Bad_InternalError, e);
+    }
+
+    setInput(new StringReader(xml));
+  }
+
   @Override
   public EncodingContext getEncodingContext() {
     return context;
@@ -589,7 +601,7 @@ public class OpcUaXmlDecoder implements UaDecoder {
 
       try {
         currentNode = node.getFirstChild().getFirstChild();
-        Object value = readVariantValue();
+        Object value = decodeVariantValue();
 
         return new Variant(value);
       } catch (Throwable t) {
@@ -602,7 +614,7 @@ public class OpcUaXmlDecoder implements UaDecoder {
     }
   }
 
-  public Object readVariantValue() {
+  public Object decodeVariantValue() {
     if (currentNode(null)) {
       Node node = currentNode;
 
