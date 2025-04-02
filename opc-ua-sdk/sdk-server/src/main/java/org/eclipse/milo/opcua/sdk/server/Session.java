@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -238,13 +238,13 @@ public class Session {
   }
 
   /**
-   * Get the {@link InetAddress} of the client that activated this session.
+   * Get the {@link InetAddress} of the client that created or activated this session.
    *
-   * <p>The address is set or updated when time the session is activated or re-activated.
+   * <p>The address is set or updated during CreateSession and ActivateSession calls.
    *
-   * @return the {@link InetAddress} of the client that activated this session.
+   * @return the {@link InetAddress} of the client that created or activated this session.
    */
-  public InetAddress getClientAddress() {
+  public @Nullable InetAddress getClientAddress() {
     return clientAddress;
   }
 

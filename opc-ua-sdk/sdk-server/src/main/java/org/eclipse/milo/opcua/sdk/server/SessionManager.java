@@ -330,6 +330,7 @@ public class SessionManager {
             securityConfiguration);
 
     session.setLastNonce(serverNonce);
+    session.setClientAddress(context.clientAddress());
 
     session.addLifecycleListener(
         (s, remove) -> {
