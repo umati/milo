@@ -10,6 +10,7 @@
 
 package org.eclipse.milo.opcua.sdk.core.types;
 
+import java.util.Objects;
 import org.eclipse.milo.opcua.sdk.core.typetree.DataType;
 import org.eclipse.milo.opcua.stack.core.types.UaDataType;
 import org.eclipse.milo.opcua.stack.core.types.structured.DataTypeDefinition;
@@ -20,6 +21,11 @@ import org.eclipse.milo.opcua.stack.core.types.structured.DataTypeDefinition;
  */
 public abstract sealed class DynamicType implements UaDataType
     permits DynamicEnumType, DynamicOptionSetType, DynamicStructType, DynamicUnionType {
+
+  @Override
+  public String getTypeName() {
+    return Objects.requireNonNull(getDataType().getBrowseName().name());
+  }
 
   /**
    * Get the {@link DataType} that defines this type.
