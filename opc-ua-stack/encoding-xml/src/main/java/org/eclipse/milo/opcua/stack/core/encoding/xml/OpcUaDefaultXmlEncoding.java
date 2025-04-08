@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
+import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.UaSerializationException;
 import org.eclipse.milo.opcua.stack.core.encoding.DataTypeCodec;
 import org.eclipse.milo.opcua.stack.core.encoding.EncodingContext;
@@ -44,16 +45,12 @@ public class OpcUaDefaultXmlEncoding implements DataTypeEncoding {
 
   @Override
   public ExtensionObject encode(EncodingContext context, UaStructuredType struct) {
-    NodeId encodingId =
-        struct
-            .getXmlEncodingId()
-            .toNodeId(context.getNamespaceTable())
-            .orElseThrow(
-                () ->
-                    new UaSerializationException(
-                        StatusCodes.Bad_EncodingError,
-                        "no namespace registered: "
-                            + struct.getXmlEncodingId().toParseableString()));
+    NodeId encodingId;
+    try {
+      encodingId = struct.getXmlEncodingId().toNodeIdOrThrow(context.getNamespaceTable());
+    } catch (UaException e) {
+      throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
+    }
 
     DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
 

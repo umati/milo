@@ -12,6 +12,7 @@ package org.eclipse.milo.opcua.stack.core.encoding.json;
 
 import java.io.StringWriter;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
+import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.UaSerializationException;
 import org.eclipse.milo.opcua.stack.core.encoding.DataTypeCodec;
 import org.eclipse.milo.opcua.stack.core.encoding.EncodingContext;
@@ -43,15 +44,12 @@ public class OpcUaDefaultJsonEncoding implements DataTypeEncoding {
   @Override
   public ExtensionObject encode(EncodingContext context, UaStructuredType struct) {
     // Note: JSON encoding uses the DataType NodeId, not a separate encoding NodeId.
-    NodeId typeId =
-        struct
-            .getTypeId()
-            .toNodeId(context.getNamespaceTable())
-            .orElseThrow(
-                () ->
-                    new UaSerializationException(
-                        StatusCodes.Bad_EncodingError,
-                        "no namespace registered: " + struct.getTypeId().toParseableString()));
+    NodeId typeId;
+    try {
+      typeId = struct.getTypeId().toNodeIdOrThrow(context.getNamespaceTable());
+    } catch (UaException e) {
+      throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
+    }
 
     DataTypeCodec codec = context.getDataTypeManager().getCodec(typeId);
 

@@ -16,10 +16,7 @@ import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.eclipse.milo.opcua.stack.core.NamespaceTable;
-import org.eclipse.milo.opcua.stack.core.ServerTable;
-import org.eclipse.milo.opcua.stack.core.StatusCodes;
-import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
+import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.NamespaceReference.NamespaceIndex;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId.ServerReference.ServerIndex;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
@@ -269,15 +266,21 @@ public record ExpandedNodeId(
    * @param namespaceTable the {@link NamespaceTable} to use.
    * @return the {@link NodeId} if this {@link ExpandedNodeId} is local and the namespace index can
    *     be determined.
-   * @throws Exception if this {@link ExpandedNodeId} is not local or the namespace index cannot be
-   *     determined.
+   * @throws UaException if this {@link ExpandedNodeId} is not local or the namespace index cannot
+   *     be determined.
    */
-  public NodeId toNodeIdOrThrow(NamespaceTable namespaceTable) throws Exception {
+  public NodeId toNodeIdOrThrow(NamespaceTable namespaceTable) throws UaException {
     if (!isLocal()) {
-      throw new Exception("ExpandedNodeId is not local: " + this);
+      throw new UaException(
+          StatusCodes.Bad_NodeIdInvalid, "not local: " + this.toParseableString());
     } else {
-      return toNodeId(namespaceTable)
-          .orElseThrow(() -> new Exception("namespace not registered: " + namespace));
+      Optional<NodeId> nodeId = toNodeId(namespaceTable);
+
+      return nodeId.orElseThrow(
+          () ->
+              new UaException(
+                  StatusCodes.Bad_NodeIdInvalid,
+                  "namespace not registered: " + this.toParseableString()));
     }
   }
 

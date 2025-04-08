@@ -16,6 +16,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
+import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.UaSerializationException;
 import org.eclipse.milo.opcua.stack.core.encoding.DataTypeCodec;
 import org.eclipse.milo.opcua.stack.core.encoding.EncodingContext;
@@ -47,16 +48,12 @@ public class OpcUaDefaultBinaryEncoding implements DataTypeEncoding {
 
   @Override
   public ExtensionObject encode(EncodingContext context, UaStructuredType struct) {
-    NodeId encodingId =
-        struct
-            .getBinaryEncodingId()
-            .toNodeId(context.getNamespaceTable())
-            .orElseThrow(
-                () ->
-                    new UaSerializationException(
-                        StatusCodes.Bad_EncodingError,
-                        "no namespace registered: "
-                            + struct.getBinaryEncodingId().toParseableString()));
+    NodeId encodingId;
+    try {
+      encodingId = struct.getBinaryEncodingId().toNodeIdOrThrow(context.getNamespaceTable());
+    } catch (UaException e) {
+      throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
+    }
 
     DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
 
