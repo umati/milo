@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -16,18 +16,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.milo.opcua.sdk.core.dtd.AbstractBsdCodec;
+import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.util.ArrayUtil;
 import org.opcfoundation.opcua.binaryschema.StructuredType;
 
 public class StructCodec extends AbstractBsdCodec<Struct, Struct.Member> {
 
-  public StructCodec(StructuredType structuredType) {
-    super(structuredType);
-  }
+  public StructCodec(
+      String namespaceUri, NodeId dataTypeId, NodeId encodingId, StructuredType structuredType) {
 
-  @Override
-  public Class<Struct> getType() {
-    return Struct.class;
+    super(namespaceUri, dataTypeId, encodingId, structuredType);
   }
 
   @Override

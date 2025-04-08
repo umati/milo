@@ -18,6 +18,8 @@ import org.eclipse.milo.opcua.stack.core.UaSerializationException;
 import org.eclipse.milo.opcua.stack.core.encoding.DataTypeCodec;
 import org.eclipse.milo.opcua.stack.core.encoding.EncodingContext;
 import org.eclipse.milo.opcua.stack.core.types.DataTypeEncoding;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 import org.eclipse.milo.opcua.stack.core.types.builtin.XmlElement;
@@ -41,21 +43,36 @@ public class OpcUaDefaultXmlEncoding implements DataTypeEncoding {
   }
 
   @Override
-  public Object encode(EncodingContext context, Object struct, NodeId encodingId) {
+  public ExtensionObject encode(
+      EncodingContext context, UaStructuredType struct, NodeId encodingId) {
+
+    DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
+
+    if (codec == null) {
+      throw new UaSerializationException(
+          StatusCodes.Bad_DecodingError, "no codec registered for encodingId=" + encodingId);
+    }
+
     OpcUaXmlEncoder encoder = new OpcUaXmlEncoder(context);
 
-    String typeName = struct.getClass().getSimpleName();
-    encoder.encodeStruct(typeName, struct, encodingId);
+    encoder.encodeStruct(struct.getEncodingName(), struct, codec);
 
-    return new XmlElement(encoder.getDocumentXml());
+    return ExtensionObject.of(XmlElement.of(encoder.getDocumentXml()), encodingId);
   }
 
   @Override
-  public Object decode(EncodingContext context, Object body, NodeId encodingId) {
-    DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
+  public UaStructuredType decode(
+      EncodingContext context, ExtensionObject encoded, NodeId encodingId) {
 
-    if (codec != null) {
-      XmlElement xmlBody = (XmlElement) body;
+    if (encoded instanceof ExtensionObject.Xml xo) {
+      DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
+
+      if (codec == null) {
+        throw new UaSerializationException(
+            StatusCodes.Bad_DecodingError, "no codec registered for encodingId=" + encodingId);
+      }
+
+      XmlElement xmlBody = xo.getBody();
       String xml = xmlBody.getFragmentOrEmpty();
 
       OpcUaXmlDecoder decoder = new OpcUaXmlDecoder(context);
@@ -67,10 +84,10 @@ public class OpcUaDefaultXmlEncoding implements DataTypeEncoding {
 
       // We have to use decoder.decodeStruct() instead of codec.decode() because
       // XML-encoded structs are wrapped in a container element with the struct name.
-      return decoder.decodeStruct(codec.getType().getSimpleName(), codec);
+      return decoder.decodeStruct(null, codec);
     } else {
       throw new UaSerializationException(
-          StatusCodes.Bad_DecodingError, "no codec registered for encodingId=" + encodingId);
+          StatusCodes.Bad_DecodingError, "not XML encoded" + encoded);
     }
   }
 }

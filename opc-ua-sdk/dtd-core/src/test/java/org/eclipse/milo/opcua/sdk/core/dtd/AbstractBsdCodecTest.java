@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -29,6 +29,7 @@ import org.eclipse.milo.opcua.stack.core.encoding.binary.OpcUaBinaryEncoder;
 import org.eclipse.milo.opcua.stack.core.types.DataTypeDictionary;
 import org.eclipse.milo.opcua.stack.core.types.DataTypeManager;
 import org.eclipse.milo.opcua.stack.core.types.OpcUaDataTypeManager;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.opcfoundation.opcua.binaryschema.StructuredType;
 import org.opcfoundation.opcua.binaryschema.TypeDictionary;
@@ -87,7 +88,12 @@ public abstract class AbstractBsdCodecTest {
               if (typeDescription instanceof StructuredType) {
                 StructuredType structuredType = (StructuredType) typeDescription;
 
-                BinaryDataTypeCodec codec = createCodec(structuredType);
+                BinaryDataTypeCodec codec =
+                    createCodec(
+                        BSD_CODEC_TEST_NAMESPACE,
+                        NodeId.NULL_VALUE,
+                        NodeId.NULL_VALUE,
+                        structuredType);
 
                 binaryDictionary.registerType(
                     new BinaryDataTypeDictionary.BinaryType(
@@ -105,7 +111,8 @@ public abstract class AbstractBsdCodecTest {
                     type.getDataTypeId(), type.getCodec(), type.getEncodingId(), null, null));
   }
 
-  protected abstract BinaryDataTypeCodec createCodec(StructuredType structuredType);
+  protected abstract BinaryDataTypeCodec createCodec(
+      String namespaceUri, NodeId dataTypeId, NodeId encodingId, StructuredType structuredType);
 
   protected BinaryDataTypeCodec getCodec(String name) {
     DataTypeDictionary dictionary = dataTypeManager.getTypeDictionary(BSD_CODEC_TEST_NAMESPACE);
@@ -120,12 +127,16 @@ public abstract class AbstractBsdCodecTest {
 
     System.out.println("originalValue:\t" + originalValue);
     ByteBuf buffer = Unpooled.buffer();
-    codec.encode(context, new OpcUaBinaryEncoder(context).setBuffer(buffer), originalValue);
+    codec.encodeBinary(
+        context,
+        new OpcUaBinaryEncoder(context).setBuffer(buffer),
+        (UaStructuredType) originalValue);
 
     ByteBuf encodedValue = buffer.copy();
     System.out.println("encodedValue:\t" + ByteBufUtil.hexDump(encodedValue));
 
-    Object decodedValue = codec.decode(context, new OpcUaBinaryDecoder(context).setBuffer(buffer));
+    Object decodedValue =
+        codec.decodeBinary(context, new OpcUaBinaryDecoder(context).setBuffer(buffer));
     assertEquals(originalValue, decodedValue);
     System.out.println("decodedValue:\t" + decodedValue);
   }
@@ -145,12 +156,16 @@ public abstract class AbstractBsdCodecTest {
 
     System.out.println("originalValue:\t" + originalValue);
     ByteBuf buffer = Unpooled.buffer();
-    codec.encode(context, new OpcUaBinaryEncoder(context).setBuffer(buffer), originalValue);
+    codec.encodeBinary(
+        context,
+        new OpcUaBinaryEncoder(context).setBuffer(buffer),
+        (UaStructuredType) originalValue);
 
     ByteBuf encodedValue = buffer.copy();
     System.out.println("encodedValue:\t" + ByteBufUtil.hexDump(encodedValue));
 
-    Object decodedValue = codec.decode(context, new OpcUaBinaryDecoder(context).setBuffer(buffer));
+    Object decodedValue =
+        codec.decodeBinary(context, new OpcUaBinaryDecoder(context).setBuffer(buffer));
     assertEquals(originalValue.toString(), decodedValue.toString());
     System.out.println("decodedValue:\t" + decodedValue);
   }

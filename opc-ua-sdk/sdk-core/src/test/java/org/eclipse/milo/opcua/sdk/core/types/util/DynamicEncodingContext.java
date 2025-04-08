@@ -15,6 +15,8 @@ import org.mockito.Mockito;
 
 public class DynamicEncodingContext extends AbstractEncodingContext {
 
+  private static final String TEST_NAMESPACE = "https://github.com/eclipse/milo/DataTypeTest";
+
   public DynamicEncodingContext() {
     super();
 

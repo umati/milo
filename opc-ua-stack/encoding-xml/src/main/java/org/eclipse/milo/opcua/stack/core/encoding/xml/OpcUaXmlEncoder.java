@@ -951,7 +951,7 @@ public class OpcUaXmlEncoder implements UaEncoder {
   }
 
   @Override
-  public void encodeStruct(String field, Object value, ExpandedNodeId dataTypeId)
+  public void encodeStruct(String field, UaStructuredType value, ExpandedNodeId dataTypeId)
       throws UaSerializationException {
 
     NodeId localDateTypeId =
@@ -967,7 +967,7 @@ public class OpcUaXmlEncoder implements UaEncoder {
   }
 
   @Override
-  public void encodeStruct(String field, Object value, NodeId dataTypeId)
+  public void encodeStruct(String field, UaStructuredType value, NodeId dataTypeId)
       throws UaSerializationException {
 
     if (beginField(field)) {
@@ -989,6 +989,35 @@ public class OpcUaXmlEncoder implements UaEncoder {
         if (codec == null) {
           throw new UaSerializationException(
               StatusCodes.Bad_EncodingError, "no codec registered: " + dataTypeId);
+        }
+
+        namespaceStack.push(namespaceUri);
+        codec.encode(context, this, value);
+        namespaceStack.pop();
+      } finally {
+        depth.decrementAndGet();
+        endField(field);
+      }
+    }
+  }
+
+  @Override
+  public void encodeStruct(String field, UaStructuredType value, DataTypeCodec codec)
+      throws UaSerializationException {
+
+    if (beginField(field)) {
+      if (depth.getAndIncrement() > context.getEncodingLimits().getMaxRecursionDepth()) {
+        throw new UaSerializationException(
+            StatusCodes.Bad_EncodingError,
+            "max recursion depth exceeded: " + context.getEncodingLimits().getMaxRecursionDepth());
+      }
+
+      try {
+        String namespaceUri = value.getTypeId().getNamespaceUri(context.getNamespaceTable());
+        if (namespaceUri == null) {
+          throw new UaSerializationException(
+              StatusCodes.Bad_EncodingError,
+              "no namespace registered: " + value.getTypeId().toParseableString());
         }
 
         namespaceStack.push(namespaceUri);
@@ -1490,7 +1519,7 @@ public class OpcUaXmlEncoder implements UaEncoder {
           namespaceStack.push(namespaceUri);
 
           for (UaEnumeratedType element : value) {
-            encodeEnum(element.getTypeName(), element);
+            encodeEnum(element.getEncodingName(), element);
           }
 
           namespaceStack.pop();
@@ -1504,7 +1533,7 @@ public class OpcUaXmlEncoder implements UaEncoder {
   }
 
   @Override
-  public void encodeStructArray(String field, Object[] values, NodeId dataTypeId)
+  public void encodeStructArray(String field, UaStructuredType[] values, NodeId dataTypeId)
       throws UaSerializationException {
 
     if (beginField(field, values == null, true, true)) {
@@ -1521,8 +1550,8 @@ public class OpcUaXmlEncoder implements UaEncoder {
         namespaceStack.push(namespaceUri);
 
         assert values != null;
-        for (Object v : values) {
-          String typeName = ((UaStructuredType) v).getTypeName();
+        for (UaStructuredType v : values) {
+          String typeName = v.getEncodingName();
           encodeStruct(typeName, v, dataTypeId);
         }
 
@@ -1536,7 +1565,7 @@ public class OpcUaXmlEncoder implements UaEncoder {
   }
 
   @Override
-  public void encodeStructArray(String field, Object[] value, ExpandedNodeId dataTypeId)
+  public void encodeStructArray(String field, UaStructuredType[] value, ExpandedNodeId dataTypeId)
       throws UaSerializationException {
 
     NodeId localDateTypeId =
@@ -1826,7 +1855,7 @@ public class OpcUaXmlEncoder implements UaEncoder {
 
             namespaceStack.push(namespaceUri);
 
-            encodeEnum(element.getTypeName(), element);
+            encodeEnum(element.getEncodingName(), element);
 
             namespaceStack.pop();
           }

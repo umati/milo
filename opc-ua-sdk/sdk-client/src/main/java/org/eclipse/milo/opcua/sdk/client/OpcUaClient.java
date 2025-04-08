@@ -42,14 +42,7 @@ import org.eclipse.milo.opcua.sdk.client.typetree.DataTypeTreeBuilder;
 import org.eclipse.milo.opcua.sdk.core.types.codec.DynamicCodecFactory;
 import org.eclipse.milo.opcua.sdk.core.typetree.DataType;
 import org.eclipse.milo.opcua.sdk.core.typetree.DataTypeTree;
-import org.eclipse.milo.opcua.stack.core.AttributeId;
-import org.eclipse.milo.opcua.stack.core.NamespaceTable;
-import org.eclipse.milo.opcua.stack.core.NodeIds;
-import org.eclipse.milo.opcua.stack.core.ServerTable;
-import org.eclipse.milo.opcua.stack.core.Stack;
-import org.eclipse.milo.opcua.stack.core.StatusCodes;
-import org.eclipse.milo.opcua.stack.core.UaException;
-import org.eclipse.milo.opcua.stack.core.UaServiceFaultException;
+import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.channel.EncodingLimits;
 import org.eclipse.milo.opcua.stack.core.encoding.DataTypeCodec;
 import org.eclipse.milo.opcua.stack.core.encoding.DefaultEncodingManager;
@@ -2798,6 +2791,15 @@ public class OpcUaClient {
                         "Registering type: name={}, dataTypeId={}",
                         dataType.getBrowseName(),
                         dataType.getNodeId());
+
+                String namespaceUri = namespaceTable.get(dataType.getNodeId().getNamespaceIndex());
+
+                if (namespaceUri == null) {
+                  throw new UaRuntimeException(
+                      StatusCodes.Bad_UnexpectedError,
+                      "DataType namespace not registered: "
+                          + dataType.getNodeId().toParseableString());
+                }
 
                 dataTypeManager.registerType(
                     dataType.getNodeId(),

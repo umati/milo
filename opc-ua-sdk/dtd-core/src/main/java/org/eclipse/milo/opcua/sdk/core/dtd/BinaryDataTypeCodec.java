@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -17,19 +17,20 @@ import org.eclipse.milo.opcua.stack.core.encoding.UaDecoder;
 import org.eclipse.milo.opcua.stack.core.encoding.UaEncoder;
 import org.eclipse.milo.opcua.stack.core.encoding.binary.OpcUaBinaryDecoder;
 import org.eclipse.milo.opcua.stack.core.encoding.binary.OpcUaBinaryEncoder;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 
 public interface BinaryDataTypeCodec extends DataTypeCodec {
 
   @Override
-  default Object decode(EncodingContext context, UaDecoder decoder)
+  default UaStructuredType decode(EncodingContext context, UaDecoder decoder)
       throws UaSerializationException {
-    return decode(context, (OpcUaBinaryDecoder) decoder);
+    return decodeBinary(context, (OpcUaBinaryDecoder) decoder);
   }
 
   @Override
-  default void encode(EncodingContext context, UaEncoder encoder, Object value)
+  default void encode(EncodingContext context, UaEncoder encoder, UaStructuredType value)
       throws UaSerializationException {
-    encode(context, (OpcUaBinaryEncoder) encoder, value);
+    encodeBinary(context, (OpcUaBinaryEncoder) encoder, value);
   }
 
   /**
@@ -37,9 +38,9 @@ public interface BinaryDataTypeCodec extends DataTypeCodec {
    *
    * @param context the {@link EncodingContext}.
    * @param decoder the {@link OpcUaBinaryDecoder} to decode from.
-   * @return a decoded Object.
+   * @return a decoded {@link UaStructuredType}.
    */
-  Object decode(EncodingContext context, OpcUaBinaryDecoder decoder)
+  UaStructuredType decodeBinary(EncodingContext context, OpcUaBinaryDecoder decoder)
       throws UaSerializationException;
 
   /**
@@ -47,9 +48,9 @@ public interface BinaryDataTypeCodec extends DataTypeCodec {
    *
    * @param context the {@link EncodingContext}.
    * @param encoder the {@link OpcUaBinaryEncoder} to encode to.
-   * @param value the Object to encode.
+   * @param value the {@link UaStructuredType} to encode.
    */
-  void encode(EncodingContext context, OpcUaBinaryEncoder encoder, Object value)
+  void encodeBinary(EncodingContext context, OpcUaBinaryEncoder encoder, UaStructuredType value)
       throws UaSerializationException;
 
   static BinaryDataTypeCodec from(DataTypeCodec codec) {
@@ -70,13 +71,14 @@ public interface BinaryDataTypeCodec extends DataTypeCodec {
     }
 
     @Override
-    public Object decode(EncodingContext context, OpcUaBinaryDecoder decoder)
+    public UaStructuredType decodeBinary(EncodingContext context, OpcUaBinaryDecoder decoder)
         throws UaSerializationException {
       return codec.decode(context, decoder);
     }
 
     @Override
-    public void encode(EncodingContext context, OpcUaBinaryEncoder encoder, Object value)
+    public void encodeBinary(
+        EncodingContext context, OpcUaBinaryEncoder encoder, UaStructuredType value)
         throws UaSerializationException {
       codec.encode(context, encoder, value);
     }

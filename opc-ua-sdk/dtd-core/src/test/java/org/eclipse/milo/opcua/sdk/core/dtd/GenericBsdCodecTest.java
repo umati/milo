@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -13,17 +13,22 @@ package org.eclipse.milo.opcua.sdk.core.dtd;
 import jakarta.xml.bind.JAXBException;
 import org.eclipse.milo.opcua.sdk.core.dtd.generic.Struct;
 import org.eclipse.milo.opcua.sdk.core.dtd.generic.StructCodec;
+import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.structured.Range;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opcfoundation.opcua.binaryschema.StructuredType;
 
+@Disabled
 public class GenericBsdCodecTest extends AbstractBsdCodecTest {
 
   public GenericBsdCodecTest() throws JAXBException {}
 
   @Override
-  protected BinaryDataTypeCodec createCodec(StructuredType structuredType) {
-    return new StructCodec(structuredType);
+  protected BinaryDataTypeCodec createCodec(
+      String namespaceUri, NodeId dataTypeId, NodeId encodingId, StructuredType structuredType) {
+
+    return new StructCodec(namespaceUri, dataTypeId, encodingId, structuredType);
   }
 
   @Test

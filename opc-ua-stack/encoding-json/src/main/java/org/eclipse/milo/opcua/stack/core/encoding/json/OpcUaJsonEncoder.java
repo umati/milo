@@ -1070,7 +1070,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
   }
 
   @Override
-  public void encodeStruct(String field, Object value, ExpandedNodeId dataTypeId)
+  public void encodeStruct(String field, UaStructuredType value, ExpandedNodeId dataTypeId)
       throws UaSerializationException {
 
     NodeId localDataTypeId =
@@ -1085,28 +1085,47 @@ public class OpcUaJsonEncoder implements UaEncoder {
   }
 
   @Override
-  public void encodeStruct(String field, Object value, NodeId dataTypeId)
+  public void encodeStruct(String field, UaStructuredType value, NodeId dataTypeId)
       throws UaSerializationException {
 
     DataTypeCodec codec = encodingContext.getDataTypeManager().getCodec(dataTypeId);
 
-    if (codec != null) {
-      try {
-        if (field != null) {
-          jsonWriter.name(field);
-        }
-
-        contextPush(EncoderContext.STRUCT);
-        jsonWriter.beginObject();
-        codec.encode(encodingContext, this, value);
-        jsonWriter.endObject();
-        contextPop();
-      } catch (IOException e) {
-        throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
-      }
-    } else {
+    if (codec == null) {
       throw new UaSerializationException(
           StatusCodes.Bad_EncodingError, "no codec registered: " + dataTypeId);
+    }
+
+    try {
+      if (field != null) {
+        jsonWriter.name(field);
+      }
+
+      contextPush(EncoderContext.STRUCT);
+      jsonWriter.beginObject();
+      codec.encode(encodingContext, this, value);
+      jsonWriter.endObject();
+      contextPop();
+    } catch (IOException e) {
+      throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
+    }
+  }
+
+  @Override
+  public void encodeStruct(String field, UaStructuredType value, DataTypeCodec codec)
+      throws UaSerializationException {
+
+    try {
+      if (field != null) {
+        jsonWriter.name(field);
+      }
+
+      contextPush(EncoderContext.STRUCT);
+      jsonWriter.beginObject();
+      codec.encode(encodingContext, this, value);
+      jsonWriter.endObject();
+      contextPop();
+    } catch (IOException e) {
+      throw new UaSerializationException(StatusCodes.Bad_EncodingError, e);
     }
   }
 
@@ -1251,13 +1270,13 @@ public class OpcUaJsonEncoder implements UaEncoder {
   }
 
   @Override
-  public void encodeStructArray(String field, Object[] value, NodeId dataTypeId)
+  public void encodeStructArray(String field, UaStructuredType[] value, NodeId dataTypeId)
       throws UaSerializationException {
     encodeArray(field, value, (f, v) -> encodeStruct(null, v, dataTypeId));
   }
 
   @Override
-  public void encodeStructArray(String field, Object[] value, ExpandedNodeId dataTypeId)
+  public void encodeStructArray(String field, UaStructuredType[] value, ExpandedNodeId dataTypeId)
       throws UaSerializationException {
 
     NodeId localDataTypeId =
@@ -1433,7 +1452,7 @@ public class OpcUaJsonEncoder implements UaEncoder {
             jsonWriter.name("Array");
             jsonWriter.beginArray();
             for (int i = 0; i < Array.getLength(flatArray); i++) {
-              Object e = Array.get(flatArray, i);
+              UaStructuredType e = (UaStructuredType) Array.get(flatArray, i);
               encodeStruct(null, e, dataTypeId);
             }
             jsonWriter.endArray();

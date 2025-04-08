@@ -16,6 +16,8 @@ import org.eclipse.milo.opcua.stack.core.UaSerializationException;
 import org.eclipse.milo.opcua.stack.core.encoding.DataTypeCodec;
 import org.eclipse.milo.opcua.stack.core.encoding.EncodingContext;
 import org.eclipse.milo.opcua.stack.core.types.DataTypeEncoding;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 
@@ -39,25 +41,41 @@ public class OpcUaDefaultJsonEncoding implements DataTypeEncoding {
   }
 
   @Override
-  public Object encode(EncodingContext context, Object decodedBody, NodeId encodingId) {
+  public ExtensionObject encode(
+      EncodingContext context, UaStructuredType struct, NodeId encodingId) {
+
+    DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
+
+    if (codec == null) {
+      throw new UaSerializationException(
+          StatusCodes.Bad_DecodingError, "no codec registered for encodingId=" + encodingId);
+    }
+
     var stringWriter = new StringWriter();
     var encoder = new OpcUaJsonEncoder(context, stringWriter);
-    encoder.encodeStruct(null, decodedBody, encodingId);
+    encoder.encodeStruct(null, struct, codec);
 
-    return stringWriter.toString();
+    return ExtensionObject.of(stringWriter.toString(), encodingId);
   }
 
   @Override
-  public Object decode(EncodingContext context, Object encodedBody, NodeId encodingId) {
-    DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
+  public UaStructuredType decode(
+      EncodingContext context, ExtensionObject encoded, NodeId encodingId) {
 
-    if (codec != null) {
-      var decoder = new OpcUaJsonDecoder(context, (String) encodedBody);
+    if (encoded instanceof ExtensionObject.Json xo) {
+      DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
+
+      if (codec == null) {
+        throw new UaSerializationException(
+            StatusCodes.Bad_DecodingError, "no codec registered for encodingId=" + encodingId);
+      }
+
+      var decoder = new OpcUaJsonDecoder(context, xo.getBody());
 
       return decoder.decodeStruct(null, codec);
     } else {
       throw new UaSerializationException(
-          StatusCodes.Bad_DecodingError, "no codec registered for encodingId=" + encodingId);
+          StatusCodes.Bad_DecodingError, "not JSON encoded: " + encoded);
     }
   }
 }

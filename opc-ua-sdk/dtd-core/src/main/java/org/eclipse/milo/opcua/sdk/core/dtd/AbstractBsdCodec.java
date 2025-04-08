@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the Eclipse Milo Authors
+ * Copyright (c) 2025 the Eclipse Milo Authors
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -27,6 +27,7 @@ import org.eclipse.milo.opcua.stack.core.encoding.binary.OpcUaBinaryDecoder;
 import org.eclipse.milo.opcua.stack.core.encoding.binary.OpcUaBinaryEncoder;
 import org.eclipse.milo.opcua.stack.core.types.DataTypeDictionary;
 import org.eclipse.milo.opcua.stack.core.types.UaEnumeratedType;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
@@ -56,9 +57,17 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
   private final Map<String, FieldType> fields = new HashMap<>();
   private final Map<String, FieldType> lengthFields = new HashMap<>();
 
-  private final StructuredType structuredType;
+  protected final String namespaceUri;
+  protected final NodeId dataTypeId;
+  protected final NodeId encodingId;
+  protected final StructuredType structuredType;
 
-  protected AbstractBsdCodec(StructuredType structuredType) {
+  protected AbstractBsdCodec(
+      String namespaceUri, NodeId dataTypeId, NodeId encodingId, StructuredType structuredType) {
+
+    this.namespaceUri = namespaceUri;
+    this.dataTypeId = dataTypeId;
+    this.encodingId = encodingId;
     this.structuredType = structuredType;
 
     structuredType
@@ -76,8 +85,13 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
   }
 
   @Override
-  public StructureT decode(EncodingContext context, OpcUaBinaryDecoder decoder)
-      throws UaSerializationException {
+  public final Class<?> getType() {
+    return BsdStructWrapper.class;
+  }
+
+  @Override
+  public BsdStructWrapper<StructureT> decodeBinary(
+      EncodingContext context, OpcUaBinaryDecoder decoder) throws UaSerializationException {
 
     LinkedHashMap<String, MemberT> members = new LinkedHashMap<>();
 
@@ -104,7 +118,7 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
 
           members.put(fieldName, opcUaToMemberTypeScalar(fieldName, value, typeName));
         } else {
-          Object value = decode(context, fieldName, typeNamespace, typeName, decoder);
+          Object value = decodeField(context, fieldName, typeNamespace, typeName, decoder);
 
           members.put(fieldName, opcUaToMemberTypeScalar(fieldName, value, typeName));
         }
@@ -142,7 +156,7 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
               }
             } else {
               for (int i = 0; i < length; i++) {
-                Object value = decode(context, fieldName, typeNamespace, typeName, decoder);
+                Object value = decodeField(context, fieldName, typeNamespace, typeName, decoder);
 
                 values[i] = value;
               }
@@ -158,16 +172,23 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
       members.remove(lengthField);
     }
 
-    return createStructure(structuredType.getName(), members);
+    StructureT structure = createStructure(structuredType.getName(), members);
+    BsdDataType dataType =
+        new BsdDataType(structuredType.getName(), dataTypeId, encodingId, structuredType);
+
+    return new BsdStructWrapper<>(dataType, structure);
   }
 
   @Override
-  public void encode(EncodingContext context, OpcUaBinaryEncoder encoder, Object structure)
+  public void encodeBinary(
+      EncodingContext context, OpcUaBinaryEncoder encoder, UaStructuredType structure)
       throws UaSerializationException {
 
     //noinspection unchecked
-    LinkedHashMap<String, MemberT> members =
-        new LinkedHashMap<>(getMembers((StructureT) structure));
+    BsdStructWrapper<StructureT> wrapper = (BsdStructWrapper<StructureT>) structure;
+    StructureT unwrappedStructure = wrapper.object();
+
+    LinkedHashMap<String, MemberT> members = new LinkedHashMap<>(getMembers(unwrappedStructure));
 
     PeekingIterator<FieldType> fieldIterator =
         Iterators.peekingIterator(structuredType.getField().iterator());
@@ -210,7 +231,7 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
       if (typeNamespaceIsUa && (writer = getWriter(typeName)) != null) {
         writer.accept(encoder, scalarValue);
       } else {
-        encode(context, field.getName(), typeNamespace, typeName, scalarValue, encoder);
+        encodeField(context, field.getName(), typeNamespace, typeName, scalarValue, encoder);
       }
     } else {
       if (field.isIsLengthInBytes()) {
@@ -251,7 +272,7 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
             }
           } else {
             for (Object value : valueArray) {
-              encode(context, field.getName(), typeNamespace, typeName, value, encoder);
+              encodeField(context, field.getName(), typeNamespace, typeName, value, encoder);
             }
           }
         }
@@ -259,7 +280,7 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
     }
   }
 
-  private Object decode(
+  private Object decodeField(
       EncodingContext context,
       String fieldName,
       String namespaceUri,
@@ -300,7 +321,7 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
     }
   }
 
-  private void encode(
+  private void encodeField(
       EncodingContext context,
       String fieldName,
       String namespaceUri,
@@ -319,7 +340,7 @@ public abstract class AbstractBsdCodec<StructureT, MemberT> implements BinaryDat
         DataTypeCodec codec = dictionary.getCodec(description);
 
         if (codec != null) {
-          codec.encode(context, encoder, value);
+          codec.encode(context, encoder, (UaStructuredType) value);
         } else {
           throw new UaSerializationException(
               StatusCodes.Bad_DecodingError,

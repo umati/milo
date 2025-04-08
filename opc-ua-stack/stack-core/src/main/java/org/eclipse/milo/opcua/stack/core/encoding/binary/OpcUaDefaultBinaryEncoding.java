@@ -20,7 +20,9 @@ import org.eclipse.milo.opcua.stack.core.UaSerializationException;
 import org.eclipse.milo.opcua.stack.core.encoding.DataTypeCodec;
 import org.eclipse.milo.opcua.stack.core.encoding.EncodingContext;
 import org.eclipse.milo.opcua.stack.core.types.DataTypeEncoding;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 
@@ -44,28 +46,43 @@ public class OpcUaDefaultBinaryEncoding implements DataTypeEncoding {
   }
 
   @Override
-  public Object encode(EncodingContext context, Object decodedBody, NodeId encodingId) {
+  public ExtensionObject encode(
+      EncodingContext context, UaStructuredType struct, NodeId encodingId) {
+
+    DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
+
+    if (codec == null) {
+      throw new UaSerializationException(
+          StatusCodes.Bad_DecodingError, "no codec registered for encodingId=" + encodingId);
+    }
+
     ByteBuf buffer = buffer();
 
     try {
       OpcUaBinaryEncoder encoder = new OpcUaBinaryEncoder(context);
       encoder.setBuffer(buffer);
 
-      encoder.encodeStruct(null, decodedBody, encodingId);
+      encoder.encodeStruct(null, struct, codec);
 
-      return ByteString.of(ByteBufUtil.getBytes(buffer));
+      return ExtensionObject.of(ByteString.of(ByteBufUtil.getBytes(buffer)), encodingId);
     } finally {
       buffer.release();
     }
   }
 
   @Override
-  public Object decode(EncodingContext context, Object encodedBody, NodeId encodingId) {
+  public UaStructuredType decode(
+      EncodingContext context, ExtensionObject encoded, NodeId encodingId) {
 
-    DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
+    if (encoded instanceof ExtensionObject.Binary xo) {
+      DataTypeCodec codec = context.getDataTypeManager().getCodec(encodingId);
 
-    if (codec != null) {
-      ByteString binaryBody = (ByteString) encodedBody;
+      if (codec == null) {
+        throw new UaSerializationException(
+            StatusCodes.Bad_DecodingError, "no codec registered for encodingId=" + encodingId);
+      }
+
+      ByteString binaryBody = xo.getBody();
       byte[] bs = binaryBody.bytesOrEmpty();
 
       ByteBuf buffer = Unpooled.wrappedBuffer(bs);
@@ -76,7 +93,7 @@ public class OpcUaDefaultBinaryEncoding implements DataTypeEncoding {
       return decoder.decodeStruct(null, codec);
     } else {
       throw new UaSerializationException(
-          StatusCodes.Bad_DecodingError, "no codec registered for encodingId=" + encodingId);
+          StatusCodes.Bad_DecodingError, "not binary encoded: " + encoded);
     }
   }
 }

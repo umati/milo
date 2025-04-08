@@ -25,6 +25,7 @@ import org.eclipse.milo.opcua.stack.core.types.structured.StructureDefinition;
 public class DynamicCodecFactory {
 
   public static DataTypeCodec create(DataType dataType, DataTypeTree dataTypeTree) {
+
     DataTypeDefinition definition = dataType.getDataTypeDefinition();
 
     if (definition instanceof EnumDefinition) {
