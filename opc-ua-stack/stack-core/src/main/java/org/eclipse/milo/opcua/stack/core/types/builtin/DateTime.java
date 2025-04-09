@@ -98,12 +98,23 @@ public record DateTime(long utcTime) {
     return !isValid();
   }
 
-  @Deprecated
+  /**
+   * Check if this is a "null" DateTime.
+   *
+   * <p>A "null" DateTime has a `utcTime` of 0, i.e. it is equivalent to the ISO-8601 date
+   * "1601-01-01T00:00:00Z".
+   *
+   * @return {@code true} if this DateTime is "null", {@code false} otherwise.
+   */
   public boolean isNull() {
     return utcTime == 0;
   }
 
-  @Deprecated
+  /**
+   * Check if this is not a "null" DateTime.
+   *
+   * @return {@code true} if this DateTime is not "null", {@code false} otherwise.
+   */
   public boolean isNotNull() {
     return !isNull();
   }

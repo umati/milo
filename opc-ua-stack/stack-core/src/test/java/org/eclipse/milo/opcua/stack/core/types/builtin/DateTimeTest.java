@@ -11,6 +11,7 @@
 package org.eclipse.milo.opcua.stack.core.types.builtin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -22,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class DateTimeTest {
 
   @Test
-  public void getJavaInstant() {
+  void getJavaInstant() {
     ZonedDateTime inputZdt =
         LocalDateTime.of(2020, Month.JANUARY, 10, 20, 30, 40, 123_456_789)
             .atZone(ZoneId.systemDefault());
@@ -42,5 +43,15 @@ public class DateTimeTest {
     assertEquals(inputZdt.getSecond(), outputZdt.getSecond());
     // we lose precision here because DateTime uses 100-nanosecond intervals
     assertEquals(123_456_700, outputZdt.getNano());
+  }
+
+  @Test
+  void isNull() {
+    DateTime nullDateTime = DateTime.NULL_VALUE;
+    DateTime zeroDateTime = new DateTime(0L);
+
+    assertTrue(nullDateTime.isNull());
+    assertTrue(zeroDateTime.isNull());
+    assertEquals(nullDateTime, zeroDateTime);
   }
 }
