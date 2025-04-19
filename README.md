@@ -13,9 +13,9 @@ Mailing list: https://dev.eclipse.org/mailman/listinfo/milo-dev
 
 ### Building Milo
 
-**Using JDK 8**, run `mvn clean install` from the project root.
+**Using JDK 17**, run `mvn clean install` from the project root.
 
-To maintain compatibility with Java 8 it is recommended that you build using JDK 8, however the library is runtime compatible with versions 8 and later (e.g. JDK 11, JDK 17).
+To maintain compatibility with Java 17 it is recommended that you build using JDK 17, however the library is runtime compatible with versions 17 and later (e.g. JDK 21, JDK 24).
 
 ### Releases
 
@@ -27,7 +27,7 @@ Releases are published to Maven Central and snapshots to Sonatype.
 <dependency>
     <groupId>org.eclipse.milo</groupId>
     <artifactId>milo-sdk-client</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -37,7 +37,7 @@ Releases are published to Maven Central and snapshots to Sonatype.
 <dependency>
     <groupId>org.eclipse.milo</groupId>
     <artifactId>milo-sdk-server</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -53,13 +53,22 @@ Referencing a `SNAPSHOT` release requires the Sonatype snapshot repository be ad
 
 ## Public Demo Server
 
-An internet-facing demo server is accessible at `opc.tcp://milo.digitalpetri.com:62541/milo`.
+An internet-facing instance of this demo server is accessible at
+`opc.tcp://milo.digitalpetri.com:62541/milo`.
 
-It accepts both unsecured and secured connections. Before connecting with security you must upload your client's DER-encoded X509 certificate using the form at http://milo.digitalpetri.com.
+It accepts both unsecured and secured connections. All incoming client certificates are automatically trusted.
 
 Authenticate anonymously or with one of the following credential pairs:
-- `user1` / `password`
-- `user2` / `password`
-- `admin` / `password`
+
+- `User` / `password`
+    - roles: `WellKnownRole_AuthenticatedUser`
+- `UserA` / `password`
+    - roles: `SiteA_Read`, `SiteA_Write`
+- `UserB` / `password`
+    - roles: `SiteB_Read`, `SiteB_Write`
+- `SiteAdmin` / `password`
+    - roles: `SiteA_Read`, `SiteB_Read`
+- `SecurityAdmin` / `password`
+    - roles: `WellKnownRole_SecurityAdmin`
 
 The code powering the demo server is available here: https://github.com/digitalpetri/opc-ua-demo-server
