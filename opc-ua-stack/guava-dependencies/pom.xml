@@ -67,6 +67,13 @@
                     <exclude>META-INF/versions/9/module-info.class</exclude>
                   </excludes>
                 </filter>
+                <filter>
+                  <artifact>com.google.guava:failureaccess</artifact>
+                  <excludes>
+                    <exclude>META-INF/LICENSE</exclude>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                  </excludes>
+                </filter>
               </filters>
             </configuration>
           </execution>
