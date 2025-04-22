@@ -25,7 +25,8 @@ jobs:
           gpg --list-secret-keys --keyid-format LONG
 
       - name: Publish package
-        run: mvn -B "-Dgpg.passphrase=${{ secrets.ORG_GPG_PASSPHRASE }}" clean deploy -P release
+        run: mvn -B clean deploy -P release
         env:
           MAVEN_USERNAME: ${{ secrets.ORG_OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.ORG_GPG_PASSPHRASE }}
