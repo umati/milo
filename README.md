@@ -1,5 +1,6 @@
 # Eclipse Milo
-[![Jenkins](https://img.shields.io/jenkins/build/https/ci.eclipse.org/milo/job/Milo_Deploy.svg)](https://ci.eclipse.org/milo/)
+[![Actions](https://img.shields.io/github/actions/workflow/status/eclipse-milo/milo/.github%2Fworkflows%2Fmaven-verify.yml
+)](https://github.com/eclipse-milo/milo/actions/workflows/maven-verify.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/org.eclipse.milo/milo.svg)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.eclipse.milo%22%20AND%20a%3A%22milo%22)
 
 Milo is an open-source implementation of OPC UA (currently targeting 1.05). It includes a high-performance stack (channels, serialization, data structures, security) as well as client and server SDKs built on top of the stack.
