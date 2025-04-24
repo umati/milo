@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2024 the Eclipse Milo Authors
+  ~ Copyright (c) 2025 the Eclipse Milo Authors
   ~
   ~ This program and the accompanying materials are made
   ~ available under the terms of the Eclipse Public License 2.0
@@ -10,8 +10,8 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -87,6 +87,12 @@
           <excludeFilterFile>${basedir}/../findbugs-exclude.xml</excludeFilterFile>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <inherited>false</inherited>
+      </plugin>
     </plugins>
 
     <pluginManagement>
@@ -118,6 +124,17 @@
               </configuration>
             </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>${nexus-staging-maven-plugin.version}</version>
+          <extensions>true</extensions>
+          <configuration>
+            <serverId>ossrh</serverId>
+            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
