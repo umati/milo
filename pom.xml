@@ -71,7 +71,7 @@
 
     <!-- Plugin Dependency Versions -->
     <checkstyle.version>10.21.4</checkstyle.version>
-    <jaxb2-maven-plugin.version>3.2.0</jaxb2-maven-plugin.version>
+    <jaxb2-maven-plugin.version>3.3.0</jaxb2-maven-plugin.version>
     <maven-bundle-plugin.version>6.0.0</maven-bundle-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
