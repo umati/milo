@@ -90,7 +90,7 @@
     <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
 
     <!-- Test Dependency Versions -->
-    <junit.version>5.12.1</junit.version>
+    <junit.version>5.13.1</junit.version>
     <mockito.version>5.16.1</mockito.version>
   </properties>
 
