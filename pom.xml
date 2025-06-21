@@ -70,7 +70,7 @@
     <jspecify.version>1.0.0</jspecify.version>
 
     <!-- Plugin Dependency Versions -->
-    <checkstyle.version>10.21.4</checkstyle.version>
+    <checkstyle.version>10.25.1</checkstyle.version>
     <jaxb2-maven-plugin.version>3.2.0</jaxb2-maven-plugin.version>
     <maven-bundle-plugin.version>6.0.0</maven-bundle-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
